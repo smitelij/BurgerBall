@@ -1,2 +1,0 @@
-"#TargetCollectionGame" 
-# TargetCollectionGame
