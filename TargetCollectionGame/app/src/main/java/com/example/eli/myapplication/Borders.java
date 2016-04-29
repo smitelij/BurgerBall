@@ -92,7 +92,7 @@ public class Borders {
         allBorders.add(mBorderBottomRight);
         allBorders.add(mBorderBottomLeft);
 
-        //allBorders.add(testP);
+        allBorders.add(testP);
 
     }
 
@@ -105,6 +105,6 @@ public class Borders {
         mBorderBottomRight.draw(mProjectionMatrix);
         mBorderBottomLeft.draw(mProjectionMatrix);
 
-        //testP.draw(mProjectionMatrix);
+        testP.draw(mProjectionMatrix);
     }
 }

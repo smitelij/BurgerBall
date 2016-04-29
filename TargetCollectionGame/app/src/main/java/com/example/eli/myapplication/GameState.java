@@ -15,7 +15,7 @@ public class GameState {
 
     static final float ARENA_HEIGHT = FULL_HEIGHT * 0.8f;
 
-    static final float ballCenterX = 170f;
+    static final float ballCenterX = 169.5f;
     static final float ballCenterY = 270f;
     static final float ballRadius = 8f;
 

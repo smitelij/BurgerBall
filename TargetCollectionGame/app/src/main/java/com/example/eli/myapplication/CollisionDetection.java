@@ -57,6 +57,16 @@ public class CollisionDetection {
     public ArrayList<collisionHistory> getCollisions(){
         return mCollisions;
     }
+    public float getFirstCollisionTime(){
+        ArrayList<collisionHistory> collisions = new ArrayList<>();
+        collisions = getFirstCollision();
+
+        if (collisions.size() == 0)
+            System.out.println("no collisions found, bad error.");
+
+        //If getFirstCollision returns multiple collisions, they will all have the same time, so we can use the first.
+        return collisions.get(0).getTime();
+    }
     public ArrayList<collisionHistory> getFirstCollision() {
 
         //sanity check
@@ -250,16 +260,26 @@ public class CollisionDetection {
 
         //save some information
         PointF ballCenterPrev = new PointF();
-        PointF prevVelocity = new PointF(ball.getXVelocity() * timeStep, ball.getYVelocity() *timeStep);
-        ballCenterPrev.set(ball.getCenter().x - prevVelocity.x, ball.getCenter().y - prevVelocity.y);
+        PointF prevVelocity = new PointF(ball.getXVelocity(), ball.getYVelocity());
+        PointF prevVelocityStep = new PointF(prevVelocity.x * timeStep, prevVelocity.y * timeStep);
+        ballCenterPrev.set(ball.getCenter().x - prevVelocityStep.x, ball.getCenter().y - prevVelocityStep.y);
 
         //Calculate the angle of the ball's velocity against the boundary axis
-        double prevAngle = Math.acos(dotProduct(boundaryAxis,prevVelocity) / (boundaryAxis.length() * prevVelocity.length()));
+        double prevAngle = Math.acos(dotProduct(boundaryAxis,prevVelocityStep) / (boundaryAxis.length() * prevVelocityStep.length()));
         //Use this angle to calculate how far the ball traveled through the obstacle (hypotenuse)
         double hypotenuse = Math.abs(penetration) / Math.cos(prevAngle);
 
         //Calculate the % of velocity used before collision
         float percentOfVelocityUsed = ((prevVelocity.length() - (float) Math.abs(hypotenuse)) / prevVelocity.length());
+        /*System.out.println(". ");
+        System.out.println("prev velocity: " + prevVelocity.x + ";" + prevVelocity.y);
+        System.out.println("hypotenuse: " + hypotenuse);
+        System.out.println("penetration: " + penetration);
+        System.out.println("prev angle: " + prevAngle);
+        System.out.println("normal axis: " + boundaryAxis);
+        System.out.println("mVertex: " + pHistory.mVertex);
+        System.out.println("circle x,y top and right bounds: " + (ball.getCenter().x + ball.getRadius()) + ";" + (ball.getCenter().y + ball.getRadius()));
+        System.out.println(".");*/
 
         mCollisions.add(new collisionHistory(percentOfVelocityUsed, boundaryAxis, obstacle));
 
@@ -276,11 +296,12 @@ public class CollisionDetection {
         PointF changeInCoords;
 
         PointF ballCenterPrev = ball.getPrevCenter();
-        PointF prevVelocity = new PointF(ball.getXVelocity() * timeStep, ball.getYVelocity() * timeStep);
+        PointF prevVelocity = new PointF(ball.getXVelocity(), ball.getYVelocity());
         PointF boundaryAxis = collision.mBoundaryAxis;
 
         //Calculate the % of velocity used before collision, and % after collision
         //TODO will this change after the nth collision in 1 frame?
+        //System.out.println("collision.mTime: " + collision.mTime);
         float percentOfVelocityUsed = collision.mTime;  //before
         float percentOfVelocityOver = 1 - collision.mTime;      //after
 
@@ -292,14 +313,17 @@ public class CollisionDetection {
             //Update with new resultant velocity
             calculateNewVelocity(ball, boundaryAxis);
 
-            //most normal cases where ball needs to be moved back to collision point and then bounced
+            //most normal cases where ball needs to be moved back to collision point
         } else {
 
-            System.out.println("percent of velocity over: " + percentOfVelocityOver);
+            //System.out.println("percent of velocity over: " + percentOfVelocityOver);
             //calculate amount that ball must be moved back (to where ball first collided), and move ball there.
             //displacementVector = new PointF(-prevVelocity.x * percentOfVelocityOver, -prevVelocity.y * percentOfVelocityOver);
+            //System.out.println("prev velocity: " + prevVelocity.x + ";" + prevVelocity.y);
             displacementVector = new PointF(-prevVelocity.x * (percentOfVelocityOver), -prevVelocity.y * (percentOfVelocityOver));
             ball.updateAABB(displacementVector.x, displacementVector.y);
+
+            //System.out.println("inner displacement vector: " + displacementVector.x + ";" + displacementVector.y);
 
             //Calculate new resultant velocity after collision
             if (multipleCollisions){
@@ -310,6 +334,7 @@ public class CollisionDetection {
 
             //Based on the new ball location, calculate what the change was from the original location.
             PointF newCenter = ball.getCenter();
+            //System.out.println("ball center prev: " + ballCenterPrev.x + ";" + ballCenterPrev.y);
             changeInCoords = new PointF(newCenter.x - ballCenterPrev.x, newCenter.y - ballCenterPrev.y);
         }
 

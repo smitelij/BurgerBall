@@ -90,6 +90,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 unused) {
+        //System.out.println("START FRAME!");
+
         float[] scratch = new float[16];
         float[] oldSquarePos = new float[16];
 
@@ -104,10 +106,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
             float timeStep = 1 - timeElapsed;
 
-            try {
-                Thread.sleep(1000);
+            /*try {
+                Thread.sleep(1500);
             } catch (Exception e) {
-            }
+            }*/
 
             //initialize collision detection engine
             CollisionDetection CD = new CollisionDetection();
@@ -115,9 +117,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             //go through all borders
             for (Polygon border : mBorders.allBorders) {
 
-                //reset AABB to restore previous value
+                //reset AABB to restore original value, and then move ball forward by time step amount.
+                //This is better to keep here rather than in the WHILE loop, because it is easier to start each
+                //collision detection testing with a clean slate.
                 mBall.resetAABB();
-                //Move ball forward by time step amount
                 mBall.moveBallByFrame(timeStep);
 
                 //First, test the bounding boxes to see if there may have been a collision
@@ -134,22 +137,28 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             }
 
             //If one collision occurred
-            if (CD.getCollisions().size() == 1) {
-                System.out.println("one collision occurred.");
-                PointF newDisplacementVector = CD.calculateChangeInCoords(mBall, CD.getFirstCollision(), timeStep);
-                displacementVector.set(displacementVector.x + newDisplacementVector.x, displacementVector.y + newDisplacementVector.y);
-                timeElapsed = timeElapsed + CD.getCollisions().get(0).getTime();
-                System.out.println("Time elapsed: " + timeElapsed);
-                System.out.println("displacementVector: " + displacementVector.x + "." + displacementVector.y);
+            if (CD.getCollisions().size() >= 1) {
 
-            //If multiple collisions occurred
-            } else if (CD.getCollisions().size() > 1) {
-                System.out.println("multiple collisions occurred");
+                if (CD.getCollisions().size() == 1) {
+                    System.out.println("one collision occurred.");
+                } else {
+                    System.out.println("multiple collisions occurred.");
+                }
+
                 PointF newDisplacementVector = CD.calculateChangeInCoords(mBall, CD.getFirstCollision(), timeStep);
+                //System.out.println("new displacement vector: " + newDisplacementVector.x + ";" + newDisplacementVector.y);
                 displacementVector.set(displacementVector.x + newDisplacementVector.x, displacementVector.y + newDisplacementVector.y);
-                timeElapsed = timeElapsed + CD.getCollisions().get(0).getTime();
-                System.out.println("Time elapsed: " + timeElapsed);
-                System.out.println("displacementVector: " + displacementVector.x + "." + displacementVector.y);
+                //System.out.println("collision time:" + CD.getFirstCollisionTime());
+                timeElapsed = CD.getFirstCollisionTime();
+                //System.out.println("Time elapsed: " + timeElapsed);
+                //System.out.println("displacementVector: " + displacementVector.x + "." + displacementVector.y);
+
+                //clean up any lingering weird AABB stuff from collision detection
+                mBall.resetAABB();
+                //move ball by however far it has so far been displaced (this will be 0 unless there are multiple collisions in 1 frame)
+                mBall.updateAABB(newDisplacementVector.x, newDisplacementVector.y);
+                //Update saved value for AABB
+                mBall.updatePrevAABB();
 
             //If no collisions occurred
             } else {
@@ -160,6 +169,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 displacementVector.set(displacementVector.x + additionalDisplacement.x, displacementVector.y + additionalDisplacement.y);
             }
         }
+
+        //System.out.println("final displacement amount:" + displacementVector.x + ";" + displacementVector.y);
 
         //Move ball forward by displacement amount
         Matrix.translateM(mBall.mModelMatrix, 0, mBall.mModelMatrix, 0, displacementVector.x, displacementVector.y, 0);

@@ -45,7 +45,9 @@ public class Ball extends Interactable{
      */
     public Ball(float[] borderCoords, PointF velocity, float radius) {
 
+        //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
         super(borderCoords, GameState.OBSTACLE_BALL);
+        updatePrevAABB();
 
         //shouldn't need this once ball is moved to Ball class
         Matrix.setIdentityM(mModelMatrix, 0);
@@ -122,7 +124,7 @@ public class Ball extends Interactable{
         mVelocity = mPrevVelocity;
     }
 
-    private void updatePrevAABB(){
+    public void updatePrevAABB(){
         mPrevAABB[0] = mMinXCoord;
         mPrevAABB[1] = mMaxXCoord;
         mPrevAABB[2] = mMinYCoord;
