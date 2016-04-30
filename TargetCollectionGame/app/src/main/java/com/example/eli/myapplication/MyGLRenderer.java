@@ -88,7 +88,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         mBalls.add(ball2);
 
         //temporary
-        mBall = ball1;
+        mBall = ball2;
 
         mBorders = new Borders();
     }
