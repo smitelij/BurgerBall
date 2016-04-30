@@ -43,10 +43,11 @@ public class Ball extends Interactable{
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Ball(float[] borderCoords, PointF velocity, float radius) {
+    public Ball(float[] borderCoords, PointF velocity, float radius, float[] color) {
 
         //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
         super(borderCoords, GameState.OBSTACLE_BALL);
+        setColor(color);
         updatePrevAABB();
 
         //shouldn't need this once ball is moved to Ball class

@@ -24,6 +24,8 @@ import android.opengl.Matrix;
 import android.util.Log;
 import android.graphics.PointF;
 
+import java.util.ArrayList;
+
 /**
  * Provides drawing instructions for a GLSurfaceView object. This class
  * must override the OpenGL ES drawing lifecycle methods:
@@ -37,6 +39,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "MyGLRenderer";
     private Triangle mTriangle;
+    private ArrayList<Ball> mBalls = new ArrayList<>();
     private Ball mBall;
 
     private Borders mBorders;
@@ -75,8 +78,18 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         setMMVPMatrix();
 
         mTriangle = new Triangle();
-        mBall = new Ball(GameState.initialBallCoords, GameState.initialBallVelocity, GameState.ballRadius); // top right});
-        mBall.setColor(GameState.borderColor);
+
+        //Create balls
+        float[] ballCoords1 = GameState.getBorderCoords(170f, 270f, 8f);
+        float[] ballCoords2 = GameState.getBorderCoords(120f, 240f, 8f);
+        Ball ball1 = new Ball(ballCoords1, GameState.initialBallVelocity, GameState.ballRadius, GameState.ballColor);
+        Ball ball2 = new Ball(ballCoords2, GameState.initialBallVelocity, GameState.ballRadius, GameState.ballColor);
+        mBalls.add(ball1);
+        mBalls.add(ball2);
+
+        //temporary
+        mBall = ball1;
+
         mBorders = new Borders();
     }
 

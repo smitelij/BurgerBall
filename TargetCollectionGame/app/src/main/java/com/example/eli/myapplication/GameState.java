@@ -12,6 +12,7 @@ public class GameState {
 
     static final float[] backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
     static final float[] borderColor = { 0.8f, 0.8f, 0.8f, 1.0f };
+    static final float[] ballColor = {0.9f, 0.2f, 0.9f, 1.0f};
 
     static final float ARENA_HEIGHT = FULL_HEIGHT * 0.8f;
 
@@ -26,6 +27,7 @@ public class GameState {
             ballCenterX + ballRadius,  ballCenterY + ballRadius, 0.0f }; //top right
 
 
+
     static final PointF initialBallVelocity = new PointF(3.0f, 3.0f);
 
     static final int OBSTACLE_POLYGON = 1000;
@@ -34,5 +36,13 @@ public class GameState {
     //currently only used for collision detection, move into that class if never used again
     static final float LARGE_NUMBER = 99999f;
     static final float SMALL_NUMBER = -99999f;
+
+    public static float[] getBorderCoords(float ballCenterX, float ballCenterY, float ballRadius){
+        return new float[]{
+                ballCenterX - ballRadius,  ballCenterY + ballRadius, 0.0f,   // top left
+                ballCenterX - ballRadius, ballCenterY - ballRadius, 0.0f,   // bottom left
+                ballCenterX + ballRadius, ballCenterY - ballRadius, 0.0f,   // bottom right
+                ballCenterX + ballRadius,  ballCenterY + ballRadius, 0.0f }; //top right
+    }
 
 }
