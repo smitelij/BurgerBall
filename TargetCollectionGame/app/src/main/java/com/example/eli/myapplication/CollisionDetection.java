@@ -37,16 +37,20 @@ public class CollisionDetection {
         private float mTime; //percent time into the frame that collision occurred
         private PointF mBoundaryAxis; //normalized boundary axis of the obstacle where collision occurred
         private Polygon mObstacle; //the obstacle that was struck
+        private Ball mBall;
 
-        collisionHistory(float time, PointF boundaryAxis, Polygon obstacle){
+        collisionHistory(float time, PointF boundaryAxis, Polygon obstacle, Ball ball){
             mTime = time;
             mBoundaryAxis = boundaryAxis;
             mObstacle = obstacle;
+            mBall = ball;
         }
 
         public float getTime(){
             return mTime;
         }
+
+        public Ball getBall() { return mBall; }
     }
 
     private ArrayList<penetrationHistory> pHistory = new ArrayList<penetrationHistory>();
@@ -281,7 +285,7 @@ public class CollisionDetection {
         System.out.println("circle x,y top and right bounds: " + (ball.getCenter().x + ball.getRadius()) + ";" + (ball.getCenter().y + ball.getRadius()));
         System.out.println(".");*/
 
-        mCollisions.add(new collisionHistory(percentOfVelocityUsed, boundaryAxis, obstacle));
+        mCollisions.add(new collisionHistory(percentOfVelocityUsed, boundaryAxis, obstacle, ball));
 
     }
 
@@ -486,6 +490,59 @@ public class CollisionDetection {
         }
 
         return false;
+    }
+
+    public boolean didCollisionHappen(){
+        return (getCollisions().size() >= 1);
+    }
+
+    //Collision info key:
+    // 0 = no collisions
+    // 1 = 1 ball, 1 collision
+    // 2 = multiple balls (possibly colliding with multiple boundaries)
+    // 3 = 1 ball, multiple boundaries
+    public int getCollisionInfo(){
+
+        //no collisions
+        if (getCollisions().size() == 0) {
+            return 0;
+        }
+
+        //If we had at least one collision, grab the first collision(s), because
+        //that is the only one that matters
+
+        ArrayList<collisionHistory> firstCollisions = getFirstCollision();
+        int numberOfCollisions = firstCollisions.size();
+
+        //one ball one collision
+        if (numberOfCollisions == 1){
+            return 1;
+        }
+
+        if (firstCollisions.size() > 0){
+
+            int firstBallID = firstCollisions.get(0).getBall().getID();
+            boolean multipleBalls = false; //default to false
+
+            for (collisionHistory currentCollision : firstCollisions){
+                if (firstBallID != currentCollision.getBall().getID()){
+                    multipleBalls = true;
+                }
+            }
+
+            //more than one ball collided (possibly with multiple boundaries)
+            if (multipleBalls){
+                return 2;
+
+            //only one ball collided, but with multiple boundaries
+            } else {
+                return 3;
+            }
+        }
+
+        //should never get here
+        return 4;
+
     }
 
 /*

@@ -38,6 +38,7 @@ public class Ball extends Interactable{
     private PointF mPrevVelocity;
 
     float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
+    private int mID;
 
 
     /**
@@ -55,6 +56,7 @@ public class Ball extends Interactable{
 
         mVelocity = velocity;
         mRadius = radius;
+        mID = GameState.getNextBallID();
 
     }
 
@@ -140,6 +142,10 @@ public class Ball extends Interactable{
         center = new PointF(xCenter, yCenter);
 
         return center;
+    }
+
+    public int getID(){
+        return mID;
     }
 
 

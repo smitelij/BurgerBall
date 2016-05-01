@@ -6,6 +6,8 @@ import android.graphics.PointF;
  * Created by Eli on 3/11/2016.
  */
 public class GameState {
+
+    static int currentBallID = 0;
     static final float FULL_WIDTH = 200.0f;
     static final float FULL_HEIGHT = 300.0f;
     static final float BORDER_WIDTH = 6.0f;
@@ -43,6 +45,11 @@ public class GameState {
                 ballCenterX - ballRadius, ballCenterY - ballRadius, 0.0f,   // bottom left
                 ballCenterX + ballRadius, ballCenterY - ballRadius, 0.0f,   // bottom right
                 ballCenterX + ballRadius,  ballCenterY + ballRadius, 0.0f }; //top right
+    }
+
+    public static int getNextBallID(){
+        currentBallID++;
+        return currentBallID;
     }
 
 }
