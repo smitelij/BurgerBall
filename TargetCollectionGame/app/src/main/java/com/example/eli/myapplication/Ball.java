@@ -39,6 +39,8 @@ public class Ball extends Interactable{
 
     float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
     private int mID;
+    private boolean isActive;
+    private PointF mDisplacementVector = new PointF(0f, 0f);
 
 
     /**
@@ -57,6 +59,7 @@ public class Ball extends Interactable{
         mVelocity = velocity;
         mRadius = radius;
         mID = GameState.getNextBallID();
+        isActive = true;
 
     }
 
@@ -146,6 +149,18 @@ public class Ball extends Interactable{
 
     public int getID(){
         return mID;
+    }
+
+    public PointF getDisplacementVector(){
+        return mDisplacementVector;
+    }
+
+    public void clearDisplacementVector(){
+        mDisplacementVector.set(0f,0f);
+    }
+
+    public void addToDisplacementVector(PointF additionalDisplacement){
+        mDisplacementVector.set(mDisplacementVector.x + additionalDisplacement.x, mDisplacementVector.y + additionalDisplacement.y);
     }
 
 

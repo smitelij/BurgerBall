@@ -3,6 +3,7 @@ package com.example.eli.myapplication;
 import android.graphics.PointF;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -33,36 +34,17 @@ public class CollisionDetection {
             mDisplacementVector = new PointF(displacementVectorX, displacementVectorY);
         }
     }
-    public class collisionHistory{
-        private float mTime; //percent time into the frame that collision occurred
-        private PointF mBoundaryAxis; //normalized boundary axis of the obstacle where collision occurred
-        private Polygon mObstacle; //the obstacle that was struck
-        private Ball mBall;
-
-        collisionHistory(float time, PointF boundaryAxis, Polygon obstacle, Ball ball){
-            mTime = time;
-            mBoundaryAxis = boundaryAxis;
-            mObstacle = obstacle;
-            mBall = ball;
-        }
-
-        public float getTime(){
-            return mTime;
-        }
-
-        public Ball getBall() { return mBall; }
-    }
 
     private ArrayList<penetrationHistory> pHistory = new ArrayList<penetrationHistory>();
-    private ArrayList<collisionHistory> mCollisions = new ArrayList<>();
+    private ArrayList<CollisionHistory> mCollisions = new ArrayList<>();
 
     private PointF displacementVector;
 
-    public ArrayList<collisionHistory> getCollisions(){
+    public ArrayList<CollisionHistory> getCollisions(){
         return mCollisions;
     }
     public float getFirstCollisionTime(){
-        ArrayList<collisionHistory> collisions = new ArrayList<>();
+        ArrayList<CollisionHistory> collisions = new ArrayList<>();
         collisions = getFirstCollision();
 
         if (collisions.size() == 0)
@@ -71,19 +53,19 @@ public class CollisionDetection {
         //If getFirstCollision returns multiple collisions, they will all have the same time, so we can use the first.
         return collisions.get(0).getTime();
     }
-    public ArrayList<collisionHistory> getFirstCollision() {
+    public ArrayList<CollisionHistory> getFirstCollision() {
 
         //sanity check
         if (mCollisions.size() == 0){
             return null;
         }
 
-        //Initialize
-        ArrayList<collisionHistory> firstCollision = new ArrayList<>();
+        //Initialize arraylist
+        ArrayList<CollisionHistory> firstCollision = new ArrayList<>();
         float firstCollisionTime = 1f; //time should always be less than 1
 
         //loop through all finding the earliest collision
-        for (collisionHistory collision : mCollisions){
+        for (CollisionHistory collision : mCollisions){
 
             float curCollisionTime = collision.getTime();
 
@@ -285,29 +267,29 @@ public class CollisionDetection {
         System.out.println("circle x,y top and right bounds: " + (ball.getCenter().x + ball.getRadius()) + ";" + (ball.getCenter().y + ball.getRadius()));
         System.out.println(".");*/
 
-        mCollisions.add(new collisionHistory(percentOfVelocityUsed, boundaryAxis, obstacle, ball));
+        mCollisions.add(new CollisionHistory(percentOfVelocityUsed, boundaryAxis, obstacle, ball));
 
     }
 
-    public PointF calculateChangeInCoords(Ball ball, ArrayList<collisionHistory> collisions, float timeStep){
+    public PointF calculateChangeInCoords(Ball ball, ArrayList<CollisionHistory> collisions, float timeStep){
 
         boolean multipleCollisions = (collisions.size() > 1);
         //Even if there were multiple collisions, we can just use information from one of the collisions
         //for almost all the calculations we need to do.
-        collisionHistory collision = collisions.get(0);
+        CollisionHistory collision = collisions.get(0);
 
         PointF newVelocity;
         PointF changeInCoords;
 
         PointF ballCenterPrev = ball.getPrevCenter();
         PointF prevVelocity = new PointF(ball.getXVelocity(), ball.getYVelocity());
-        PointF boundaryAxis = collision.mBoundaryAxis;
+        PointF boundaryAxis = collision.getBoundaryAxis();
 
         //Calculate the % of velocity used before collision, and % after collision
         //TODO will this change after the nth collision in 1 frame?
         //System.out.println("collision.mTime: " + collision.mTime);
-        float percentOfVelocityUsed = collision.mTime;  //before
-        float percentOfVelocityOver = 1 - collision.mTime;      //after
+        float percentOfVelocityUsed = collision.getTime();  //before
+        float percentOfVelocityOver = 1 - collision.getTime();      //after
 
         //cover corner case where new ball location barely hits boundary
         if (percentOfVelocityUsed == 0){
@@ -369,15 +351,15 @@ public class CollisionDetection {
         return newVelocity;
     }
 
-    private PointF calculateNewVelocity(Ball ball, ArrayList<collisionHistory> collisions){
+    private PointF calculateNewVelocity(Ball ball, ArrayList<CollisionHistory> collisions){
         float velocityChange;
         PointF velocityChangeVector;
         PointF newVelocity;
         PointF combinedBoundaryAxis = new PointF(0.0f, 0.0f);
 
-        for (collisionHistory collision : collisions){
-            float currentBAX = collision.mBoundaryAxis.x;
-            float currentBAY = collision.mBoundaryAxis.y;
+        for (CollisionHistory collision : collisions){
+            float currentBAX = collision.getBoundaryAxis().x;
+            float currentBAY = collision.getBoundaryAxis().y;
             combinedBoundaryAxis.set(combinedBoundaryAxis.x + currentBAX, combinedBoundaryAxis.y + currentBAY);
         }
 
@@ -498,9 +480,8 @@ public class CollisionDetection {
 
     //Collision info key:
     // 0 = no collisions
-    // 1 = 1 ball, 1 collision
-    // 2 = multiple balls (possibly colliding with multiple boundaries)
-    // 3 = 1 ball, multiple boundaries
+    // 1 = 1 ball collided
+    // 2 = multiple balls (possibly colliding with multiple boundaries
     public int getCollisionInfo(){
 
         //no collisions
@@ -511,7 +492,7 @@ public class CollisionDetection {
         //If we had at least one collision, grab the first collision(s), because
         //that is the only one that matters
 
-        ArrayList<collisionHistory> firstCollisions = getFirstCollision();
+        ArrayList<CollisionHistory> firstCollisions = getFirstCollision();
         int numberOfCollisions = firstCollisions.size();
 
         //one ball one collision
@@ -524,7 +505,7 @@ public class CollisionDetection {
             int firstBallID = firstCollisions.get(0).getBall().getID();
             boolean multipleBalls = false; //default to false
 
-            for (collisionHistory currentCollision : firstCollisions){
+            for (CollisionHistory currentCollision : firstCollisions){
                 if (firstBallID != currentCollision.getBall().getID()){
                     multipleBalls = true;
                 }
@@ -536,13 +517,33 @@ public class CollisionDetection {
 
             //only one ball collided, but with multiple boundaries
             } else {
-                return 3;
+                return 1; //Possibility here for a different status number, but currently doesn't seem necessary
             }
         }
 
         //should never get here
         return 4;
+    }
 
+    public HashMap<Integer, ArrayList<CollisionHistory>> createHashOfCollisions(ArrayList<CollisionHistory>){
+
+        HashMap<Integer, ArrayList<CollisionHistory>> map = new HashMap<>();
+
+
+
+
+        return map;
+    }
+
+    public ArrayList<CollisionHistory>[] createBallCollisionArray(ArrayList<CollisionHistory> collisions){
+        ArrayList<CollisionHistory>[] mapping = new ArrayList[GameState.currentBalls];
+
+        for (CollisionHistory currentCollision : collisions){
+            int currentBallID = currentCollision.getBall().getID();
+            mapping[currentBallID].add(currentCollision);
+        }
+
+        return mapping;
     }
 
 /*

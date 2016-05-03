@@ -110,7 +110,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         float timeElapsed = 0f;
         boolean collisionOccurred = false;
-        PointF displacementVector = new PointF(0f,0f);
 
         // Draw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -153,8 +152,38 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 }
             }
 
-            if (CD.didCollisionHappen()){
-                CD.getFirstcollision();
+            ArrayList<CollisionHistory> firstCollisions = CD.getFirstCollision();
+
+            //no collisions
+            if (firstCollisions.size() == 0 ) {
+                timeElapsed = 1;
+                PointF additionalDisplacement = new PointF(mBall.getXVelocity() * timeStep, mBall.getYVelocity() * timeStep);
+                //move all balls forward by 1 frame
+
+            //1 collision (definitely only 1 ball)
+            } else if (firstCollisions.size() >= 1) {
+                ArrayList<CollisionHistory>[] mapping = new ArrayList[GameState.currentBalls];
+
+                mapping = CD.createBallCollisionArray(firstCollisions);
+
+                handleCollisionsForBalls(CD, mapping, timeStep);
+
+                timeElapsed = CD.getFirstCollisionTime();
+                //get displacement amount of collided ball, update velocity. (calculateChangeInCoords)
+                //reset all other balls, move them forward by their velocity up to the instant of collision
+
+            //multiple collisions
+            } else if (firstCollisions.size() > 1) {
+                ArrayList<CollisionHistory>[] mapping = new ArrayList[GameState.currentBalls];
+
+                mapping = CD.createBallCollisionArray(firstCollisions);
+
+                handleCollisionsForBalls(CD, mapping, timeStep);
+                //make hashmap with key of ball ID and value of ArrayList<CollisionHistory>
+                //get displacement amount of collided balls, update velocity
+                //reset all other balls, move them forward by their velocity up to the instant of collision
+            }
+
 
                 //If one collision occurred
                 if (CD.getCollisions().size() >= 1) {
@@ -203,10 +232,28 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             // Draw square
             mBall.draw(scratch);
 
+    }
+
+    public void handleCollisionsForBalls(CollisionDetection CD, ArrayList<CollisionHistory>[] collisionMapping, float timeStep){
+
+        for (Ball currentBall : mBalls){
+            int currentBallID = currentBall.getID();
+            if (collisionMapping[currentBallID] != null){
+                PointF newDisplacementVector = CD.calculateChangeInCoords(mBall, CD.getFirstCollision(), timeStep);
+                //System.out.println("new displacement vector: " + newDisplacementVector.x + ";" + newDisplacementVector.y);
+                currentBall.addToDisplacementVector(newDisplacementVector);
+                //System.out.println("collision time:" + CD.getFirstCollisionTime());
+            }
         }
 
-
     }
+
+    public void handleSingleCollision() {
+    }
+
+    public void handleMultipleCollisions() {
+    }
+
 
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {

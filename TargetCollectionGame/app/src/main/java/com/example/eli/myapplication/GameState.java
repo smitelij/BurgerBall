@@ -22,6 +22,8 @@ public class GameState {
     static final float ballCenterY = 270f;
     static final float ballRadius = 8f;
 
+    static int currentBalls = 3;
+
     static final float[] initialBallCoords = {
             ballCenterX - ballRadius,  ballCenterY + ballRadius, 0.0f,   // top left
             ballCenterX - ballRadius, ballCenterY - ballRadius, 0.0f,   // bottom left
