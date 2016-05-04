@@ -65,8 +65,9 @@ public class Borders {
 
     public Borders(){
 
-        mBackground = new Polygon(backgroundCoords, GameState.OBSTACLE_POLYGON);
-        mBackground.setColor(GameState.backgroundColor);
+
+        //mBackground = new Polygon(backgroundCoords, GameState.OBSTACLE_POLYGON);
+       // mBackground.setColor(GameState.backgroundColor);
 
         mBorderLeft = new Polygon(borderLeftCoords, GameState.OBSTACLE_POLYGON);
         mBorderLeft.setColor(GameState.borderColor);
@@ -92,19 +93,14 @@ public class Borders {
         allBorders.add(mBorderBottomRight);
         allBorders.add(mBorderBottomLeft);
 
-        allBorders.add(testP);
+        //allBorders.add(testP);
 
     }
 
     public void drawAllBorders(float[] mProjectionMatrix){
 
-        mBackground.draw(mProjectionMatrix);
-        mBorderLeft.draw(mProjectionMatrix);
-        mBorderRight.draw(mProjectionMatrix);
-        mBorderTop.draw(mProjectionMatrix);
-        mBorderBottomRight.draw(mProjectionMatrix);
-        mBorderBottomLeft.draw(mProjectionMatrix);
-
-        testP.draw(mProjectionMatrix);
+        for (Polygon border : allBorders){
+            border.draw(mProjectionMatrix);
+        }
     }
 }

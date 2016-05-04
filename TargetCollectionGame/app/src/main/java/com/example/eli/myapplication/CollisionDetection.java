@@ -351,7 +351,7 @@ public class CollisionDetection {
         return newVelocity;
     }
 
-    private PointF calculateNewVelocity(Ball ball, ArrayList<CollisionHistory> collisions){
+    public PointF calculateNewVelocity(Ball ball, ArrayList<CollisionHistory> collisions){
         float velocityChange;
         PointF velocityChangeVector;
         PointF newVelocity;
@@ -525,21 +525,18 @@ public class CollisionDetection {
         return 4;
     }
 
-    public HashMap<Integer, ArrayList<CollisionHistory>> createHashOfCollisions(ArrayList<CollisionHistory>){
-
-        HashMap<Integer, ArrayList<CollisionHistory>> map = new HashMap<>();
-
-
-
-
-        return map;
-    }
 
     public ArrayList<CollisionHistory>[] createBallCollisionArray(ArrayList<CollisionHistory> collisions){
         ArrayList<CollisionHistory>[] mapping = new ArrayList[GameState.currentBalls];
 
         for (CollisionHistory currentCollision : collisions){
             int currentBallID = currentCollision.getBall().getID();
+
+            //initialize arraylist as needed for each element
+            if (mapping[currentBallID] == null){
+                mapping[currentBallID] = new ArrayList<>();
+            }
+
             mapping[currentBallID].add(currentCollision);
         }
 

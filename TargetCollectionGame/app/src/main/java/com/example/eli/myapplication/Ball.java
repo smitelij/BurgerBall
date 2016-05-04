@@ -104,7 +104,6 @@ public class Ball extends Interactable{
     }
 
     public float getXVelocity(){
-
         return mVelocity.x;
     }
 

@@ -7,7 +7,8 @@ import android.graphics.PointF;
  */
 public class GameState {
 
-    static int currentBallID = 0;
+    //started at -1 because always incremented before it is returned. the first value will be 0.
+    static int currentBallID = -1;
     static final float FULL_WIDTH = 200.0f;
     static final float FULL_HEIGHT = 300.0f;
     static final float BORDER_WIDTH = 6.0f;
