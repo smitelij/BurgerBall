@@ -42,6 +42,9 @@ public class Ball extends Interactable{
     private boolean isActive;
     private PointF mDisplacementVector = new PointF(0f, 0f);
 
+    //used for collision detection, tracks whether we have advanced this ball yet for the current frame
+    boolean mHasMovedForward;
+
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -160,6 +163,18 @@ public class Ball extends Interactable{
 
     public void addToDisplacementVector(PointF additionalDisplacement){
         mDisplacementVector.set(mDisplacementVector.x + additionalDisplacement.x, mDisplacementVector.y + additionalDisplacement.y);
+    }
+
+    public void setBallMoved(){
+        mHasMovedForward = true;
+    }
+
+    public boolean hasBallMoved(){
+        return mHasMovedForward;
+    }
+
+    public void clearMovedStatus(){
+        mHasMovedForward = false;
     }
 
 

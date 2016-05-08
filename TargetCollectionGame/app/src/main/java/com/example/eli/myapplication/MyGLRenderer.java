@@ -102,7 +102,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     public void collisionDetection(CollisionDetection CD, float timeStep){
         /*try {
-                Thread.sleep(1500);
+                Thread.sleep(500);
             } catch (Exception e) {
             }*/
 
@@ -126,14 +126,29 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 if (CD.testBoundingBoxes(currentBall, border)) {
 
                     //There may have been a collision, further testing is necessary.
-                    //For now, borders can only be polygons
-                    if (border.getType() == GameState.OBSTACLE_POLYGON) {
+                    CD.doPolygonCollisionDetection(currentBall, border, timeStep);
+                }
+            }
 
-                        CD.doPolygonCollisionDetection(currentBall, border, timeStep);
+            for (Ball otherBall : mBalls){
+                //only need to test balls that have already moved
 
+                if (otherBall.hasBallMoved()){
+
+                    //System.out.println("testing balls inner: " + currentBall.getID() + ";" + otherBall.getID());
+
+                    //test bounding boxes to see if there may have been a collision
+                    if (CD.testBoundingBoxes(currentBall, otherBall)){
+                        CD.doBallCollisionDetection(currentBall, otherBall, timeStep);
                     }
                 }
             }
+
+            currentBall.setBallMoved();
+        }
+
+        for (Ball currentBall : mBalls){
+            currentBall.clearMovedStatus();
         }
     }
 
@@ -169,7 +184,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 unused) {
-        System.out.println("START FRAME!");
+        //System.out.println("START FRAME!");
 
         float[] mModelProjectionMatrix = new float[16];
 
@@ -191,7 +206,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             collisionDetection(CD, timeStep);
 
             //Handle collisions
-            collisionHandling(CD, timeStep, timeElapsed);
+            timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
 
         }
 
