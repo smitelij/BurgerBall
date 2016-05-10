@@ -243,8 +243,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             //If there is collisionHistory in the mapping for the current ball, then a collision occurred for this ball.
             //This means we need to displace the ball to the moment of collision, and then calculate the new velocity based on the collision.
             if (collisionMapping[currentBallID] != null){
-                //Don't actually need this?!
-               // newDisplacementVector = CD.calculateChangeInCoords(mBall, CD.getFirstCollision(), timeStep);
                 newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
                 CD.calculateNewVelocity(currentBall, collisionMapping[currentBallID]);
 

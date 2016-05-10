@@ -8,10 +8,10 @@ import android.graphics.PointF;
 public class CollisionHistory{
     private float mTime; //percent time into the frame that collision occurred
     private PointF mBoundaryAxis; //normalized boundary axis of the obstacle where collision occurred
-    private Polygon mObstacle; //the obstacle that was struck
+    private Interactable mObstacle; //the obstacle that was struck
     private Ball mBall;
 
-    public CollisionHistory(float time, PointF boundaryAxis, Polygon obstacle, Ball ball){
+    public CollisionHistory(float time, PointF boundaryAxis, Interactable obstacle, Ball ball){
         mTime = time;
         mBoundaryAxis = boundaryAxis;
         mObstacle = obstacle;
@@ -25,4 +25,8 @@ public class CollisionHistory{
     public Ball getBall() { return mBall; }
 
     public PointF getBoundaryAxis() { return mBoundaryAxis;}
+
+    public Interactable getObstacle(){
+        return mObstacle;
+    }
 }
