@@ -54,7 +54,6 @@ public class Interactable {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
-    public float[] mModelMatrix = new float[16];
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
@@ -119,8 +118,6 @@ public class Interactable {
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
 
-        //shouldn't need this once ball is moved to Ball class
-        Matrix.setIdentityM(mModelMatrix, 0);
 
         mType = type;
         mBorderCoords = borderCoords;
@@ -295,6 +292,7 @@ public class Interactable {
     public int getType(){
         return mType;
     }
+
 
 
 }

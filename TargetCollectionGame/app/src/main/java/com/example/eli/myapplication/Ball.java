@@ -38,6 +38,12 @@ public class Ball extends Interactable{
     private PointF mPrevVelocity;
 
     float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
+    private int mID;
+    private boolean isActive;
+    private PointF mDisplacementVector = new PointF(0f, 0f);
+
+    //used for collision detection, tracks whether we have advanced this ball yet for the current frame
+    boolean mHasMovedForward;
 
 
     /**
@@ -55,6 +61,8 @@ public class Ball extends Interactable{
 
         mVelocity = velocity;
         mRadius = radius;
+        mID = GameState.getNextBallID();
+        isActive = true;
 
     }
 
@@ -99,7 +107,6 @@ public class Ball extends Interactable{
     }
 
     public float getXVelocity(){
-
         return mVelocity.x;
     }
 
@@ -140,6 +147,34 @@ public class Ball extends Interactable{
         center = new PointF(xCenter, yCenter);
 
         return center;
+    }
+
+    public int getID(){
+        return mID;
+    }
+
+    public PointF getDisplacementVector(){
+        return mDisplacementVector;
+    }
+
+    public void clearDisplacementVector(){
+        mDisplacementVector.set(0f,0f);
+    }
+
+    public void addToDisplacementVector(PointF additionalDisplacement){
+        mDisplacementVector.set(mDisplacementVector.x + additionalDisplacement.x, mDisplacementVector.y + additionalDisplacement.y);
+    }
+
+    public void setBallMoved(){
+        mHasMovedForward = true;
+    }
+
+    public boolean hasBallMoved(){
+        return mHasMovedForward;
+    }
+
+    public void clearMovedStatus(){
+        mHasMovedForward = false;
     }
 
 
