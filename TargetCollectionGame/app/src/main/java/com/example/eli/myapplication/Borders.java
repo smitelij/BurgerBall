@@ -103,4 +103,8 @@ public class Borders {
             border.draw(mProjectionMatrix);
         }
     }
+
+    public ArrayList<Polygon> getAllBorders(){
+        return allBorders;
+    }
 }

@@ -34,14 +34,20 @@ public class Interactable {
             // the coordinates of the objects that use this vertex shader
             "uniform mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
+                    "attribute vec2 a_TexCoordinate;" + // Per-vertex texture coordinate information we will pass in.
+                    "varying vec2 v_TexCoordinate;" +   // This will be passed into the fragment shader.
                     "void main() {" +
                     // The matrix must be included as a modifier of gl_Position.
                     // Note that the uMVPMatrix factor *must be first* in order
                     // for the matrix multiplication product to be correct.
                     "  gl_Position = uMVPMatrix * vPosition;" +
+                    // Pass through the texture coordinate.
+                    "  v_TexCoordinate = a_TexCoordinate;" +
                     "}";
 
     private final String fragmentShaderCode =
+            "uniform sampler2D u_Texture;" +    // The input texture.
+            "varying vec2 v_TexCoordinate;" + // Interpolated texture coordinate per fragment.
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
                     "void main() {" +
@@ -54,6 +60,7 @@ public class Interactable {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
+
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
@@ -82,6 +89,15 @@ public class Interactable {
     //use one of the static ints declared in GameState.OBSTACLE_
     private int mType;
     private PointF[] m2dCoordArray;
+
+    private FloatBuffer textureBuffer;  // buffer holding the texture coordinates
+    private float texture[] = {
+            // Mapping coordinates for the vertices
+            0.0f, 1.0f,     // top left     (V2)
+            0.0f, 0.0f,     // bottom left  (V1)
+            1.0f, 1.0f,     // top right    (V4)
+            1.0f, 0.0f      // bottom right (V3)
+    };
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -291,6 +307,19 @@ public class Interactable {
 
     public int getType(){
         return mType;
+    }
+
+    public boolean hasObjectMoved(){
+
+        //Since Polygon==Border currently, and borders never move, we always return true.
+        if (mType==GameState.OBSTACLE_POLYGON){
+            return true;
+
+        //if not a polygon, we know it will be a ball, so we can call the sub class method
+        } else {
+            Ball tempBall = (Ball) this;
+            return tempBall.hasBallMoved();
+        }
     }
 
 

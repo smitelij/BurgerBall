@@ -28,14 +28,14 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
     private final MyGLRenderer mRenderer;
 
-    public MyGLSurfaceView(Context context) {
+    public MyGLSurfaceView(Context context, GameState game) {
         super(context);
 
         // Create an OpenGL ES 2.0 context.
         setEGLContextClientVersion(2);
 
         // Set the Renderer for drawing on the GLSurfaceView
-        mRenderer = new MyGLRenderer();
+        mRenderer = new MyGLRenderer(game);
         setEGLConfigChooser(8 , 8, 8, 8, 16, 0);
         setRenderer(mRenderer);
 
@@ -82,5 +82,6 @@ public class MyGLSurfaceView extends GLSurfaceView {
         mPreviousY = y;
         return true;
     }
+
 
 }

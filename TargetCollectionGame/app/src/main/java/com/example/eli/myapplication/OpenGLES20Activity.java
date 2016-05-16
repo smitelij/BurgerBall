@@ -27,9 +27,11 @@ public class OpenGLES20Activity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        GameState game = new GameState();
+
         // Create a GLSurfaceView instance and set it
         // as the ContentView for this Activity
-        mGLView = new MyGLSurfaceView(this);
+        mGLView = new MyGLSurfaceView(this, game);
         setContentView(mGLView);
     }
 

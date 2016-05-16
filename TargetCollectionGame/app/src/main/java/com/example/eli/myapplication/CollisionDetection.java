@@ -3,8 +3,6 @@ package com.example.eli.myapplication;
 import android.graphics.PointF;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 
 /**
@@ -14,31 +12,20 @@ public class CollisionDetection {
 
     private class penetrationHistory{
         PointF mNormalAxis;
-        PointF mDisplacementVector;
         float mPenetrationDistance;
         PointF mVertex;
+        boolean mNearestVertexAxis;
 
-
-
-        penetrationHistory(PointF normalAxis, float penetrationDistance, PointF vertex){
+        penetrationHistory(PointF normalAxis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
             mNormalAxis = normalAxis;
             mPenetrationDistance = penetrationDistance;
             mVertex = vertex;
-
-            float displacementVectorX;
-            float displacementVectorY;
-
-            displacementVectorX = normalAxis.x * penetrationDistance;
-            displacementVectorY = normalAxis.y * penetrationDistance;
-
-            mDisplacementVector = new PointF(displacementVectorX, displacementVectorY);
+            mNearestVertexAxis = nearestVertexAxis;
         }
     }
 
     private ArrayList<penetrationHistory> pHistory = new ArrayList<penetrationHistory>();
     private ArrayList<CollisionHistory> mCollisions = new ArrayList<>();
-
-    private PointF displacementVector;
 
     public ArrayList<CollisionHistory> getCollisions(){
         return mCollisions;
@@ -90,18 +77,18 @@ public class CollisionDetection {
         return firstCollision;
     }
 
-    public void addProjectionToHistory(PointF axis, float penetrationDistance, PointF vertex){
-        pHistory.add(new penetrationHistory(axis, penetrationDistance, vertex));
+    public void addProjectionToHistory(PointF axis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
+        pHistory.add(new penetrationHistory(axis, penetrationDistance, vertex, nearestVertexAxis));
     }
 
     public void clearProjectionHistory(){
         pHistory.clear();
     }
 
+    //closest axis = minimum penetration
     public penetrationHistory findClosestAxis(Ball ball, Polygon obstacle){
-        //default to the first
 
-        //sanity check
+         //sanity check
         if (pHistory.size() == 0) {
             return null;
         }
@@ -120,6 +107,7 @@ public class CollisionDetection {
 
             //This should mean that we have two parallel axis's. We must determine which one is the intersecting one.
             } else if (history.mPenetrationDistance == minPenetration){
+                //TODO improve handling for polygon obstacles
                 //when a rectangle:
                 PointF ballCenter = ball.getCenter();
                 float xComponent = history.mNormalAxis.x;
@@ -150,7 +138,21 @@ public class CollisionDetection {
         return minHistoryItem;
     }
 
-    public boolean doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep){
+    public boolean doCollisionDetection(Ball ball, Interactable object, float timeStep){
+
+        if (object.getType()==GameState.OBSTACLE_BALL){
+            return doBallCollisionDetection(ball, (Ball) object, timeStep);
+        }
+
+        if (object.getType()==GameState.OBSTACLE_POLYGON){
+            return doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
+        }
+
+        //should never get here
+        return false;
+    }
+
+    private boolean doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep){
         PointF ball1center;
         PointF ball2center;
 
@@ -159,9 +161,6 @@ public class CollisionDetection {
 
         ball1center = ball1.getCenter();
         ball2center = ball2.getCenter();
-
-        System.out.println("ball1 center current: " + ball1center.x + ";" + ball1center.y);
-        System.out.println("ball2 center current: " + ball2center.x + ";" + ball2center.y);
 
         distanceVector = new PointF(ball1center.x - ball2center.x, ball1center.y - ball2center.y);
         distance = distanceVector.length();
@@ -185,27 +184,17 @@ public class CollisionDetection {
 
         float distanceBetweenBalls = ball1.getRadius() + ball2.getRadius();
 
-        System.out.println("distance x: " + oldDistanceVector.x );
-        System.out.println("distance y: " + oldDistanceVector.y);
-        System.out.println("velocity difference x: " + velocityDifference.x);
-        System.out.println("velocity difference y: " + velocityDifference.y);
-
         double quadA = (velocityDifference.x * velocityDifference.x) + (velocityDifference.y * velocityDifference.y);
         double quadB =  (2 * (oldDistanceVector.x * velocityDifference.x)) + (2 * oldDistanceVector.y * velocityDifference.y);
         double quadC = (oldDistanceVector.x * oldDistanceVector.x) + (oldDistanceVector.y * oldDistanceVector.y) - (distanceBetweenBalls * distanceBetweenBalls);
 
-        System.out.println("quad a :" + quadA);
-        System.out.println("quad b : " + quadB);
-        System.out.println("quad c: " + quadC);
         float collisionTime = (float) doQuadratic(quadA,quadB,quadC);
-
-        System.out.println("collision time: " + collisionTime);
 
         PointF ball1NewPos = new PointF(ball1PrevCenter.x + (collisionTime * ball1.getXVelocity()), ball1PrevCenter.y + (collisionTime * ball1.getYVelocity()));
         PointF ball2NewPos = new PointF(ball2PrevCenter.x + (collisionTime * ball2.getXVelocity()), ball2PrevCenter.y + (collisionTime * ball2.getYVelocity()));
 
         PointF distanceVector = new PointF(ball1NewPos.x - ball2NewPos.x, ball1NewPos.y - ball2NewPos.y);
-        System.out.println("distance between points: " + distanceVector.length());
+        //System.out.println("distance between points: " + distanceVector.length());
 
         PointF[] vertexArray = new PointF[]{ball1NewPos, ball2NewPos};
         PointF boundaryAxis = makeNormalVectorBetweenPoints(vertexArray,0);
@@ -229,7 +218,7 @@ public class CollisionDetection {
         }
     }
 
-    public boolean doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
+    private boolean doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
 
 
         PointF ballCenter = new PointF();
@@ -237,7 +226,6 @@ public class CollisionDetection {
         PointF obstacleCenter = new PointF();
         PointF[] obstacleCoords;
 
-        PointF offsetVector = new PointF();
         PointF normalAxis = new PointF();
         float radius;
 
@@ -256,9 +244,6 @@ public class CollisionDetection {
         //reset projection history
         clearProjectionHistory();
 
-        //calculate offset vector between obstacles
-        offsetVector = new PointF(ballCenter.x - obstacleCenter.x, ballCenter.y - obstacleCenter.y);
-
         //find distance to closest vertex and normalize
         PointF nearestVertex = getNearestVertex(obstacleCoords, ballCenter);
 
@@ -267,7 +252,7 @@ public class CollisionDetection {
         normalAxis = new PointF(nearestVertex.x / nearestVertexLength, nearestVertex.y / nearestVertexLength);
 
         //Determine if a gap exists in the projection
-        gapDetected = projectPointsAndTestForGap(normalAxis, offsetVector, obstacleCoords, ballCenter, radius, nearestVertex);
+        gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, nearestVertex, true);
 
         if (gapDetected) {
             //definitely no collision, exit
@@ -281,7 +266,7 @@ public class CollisionDetection {
             normalAxis = makeNormalVectorBetweenPoints(obstacleCoords, i);
 
             //project each vertex / circle onto the current normal axis, check for gap
-            gapDetected = projectPointsAndTestForGap(normalAxis, offsetVector, obstacleCoords, ballCenter, radius, obstacleCoords[i]);
+            gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, obstacleCoords[i], false);
 
             if (gapDetected) {
                 //definitely no collision, exit
@@ -290,13 +275,8 @@ public class CollisionDetection {
         }
 
         //Collision has occurred.
-        //
         calculateBoundaryCollisionInfo(ball, obstacle, timeStep);
         return true;
-
-        // need to calculate where the ball position will be after collision.
-        //New resultant velocity is also determined / set within here.
-        //return calculateChangeInCoords(ball, obstacle);
     }
 
     private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index){
@@ -320,25 +300,40 @@ public class CollisionDetection {
         //Find the most likely axis of penetration, based on depth of penetration.
         penetrationHistory pHistory = findClosestAxis(ball, obstacle);
         PointF boundaryAxis = pHistory.mNormalAxis;
-        displacementVector = pHistory.mDisplacementVector;
         float penetration = pHistory.mPenetrationDistance;
+        boolean mNearestVertexAxis = pHistory.mNearestVertexAxis;
 
         //save some information
-        PointF ballCenterPrev = new PointF();
-        PointF prevVelocity = new PointF(ball.getXVelocity(), ball.getYVelocity());
-        PointF prevVelocityStep = new PointF(prevVelocity.x * timeStep, prevVelocity.y * timeStep);
-        ballCenterPrev.set(ball.getCenter().x - prevVelocityStep.x, ball.getCenter().y - prevVelocityStep.y);
+        PointF velocity = new PointF(ball.getXVelocity(), ball.getYVelocity());
+        PointF prevVelocityStep = new PointF(velocity.x * timeStep, velocity.y * timeStep);
 
+        //TODO can prevAngle calculation be simplified?
         //Calculate the angle of the ball's velocity against the boundary axis
         double prevAngle = Math.acos(dotProduct(boundaryAxis,prevVelocityStep) / (boundaryAxis.length() * prevVelocityStep.length()));
         //Use this angle to calculate how far the ball traveled through the obstacle (hypotenuse)
         double hypotenuse = Math.abs(penetration) / Math.cos(prevAngle);
 
         //Calculate the % of velocity used before collision
-        float percentOfVelocityUsed = ((prevVelocity.length() - (float) Math.abs(hypotenuse)) / prevVelocity.length());
+        float percentOfVelocityUsed = ((velocity.length() - (float) Math.abs(hypotenuse)) / velocity.length());
+
+        //for the special case that the separating axis was between the center of the ball and the nearest vertex,
+        // then we will want to recalculate the collision axis based on position of the ball at the exact moment of collision,
+        // rather than when the collision was detected. This will increase the accuracy of the new calculated velocity.
+        if (mNearestVertexAxis){
+            boundaryAxis = updateBoundaryAxis(ball, percentOfVelocityUsed, pHistory.mVertex);
+        }
 
         mCollisions.add(new CollisionHistory(percentOfVelocityUsed, boundaryAxis, obstacle, ball));
 
+    }
+
+    private PointF updateBoundaryAxis(Ball ball, float collisionTime, PointF nearestVertex){
+        PointF prevBallPos = ball.getPrevCenter();
+        PointF newBallPos = new PointF(prevBallPos.x + (collisionTime * ball.getXVelocity()), prevBallPos.y + (collisionTime * ball.getYVelocity()));
+        PointF collisionAxis = new PointF(nearestVertex.x - newBallPos.x, nearestVertex.y - newBallPos.y);
+        float collisionAxisLength = collisionAxis.length();
+        collisionAxis.set(collisionAxis.x / collisionAxisLength, collisionAxis.y / collisionAxisLength);
+        return collisionAxis;
     }
 
     public PointF calculateNewVelocity(Ball ball, ArrayList<CollisionHistory> collisions){
@@ -474,20 +469,6 @@ public class CollisionDetection {
 
     }
 
-    private float clamp(float min, float max, float target){
-        float result;
-
-        if (target > max) {
-            result = max;
-        } else if (target < min) {
-            result = min;
-        } else {
-            result = target;
-        }
-
-        return result;
-    }
-
     private PointF getNearestVertex(PointF[] obstacleCoords, PointF ballCenter){
         float smallestLength = GameState.LARGE_NUMBER;
         float currentLength;
@@ -506,13 +487,10 @@ public class CollisionDetection {
         return smallestVector;
     }
 
-    //TODO - remove offset vector param
-    private boolean projectPointsAndTestForGap(PointF normalAxis, PointF offsetVector, PointF[] obstacleCoords, PointF ballCenter, float radius, PointF vertex){
+    private boolean projectPointsAndTestForGap(PointF normalAxis, PointF[] obstacleCoords, PointF ballCenter, float radius, PointF vertex, boolean nearestVertexAxis){
         //Project points onto normal axis and find min / max
         float vertexMin = GameState.LARGE_NUMBER;
         float vertexMax = GameState.SMALL_NUMBER;
-
-        //System.out.println("Projection Axis: " + normalAxis);
 
         for (int i = 0; i < obstacleCoords.length; i++) {
             float vertexProjection = dotProduct(normalAxis, obstacleCoords[i]);
@@ -523,21 +501,12 @@ public class CollisionDetection {
                 vertexMin = vertexProjection;
         }
 
-        //System.out.println("min point: " + vertexMin + " max point: " + vertexMax);
-
         //project circle points onto normal axis (max is radius, min is negative radius)
         float circleProjection = dotProduct(normalAxis, ballCenter);
         float circleMin = circleProjection - radius;
         float circleMax = circleProjection + radius;
 
-        float offsetValue = dotProduct(normalAxis, offsetVector);
-
-        //add offset value to min/max from polygon  ?don't need offset anymore?
-       /* vertexMin = vertexMin + offsetValue;
-        vertexMax = vertexMax + offsetValue;*/
-
-        //System.out.println("vertex min: " + vertexMin + " vertex max: " + vertexMax + " circleMin: " + circleMin + " circleMax: " + circleMax);
-
+        //calculate results comparing vertex / circle
         float result1 = vertexMin - circleMax;
         float result2 = circleMin - vertexMax;
 
@@ -546,7 +515,7 @@ public class CollisionDetection {
             return true;
         } else {
             //Penetration will be a negative number; because a positive number indicates a gap
-            addProjectionToHistory(normalAxis, Math.max(result1,result2), vertex);
+            addProjectionToHistory(normalAxis, Math.max(result1,result2), vertex, nearestVertexAxis);
             return false;
         }
 
@@ -556,12 +525,14 @@ public class CollisionDetection {
         return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
     }
 
-    public PointF getDisplacementVector(){
-        return displacementVector;
-    }
+    //pre checks before getting into in depth checks
+    public boolean testBoundingBoxes(Ball ball, Interactable obstacle){
 
-    //Static to avoid initializing CollisionDetection class unless we think there may be a collision
-    public static boolean testBoundingBoxes(Ball ball, Interactable obstacle){
+        //first, we need to make sure the other object has already been moved this frame.
+        if (!obstacle.hasObjectMoved()){
+            return false;
+        }
+
         //test x collision
         if (((ball.getMaxX()) >= obstacle.getMinX()) && (obstacle.getMaxX() >= ball.getMinX())){
             //test y collision
@@ -571,57 +542,6 @@ public class CollisionDetection {
         }
 
         return false;
-    }
-
-    public boolean didCollisionHappen(){
-        return (getCollisions().size() >= 1);
-    }
-
-    //Collision info key:
-    // 0 = no collisions
-    // 1 = 1 ball collided
-    // 2 = multiple balls (possibly colliding with multiple boundaries
-    public int getCollisionInfo(){
-
-        //no collisions
-        if (getCollisions().size() == 0) {
-            return 0;
-        }
-
-        //If we had at least one collision, grab the first collision(s), because
-        //that is the only one that matters
-
-        ArrayList<CollisionHistory> firstCollisions = getFirstCollision();
-        int numberOfCollisions = firstCollisions.size();
-
-        //one ball one collision
-        if (numberOfCollisions == 1){
-            return 1;
-        }
-
-        if (firstCollisions.size() > 0){
-
-            int firstBallID = firstCollisions.get(0).getBall().getID();
-            boolean multipleBalls = false; //default to false
-
-            for (CollisionHistory currentCollision : firstCollisions){
-                if (firstBallID != currentCollision.getBall().getID()){
-                    multipleBalls = true;
-                }
-            }
-
-            //more than one ball collided (possibly with multiple boundaries)
-            if (multipleBalls){
-                return 2;
-
-            //only one ball collided, but with multiple boundaries
-            } else {
-                return 1; //Possibility here for a different status number, but currently doesn't seem necessary
-            }
-        }
-
-        //should never get here
-        return 4;
     }
 
 
@@ -641,197 +561,5 @@ public class CollisionDetection {
 
         return mapping;
     }
-
-/*
-    private ArrayList<PointF> getIntersectionPoints(Ball ball, PointF lineNormal, PointF vertex){
-        ArrayList<PointF> results = new ArrayList<>();
-        PointF ballCenter = ball.getCenter();
-        float ballRadius = ball.getRadius();
-
-        //To get line BA from the normal of BA, flip x/y and take the negative of x component
-        float baX = lineNormal.y;
-        float baY = -lineNormal.x;
-        float caX = ballCenter.x - vertex.x;
-        float caY = ballCenter.y - vertex.y;
-
-        float a = baX * baX + baY * baY;
-        float bBy2 = baX * caX + baY * caY;
-        float c = caX * caX + caY * caY - ballRadius * ballRadius;
-
-        float pBy2 = bBy2 / a;
-        float q = c / a;
-
-        float disc = pBy2 * pBy2 - q;
-        if (disc < 0) {
-            return null;
-        }
-        // if disc == 0 ... dealt with later
-        float tmpSqrt = (float) Math.sqrt(disc);
-        float abScalingFactor1 = -pBy2 + tmpSqrt;
-        float abScalingFactor2 = -pBy2 - tmpSqrt;
-
-        PointF p1 = new PointF(vertex.x - baX * abScalingFactor1, vertex.y
-                - baY * abScalingFactor1);
-        results.add(p1);
-
-        if (disc == 0) { // abScalingFactor1 == abScalingFactor2
-            return results;
-        }
-        PointF p2 = new PointF(vertex.x - baX * abScalingFactor2, vertex.y
-                - baY * abScalingFactor2);
-        results.add(p2);
-        return results;
-    } */
-
-/* no longer using
-    public PointF doRectCollisionDetection(Ball ball, Polygon obstacle){
-        PointF ballCenter = new PointF();
-        PointF ballCenterPrev = new PointF();
-        PointF obstacleCenter = new PointF();
-        PointF nearestPoint;
-        PointF distanceFromNearestPoint;
-
-        float lengthDFNP;
-        float penetration;
-
-        PointF distanceVector;
-        PointF clampedVector;
-
-        float obstacleHalfX;
-        float obstacleHalfY;
-        float clampedXValue;
-        float clampedYValue;
-
-        PointF prevVelocity = new PointF();
-        PointF newVelocity = new PointF();
-
-        PointF changeInCoords = new PointF();
-
-        //gather info
-        ballCenter.set(ball.getCenter());
-        ballCenterPrev.set(ballCenter.x - ball.getXVelocity(), ballCenter.y - ball.getYVelocity());
-        obstacleCenter.set(obstacle.getCenter());
-        obstacleHalfX = (obstacle.getMaxX() - obstacle.getMinX()) / 2;
-        obstacleHalfY = (obstacle.getMaxY() - obstacle.getMinY()) / 2;
-
-        //calculate distance vector between obstacles
-        distanceVector = new PointF(ballCenter.x - obstacleCenter.x, ballCenter.y - obstacleCenter.y);
-
-        //clamp distance vector to half values
-        clampedXValue = clamp(-obstacleHalfX,obstacleHalfX,distanceVector.x);
-        clampedYValue = clamp(-obstacleHalfY,obstacleHalfY,distanceVector.y);
-        clampedVector = new PointF(clampedXValue, clampedYValue);
-
-        //calculate nearest point within obstacle (to the ball center) by adding clamped vector to center
-        nearestPoint = new PointF(obstacleCenter.x + clampedVector.x, obstacleCenter.y + clampedVector.y);
-
-        //calculate the distance vector of the ball to the nearest point
-        distanceFromNearestPoint = new PointF(nearestPoint.x - ballCenter.x, nearestPoint.y - ballCenter.y);
-
-        //calculate length of DFNP vector
-        lengthDFNP = distanceFromNearestPoint.length();
-
-        //check if the final length is smaller than the radius of the ball
-        penetration = (ball.getRadius() - lengthDFNP);
-
-
-        if (penetration < 0) {
-            return null;
-        }
-
-        ////HANDLE COLLISION
-
-        System.out.println(" current ball velocity: " + ball.getXVelocity() + " . " + ball.getYVelocity());
-
-        //If the intersection point is on left or right side, flip x velocity
-        if ((nearestPoint.x == obstacle.getMinX()) || (nearestPoint.x == obstacle.getMaxX())){
-
-            changeInCoords = calculateNewPosition(ball, penetration, true);
-
-            //if the point is on top or bottom, flip y velocity
-        } else if ((nearestPoint.y == obstacle.getMinY()) || (nearestPoint.y == obstacle.getMaxY())){
-
-            changeInCoords = calculateNewPosition(ball, penetration, false);
-
-        //corner case where ball is moving fast enough that center is inside the obstacle
-        } else {
-            //so we need to determine which edge it was closest to
-            float diffMinY = Math.abs(nearestPoint.y - obstacle.getMinY());
-            float diffMaxY = Math.abs(nearestPoint.y - obstacle.getMaxY());
-            float diffMinX = Math.abs(nearestPoint.x - obstacle.getMinX());
-            float diffMaxX = Math.abs(nearestPoint.x - obstacle.getMaxX());
-
-            //and then, we can do the same as before- move it out and calculate new position
-            if (Math.min(diffMinX, diffMaxX) < Math.min(diffMinY, diffMaxY)){
-                changeInCoords = calculateNewPosition(ball, penetration, true);
-            } else {
-                changeInCoords = calculateNewPosition(ball, penetration, true);
-            }
-
-        }
-
-        return changeInCoords;
-    }
-
-    private PointF calculateNewPosition(Ball ball, float penetration, boolean collisionOnXSide){
-        PointF changeInCoords;
-        PointF ballCenterPrev = new PointF();
-        PointF prevVelocity = new PointF(ball.getXVelocity(), ball.getYVelocity());
-        ballCenterPrev.set(ball.getCenter().x - prevVelocity.x, ball.getCenter().y - prevVelocity.y);
-
-        //Move ball back to original collision spot
-        double prevAngle = Math.atan2 ((double) prevVelocity.y, (double) prevVelocity.x);
-        double hypotenuse = penetration / Math.cos(prevAngle);
-
-        float percentOfVelocityUsed = ((prevVelocity.length() - (float) Math.abs(hypotenuse)) / prevVelocity.length());
-        System.out.println("percent: " + percentOfVelocityUsed);
-        System.out.println("prev vel len: " + prevVelocity.length());
-        float percentOfVelocityOver = 1 - percentOfVelocityUsed;
-
-        //cover corner case where new ball location barely hits boundary
-        if (percentOfVelocityUsed == 0){
-            changeInCoords = new PointF(prevVelocity.x, prevVelocity.y);
-            flipVelocityAndUpdate(ball, collisionOnXSide);
-
-        //most normal cases where ball needs to be moved back to collision point and then bounced
-        } else {
-            //calculate amount that ball must be moved back (where ball first collided)
-            displacementVector = new PointF(-prevVelocity.x * percentOfVelocityOver, -prevVelocity.y * percentOfVelocityOver);
-            ball.updateAABB(displacementVector.x, displacementVector.y);
-            System.out.println("displacement vector 1 x: " + displacementVector.x + " displacement vector 1 y: " + displacementVector.y);
-
-            //Move ball to new spot using remainder of velocity
-            float remainderOfVelocity = 1 - percentOfVelocityUsed;
-            PointF newVelocity = flipVelocityAndUpdate(ball, collisionOnXSide);
-
-            PointF secondDisplacementVector = new PointF(newVelocity.x * percentOfVelocityOver, newVelocity.y * percentOfVelocityOver);
-            ball.updateAABB(secondDisplacementVector.x, secondDisplacementVector.y);
-            System.out.println("displacement vector 2 x: " + secondDisplacementVector.x + " displacement vector 2 y: " + secondDisplacementVector.y);
-
-            PointF newCenter = ball.getCenter();
-            changeInCoords = new PointF(newCenter.x - ballCenterPrev.x, newCenter.y - ballCenterPrev.y);
-
-        }
-
-        System.out.println("prev angle " + prevAngle);
-        System.out.println("penetration" + penetration);
-        System.out.println("hypotenuse " + hypotenuse);
-        System.out.println("change in Coords x: " + changeInCoords.x + " change in coords y: " + changeInCoords.y);
-
-        return changeInCoords;
-    }
-
-    private PointF flipVelocityAndUpdate(Ball ball, boolean xSide){
-        PointF newVelocity;
-
-        if (xSide) {
-            newVelocity = new PointF(ball.getXVelocity() * -1, ball.getYVelocity());
-        } else {
-            newVelocity = new PointF(ball.getXVelocity(), ball.getYVelocity() * -1);
-        }
-
-        ball.setVelocity(newVelocity);
-        return newVelocity;
-    } */
 
 }
