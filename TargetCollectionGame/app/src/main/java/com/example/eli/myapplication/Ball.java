@@ -15,13 +15,10 @@
  */
 package com.example.eli.myapplication;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import java.util.ArrayList;
 
+import android.content.Context;
 import android.graphics.PointF;
-import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 /**
@@ -34,6 +31,7 @@ public class Ball extends Interactable{
     private float mRadius;
    // private float[] mVelocity = new float[2];
     private PointF mVelocity;
+    private PointF mNewVelocity = new PointF(0f,0f);
     private float[] mPrevAABB = new float[4];
     private PointF mPrevVelocity;
 
@@ -45,14 +43,21 @@ public class Ball extends Interactable{
     //used for collision detection, tracks whether we have advanced this ball yet for the current frame
     boolean mHasMovedForward;
 
+    //Keeps track of the collisions that were detected in the current frame with this ball as the main ball.
+    ArrayList<CollisionHistory> mCollisions;
+    //Keeps track of how many objects this ball collided with in this frame
+    //(only > 1 if multiple collisions happened at the exact same time)
+    //(includes collisions where this ball is not the main ball)
+    private int mNumOfCollisions;
+
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Ball(float[] borderCoords, PointF velocity, float radius, float[] color) {
+    public Ball(float[] borderCoords, PointF velocity, float radius, float[] color, Context activityContext) {
 
         //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
-        super(borderCoords, GameState.OBSTACLE_BALL);
+        super(borderCoords, GameState.OBSTACLE_BALL, activityContext);
         setColor(color);
         updatePrevAABB();
 
@@ -63,6 +68,7 @@ public class Ball extends Interactable{
         mRadius = radius;
         mID = GameState.getNextBallID();
         isActive = true;
+        mCollisions = new ArrayList<>();
 
     }
 
@@ -175,6 +181,55 @@ public class Ball extends Interactable{
 
     public void clearMovedStatus(){
         mHasMovedForward = false;
+    }
+
+    public void addCollision(CollisionHistory currentCollision){
+        mCollisions.add(currentCollision);
+        mNumOfCollisions++;
+    }
+
+    public ArrayList<CollisionHistory> getCollisions(){
+        return mCollisions;
+    }
+
+    public void clearCollisionHistory(){
+        mCollisions.clear();
+        mNumOfCollisions = 0;
+    }
+
+    public boolean hasBallCollided(){
+        if (mCollisions.size() > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void increaseCollisionCount(){
+        mNumOfCollisions++;
+    }
+
+    public int getCollisionCount(){
+        return mNumOfCollisions;
+    }
+
+    public PointF getAvailableVelocity(){
+        System.out.println("mVelocity: " + mVelocity.x + ";" + mVelocity.y);
+        System.out.println("num of collisions: " + mNumOfCollisions);
+        return new PointF(mVelocity.x / mNumOfCollisions, mVelocity.y / mNumOfCollisions);
+
+    }
+
+    public void addNewVelocity(PointF newVelocity){
+        System.out.println("addedd new velocity: " + newVelocity.x + ";" + newVelocity.y);
+        mNewVelocity.set(mNewVelocity.x + newVelocity.x, mNewVelocity.y + newVelocity.y);
+    }
+
+    public void updateVelocity(){
+        if (mNewVelocity.length() > 0) {
+            mVelocity.set(mNewVelocity.x, mNewVelocity.y);
+            mNewVelocity.set(0f, 0f);
+        }
     }
 
 

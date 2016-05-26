@@ -1,6 +1,11 @@
 package com.example.eli.myapplication;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
+import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
 import java.util.ArrayList;
@@ -14,6 +19,7 @@ public class GameState {
     private ArrayList<Ball> mBalls;
     private ArrayList<Polygon> mBorders;
     private float[] mVPMatrix = new float[16];
+    private Context mActivityContext;
 
     //started at -1 because always incremented before it is returned. the first value will be 0.
     static int currentBallID = -1;
@@ -50,6 +56,12 @@ public class GameState {
     static final float LARGE_NUMBER = 99999f;
     static final float SMALL_NUMBER = -99999f;
 
+    //texture stuff
+    private int mBallTexture;
+    private int mWallTexture;
+    private int mObstacleTexture;
+
+
     public static float[] getBorderCoords(float ballCenterX, float ballCenterY, float ballRadius){
         return new float[]{
                 ballCenterX - ballRadius,  ballCenterY + ballRadius, 0.0f,   // top left
@@ -69,22 +81,28 @@ public class GameState {
         ///loadLevel();
     }
 
-    public void loadLevel(){
+    public void loadLevel(Context activityContext){
+        mActivityContext = activityContext;
+        loadTextures();
         loadBalls();
         loadBoundaries();
         updateActiveObjects();
+    }
+
+    private void loadTextures(){
+        //mBallTexture = loadGLTexture()
     }
 
     private void loadBalls(){
         mBalls = new ArrayList<>();
 
         //create balls and add them to collection
-        float[] ballCoords1 = getBorderCoords(170f, 270f, 8f);
-        float[] ballCoords2 = getBorderCoords(120f, 240f, 8f);
-        float[] ballCoords3 = getBorderCoords(80f, 10f, 8f);
-        Ball ball1 = new Ball(ballCoords1, GameState.initialBallVelocity, GameState.ballRadius, GameState.ballColor);
-        Ball ball2 = new Ball(ballCoords2, GameState.initialBallVelocity, GameState.ballRadius, GameState.ballColor);
-        Ball ball3 = new Ball(ballCoords3, GameState.initialBallVelocity, GameState.ballRadius, GameState.ballColor);
+        float[] ballCoords1 = getBorderCoords(140f, 160f, 8f);
+        float[] ballCoords2 = getBorderCoords(140f, 144f, 8f);
+        float[] ballCoords3 = getBorderCoords(30f, 152f, 8f);
+        Ball ball1 = new Ball(ballCoords1, new PointF(-3.0f, -3.0f), GameState.ballRadius, GameState.ballColor, mActivityContext);
+        Ball ball2 = new Ball(ballCoords2, new PointF(3.0f, 3.0f), GameState.ballRadius, GameState.ballColor, mActivityContext);
+        Ball ball3 = new Ball(ballCoords3, new PointF(6.0f, 0f), GameState.ballRadius, GameState.ballColor, mActivityContext);
         mBalls.add(ball1);
         mBalls.add(ball2);
         mBalls.add(ball3);
@@ -118,7 +136,9 @@ public class GameState {
         //If there is a collision, we will only advance up until the collision point,
         //and then repeat until we reach the end of the frame.
         while (timeElapsed < 1) {
+
             float timeStep = 1 - timeElapsed;
+            System.out.println("time step: " + timeStep);
 
             //initialize collision detection engine
             CollisionDetection CD = new CollisionDetection();
@@ -130,6 +150,9 @@ public class GameState {
             timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
 
         }
+
+        System.out.println("...");
+        System.out.println("...");
     }
 
     private void collisionDetection(CollisionDetection CD, float timeStep) {
@@ -195,6 +218,7 @@ public class GameState {
 
             //one or multiple collisions
         } else {
+            System.out.println("collisions detected.");
             float collisionTime = CD.getFirstCollisionTime();
             //move all balls forward by collision time, and update velocity for colliding balls
             handleCollisionsForBalls(CD, firstCollisions, collisionTime);
@@ -206,30 +230,32 @@ public class GameState {
 
     private void handleCollisionsForBalls(CollisionDetection CD, ArrayList<CollisionHistory> firstCollisions, float collisionTime){
 
-        ArrayList<CollisionHistory>[] collisionMapping;
-        collisionMapping = CD.createBallCollisionArray(firstCollisions);
+        //Keep track of ball collisions vs boundary collisions
+        CD.updateCollisionCollections(firstCollisions);
 
+        //Move all balls to the point of collision
         for (Ball currentBall : mBalls){
-            int currentBallID = currentBall.getID();
-
             PointF newDisplacementVector;
 
-            //If there is collisionHistory in the mapping for the current ball, then a collision occurred for this ball.
-            //This means we need to displace the ball to the moment of collision, and then calculate the new velocity based on the collision.
-            if (collisionMapping[currentBallID] != null){
-                newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
-                CD.calculateNewVelocity(currentBall, collisionMapping[currentBallID]);
-
-                //If no collisionHistory in the mapping, then no collision occurred for this ball, so we only
-                //need to move the ball forward to the same time as the other collision.
-            } else {
-                newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
-            }
+            newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
 
             //Add the current displacement to the balls running tally of total displacement for this frame
             currentBall.addToDisplacementVector(newDisplacementVector);
             cleanupAABB(currentBall, newDisplacementVector);
         }
+
+        //Calculate new velocity for balls that have collided
+        CD.handleBoundaryCollisions();
+        CD.handleBallCollisions();
+
+        //Update velocities
+        for (Ball currentBall : mBalls){
+            currentBall.updateVelocity();
+            currentBall.clearCollisionHistory();
+        }
+
+        System.out.println(".");
+
     }
 
     private void cleanupAABB(Ball currentBall, PointF displacementVector){
@@ -280,6 +306,32 @@ public class GameState {
 
     public void updateVPMatrix(float[] VPMatrix){
         mVPMatrix = VPMatrix;
+    }
+
+    public int loadGLTexture(Context context) {
+
+        int[] temp = new int[1];
+        // loading texture
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.circle);
+
+        // generate one texture pointer
+        GLES20.glGenTextures(1, temp, 0);
+        // ...and bind it to our array
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, temp[0]);
+
+        // create nearest filtered texture
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+        // Use Android GLUtils to specify a two-dimensional texture image from our bitmap
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+
+        // Clean up
+        bitmap.recycle();
+
+        return temp[0];
     }
 
 

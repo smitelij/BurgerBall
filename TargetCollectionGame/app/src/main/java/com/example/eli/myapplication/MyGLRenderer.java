@@ -18,6 +18,7 @@ package com.example.eli.myapplication;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -42,9 +43,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
+    private final Context mActivityContext;
 
 
     private float mAngle;
+    private int mSlowMo = 0;
 
 
     @Override
@@ -56,7 +59,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         //REALLY IMPORTANT to keep here!
         //it seems that the drawable objects must be initialized no earlier than this point
         //or else openGL has no reference to them.
-        mGame.loadLevel();
+        mGame.loadLevel(mActivityContext);
 
         setVPMatrix();
 
@@ -78,6 +81,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         // Draw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+        if (mSlowMo==1) {
+            try {
+                Thread.sleep(1500);
+            } catch (Exception e) {
+            }
+        }
 
         mGame.advanceFrame();
         mGame.drawObjects();
@@ -177,8 +187,14 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     }
 
 
-    public MyGLRenderer(GameState game){
+    public MyGLRenderer(GameState game, final Context activityContext){
+
         mGame = game;
+        mActivityContext = activityContext;
+    }
+
+    public void slowMoFlip(){
+        mSlowMo = (mSlowMo+1) % 2;
     }
 }
 

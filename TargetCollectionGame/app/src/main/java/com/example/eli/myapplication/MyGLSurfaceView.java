@@ -35,7 +35,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         setEGLContextClientVersion(2);
 
         // Set the Renderer for drawing on the GLSurfaceView
-        mRenderer = new MyGLRenderer(game);
+        mRenderer = new MyGLRenderer(game, context);
         setEGLConfigChooser(8 , 8, 8, 8, 16, 0);
         setRenderer(mRenderer);
 
@@ -57,7 +57,10 @@ public class MyGLSurfaceView extends GLSurfaceView {
         float y = e.getY();
 
         switch (e.getAction()) {
-            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_DOWN:
+
+                System.out.println("Down.");
+                mRenderer.slowMoFlip();
 
                 float dx = x - mPreviousX;
                 float dy = y - mPreviousY;

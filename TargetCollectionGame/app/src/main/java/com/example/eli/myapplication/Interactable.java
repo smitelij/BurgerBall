@@ -20,8 +20,12 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
 /**
@@ -33,8 +37,8 @@ public class Interactable {
             // This matrix member variable provides a hook to manipulate
             // the coordinates of the objects that use this vertex shader
             "uniform mat4 uMVPMatrix;" +
-                    "attribute vec4 vPosition;" +
                     "attribute vec2 a_TexCoordinate;" + // Per-vertex texture coordinate information we will pass in.
+                    "attribute vec4 vPosition;" +
                     "varying vec2 v_TexCoordinate;" +   // This will be passed into the fragment shader.
                     "void main() {" +
                     // The matrix must be included as a modifier of gl_Position.
@@ -51,7 +55,7 @@ public class Interactable {
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);" +
                     "}";
 
     private final FloatBuffer vertexBuffer;
@@ -60,6 +64,12 @@ public class Interactable {
     private int mPositionHandle;
     private int mColorHandle;
     private int mMVPMatrixHandle;
+
+    private int mTextureUniformHandle;
+    private int mTextureCoordinateHandle;
+    private int mTextureDataHandle;
+
+    private Context context;
 
 
     // number of coordinates per vertex in this array
@@ -90,8 +100,16 @@ public class Interactable {
     private int mType;
     private PointF[] m2dCoordArray;
 
-    private FloatBuffer textureBuffer;  // buffer holding the texture coordinates
+    private FloatBuffer mTextureBuffer;  // buffer holding the texture coordinates
     private float texture[] = {
+            // Mapping coordinates for the vertices
+            0.0f, 0.0f,     // top left     (V2)
+            1.0f, 0.0f,     // bottom left  (V1)
+            1.0f, 1.0f,     // top right    (V4)
+            0.0f, 1.0f      // bottom right (V3)
+    };
+
+    private float Originaltexture[] = {
             // Mapping coordinates for the vertices
             0.0f, 1.0f,     // top left     (V2)
             0.0f, 0.0f,     // bottom left  (V1)
@@ -99,10 +117,19 @@ public class Interactable {
             1.0f, 0.0f      // bottom right (V3)
     };
 
+    //texture pointer
+    private int[] textures = new int[1];
+
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Interactable(float[] borderCoords, int type) {
+    public Interactable(float[] borderCoords, int type, Context activityContext) {
+
+        if (activityContext != null) {
+            loadGLTexture(activityContext);
+            mTextureDataHandle = textures[0];
+        }
+
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -121,6 +148,13 @@ public class Interactable {
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
 
+        //initialize texture buffer
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(texture.length * 4);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        mTextureBuffer = byteBuffer.asFloatBuffer();
+        mTextureBuffer.put(texture);
+        mTextureBuffer.position(0);
+
         // prepare shaders and OpenGL program
         int vertexShader = MyGLRenderer.loadShader(
                 GLES20.GL_VERTEX_SHADER,
@@ -129,14 +163,19 @@ public class Interactable {
                 GLES20.GL_FRAGMENT_SHADER,
                 fragmentShaderCode);
 
+
         mProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
         GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
         GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
+        GLES20.glBindAttribLocation(mProgram,0,"a_TexCoordinate");
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
+        String error = GLES20.glGetProgramInfoLog(mProgram);
+        System.out.println("ERROR " + error);
 
 
         mType = type;
         mBorderCoords = borderCoords;
+        //mTextureDataHandle = textureDataHandle;
 
         set2dCoordArray();
         setupAABB();
@@ -188,15 +227,36 @@ public class Interactable {
      */
     public void draw(float[] mvpMatrix) {
 
-        float temp[] = new float[16];
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
+
+        // bind the previously generated texture
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+
+        ////////////////////////////
+
+
+        mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgram, "a_TexCoordinate");
+
+        // Set the active texture unit to texture unit 0.
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+        // Bind the texture to this unit.
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+
+        // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+        GLES20.glUniform1i(mTextureUniformHandle, 0);
+
+        ////////////////////////////
 
         // get handle to vertex shader's vPosition member
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
 
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(mPositionHandle);
+
+
 
         // Prepare the triangle coordinate data
         GLES20.glVertexAttribPointer(
@@ -205,10 +265,15 @@ public class Interactable {
                 vertexStride, vertexBuffer);
 
         // get handle to fragment shader's vColor member
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+        //mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // Set color for drawing the triangle
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        //GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+
+        mTextureBuffer.position(0);
+        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false,
+                0, mTextureBuffer);
+        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
 
         // get handle to shape's transformation matrix
@@ -320,6 +385,28 @@ public class Interactable {
             Ball tempBall = (Ball) this;
             return tempBall.hasBallMoved();
         }
+    }
+
+    public void loadGLTexture(Context context) {
+        // loading texture
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.circle);
+
+        // generate one texture pointer
+        GLES20.glGenTextures(1, textures, 0);
+        // ...and bind it to our array
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+
+        // create nearest filtered texture
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+        // Use Android GLUtils to specify a two-dimensional texture image from our bitmap
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+
+        // Clean up
+        bitmap.recycle();
     }
 
 

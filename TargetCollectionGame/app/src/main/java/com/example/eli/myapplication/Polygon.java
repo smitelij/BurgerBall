@@ -34,7 +34,7 @@ public class Polygon extends Interactable {
      */
     public Polygon(float[] borderCoords, int type) {
         // initialize vertex byte buffer for shape coordinates
-        super(borderCoords, type);
+        super(borderCoords, type, null);
 
     }
 
