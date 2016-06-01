@@ -23,7 +23,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
-import android.graphics.PointF;
 
 /**
  * Provides drawing instructions for a GLSurfaceView object. This class
@@ -36,7 +35,7 @@ import android.graphics.PointF;
  */
 public class MyGLRenderer implements GLSurfaceView.Renderer {
 
-    private GameState mGame;
+    private GameEngine mGame;
     private static final String TAG = "MyGLRenderer";
 
     // mVPMatrix is an abbreviation for "View Projection Matrix"
@@ -186,7 +185,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     }
 
 
-    public MyGLRenderer(GameState game, final Context activityContext){
+    public MyGLRenderer(GameEngine game, final Context activityContext){
 
         mGame = game;
         mGame.setContext(activityContext);

@@ -66,8 +66,8 @@ public class Borders {
     public Borders(int texturePointer){
 
 
-        //mBackground = new Polygon(backgroundCoords, GameState.OBSTACLE_POLYGON);
-       // mBackground.setColor(GameState.backgroundColor);
+        //mBackground = new Polygon(backgroundCoords, GameEngine.OBSTACLE_POLYGON);
+       // mBackground.setColor(GameEngine.backgroundColor);
 
         mBorderLeft = new Polygon(borderLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         mBorderLeft.setColor(GameState.borderColor);

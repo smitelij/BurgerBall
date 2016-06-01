@@ -143,11 +143,11 @@ public class CollisionDetection {
 
     public boolean doCollisionDetection(Ball ball, Interactable object, float timeStep){
 
-        if (object.getType()==GameState.OBSTACLE_BALL){
+        if (object.getType()== GameState.OBSTACLE_BALL){
             return doBallCollisionDetection(ball, (Ball) object, timeStep);
         }
 
-        if (object.getType()==GameState.OBSTACLE_POLYGON){
+        if (object.getType()== GameState.OBSTACLE_POLYGON){
             return doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
         }
 
@@ -373,6 +373,12 @@ public class CollisionDetection {
     }
 
 
+    //A reasonable question- Why are we splitting this into two methods?
+    // Why don't we just go through all collisions, and check obstacle type, to determine
+    //which calculateVelocity method to use?
+    // ...
+    // In order to better handle an edge case involving a ball simultaneously colliding with
+    // a boundary and another ball, it makes more sense to handle boundary collisions first
     public void handleBoundaryCollisions(){
         for (CollisionHistory currentCollision : mBoundaryCollisions){
             calculateVelocityBorderCollision(currentCollision);

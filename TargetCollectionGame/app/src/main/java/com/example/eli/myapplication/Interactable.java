@@ -26,7 +26,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.opengl.Matrix;
 
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
@@ -96,7 +95,7 @@ public class Interactable {
 
     public float[] colorDirections = {colorConstant, colorConstant, colorConstant, colorConstant};
 
-    //use one of the static ints declared in GameState.OBSTACLE_
+    //uses one of the static ints declared in GameState.OBSTACLE_
     private int mType;
     private PointF[] m2dCoordArray;
 
@@ -109,13 +108,6 @@ public class Interactable {
             0.0f, 1.0f      // bottom right (V3)
     };
 
-    private float Originaltexture[] = {
-            // Mapping coordinates for the vertices
-            0.0f, 1.0f,     // top left     (V2)
-            0.0f, 0.0f,     // bottom left  (V1)
-            1.0f, 1.0f,     // top right    (V4)
-            1.0f, 0.0f      // bottom right (V3)
-    };
 
     //texture pointer
     private int[] textures = new int[1];
@@ -272,6 +264,12 @@ public class Interactable {
         // Set color for drawing the triangle
         //GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
+
+        // Enable blending
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+
         mTextureBuffer.position(0);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false,
                 0, mTextureBuffer);
@@ -379,7 +377,7 @@ public class Interactable {
     public boolean hasObjectMoved(){
 
         //Since Polygon==Border currently, and borders never move, we always return true.
-        if (mType==GameState.OBSTACLE_POLYGON){
+        if (mType== GameState.OBSTACLE_POLYGON){
             return true;
 
         //if not a polygon, we know it will be a ball, so we can call the sub class method

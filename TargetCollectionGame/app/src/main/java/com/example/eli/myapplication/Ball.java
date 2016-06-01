@@ -17,7 +17,6 @@ package com.example.eli.myapplication;
 
 import java.util.ArrayList;
 
-import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.Matrix;
 
@@ -66,14 +65,29 @@ public class Ball extends Interactable{
 
         mVelocity = velocity;
         mRadius = radius;
-        mID = GameState.getNextBallID();
+        mID = GameEngine.getNextBallID();
         isActive = true;
         mCollisions = new ArrayList<>();
 
     }
 
     public void moveBallByFrame(float percentOfFrame){
+        //PointF positionChange = calculatePositionChange(percentOfFrame);
+        //updateAABB(positionChange.x, positionChange.y);
         updateAABB(mVelocity.x * percentOfFrame, mVelocity.y * percentOfFrame);
+    }
+
+    public PointF calculatePositionChange(float percentOfFrame){
+        float xChange = mVelocity.x * percentOfFrame;
+
+        float gravityAmount = GameState.GRAVITY_CONSTANT * percentOfFrame;
+
+        float afterGravityY = mVelocity.y + gravityAmount;
+        float avgY = (mVelocity.y + afterGravityY) / 2;
+
+        float yChange = avgY * percentOfFrame;
+
+        return new PointF(xChange, yChange);
     }
 
     public void updateAABB(){
