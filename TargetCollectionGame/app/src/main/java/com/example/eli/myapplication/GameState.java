@@ -17,6 +17,7 @@ public class GameState {
 
     private ArrayList<Interactable> allActiveObjects;
     private ArrayList<Ball> mBalls;
+    private ArrayList<Ball> mActiveBalls;
     private ArrayList<Polygon> mBorders;
     private float[] mVPMatrix = new float[16];
     private Context mActivityContext;
@@ -26,6 +27,9 @@ public class GameState {
     static final float FULL_WIDTH = 200.0f;
     static final float FULL_HEIGHT = 300.0f;
     static final float BORDER_WIDTH = 6.0f;
+
+    static final float MAX_INITIAL_X_VELOCITY = 3f;
+    static final float MAX_INITIAL_Y_VELOCITY = 3f;
 
     static final float[] backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
     static final float[] borderColor = { 0.8f, 0.8f, 0.8f, 1.0f };
@@ -37,7 +41,7 @@ public class GameState {
     static final float ballCenterY = 270f;
     static final float ballRadius = 8f;
 
-    static int currentBalls = 3;
+    static int totalBalls = 3;
 
     static final float[] initialBallCoords = {
             ballCenterX - ballRadius,  ballCenterY + ballRadius, 0.0f,   // top left
@@ -60,6 +64,7 @@ public class GameState {
     private int mBallTexture;
     private int mWallTexture;
     private int mObstacleTexture;
+    private int mCurrentActiveBallID = 0;
 
 
     public static float[] getBorderCoords(float ballCenterX, float ballCenterY, float ballRadius){
@@ -81,8 +86,7 @@ public class GameState {
         ///loadLevel();
     }
 
-    public void loadLevel(Context activityContext){
-        mActivityContext = activityContext;
+    public void loadLevel(){
         loadTextures();
         loadBalls();
         loadBoundaries();
@@ -90,35 +94,51 @@ public class GameState {
     }
 
     private void loadTextures(){
-        //mBallTexture = loadGLTexture()
+        mBallTexture = loadGLTexture(R.drawable.circle);
+        mWallTexture = loadGLTexture(R.drawable.brick);
     }
 
     private void loadBalls(){
         mBalls = new ArrayList<>();
+        mActiveBalls = new ArrayList<>();
 
         //create balls and add them to collection
-        float[] ballCoords1 = getBorderCoords(140f, 160f, 8f);
-        float[] ballCoords2 = getBorderCoords(140f, 144f, 8f);
-        float[] ballCoords3 = getBorderCoords(30f, 152f, 8f);
-        Ball ball1 = new Ball(ballCoords1, new PointF(-3.0f, -3.0f), GameState.ballRadius, GameState.ballColor, mActivityContext);
-        Ball ball2 = new Ball(ballCoords2, new PointF(3.0f, 3.0f), GameState.ballRadius, GameState.ballColor, mActivityContext);
-        Ball ball3 = new Ball(ballCoords3, new PointF(6.0f, 0f), GameState.ballRadius, GameState.ballColor, mActivityContext);
+
+        float[] newBallCoords = getBorderCoords(GameState.FULL_WIDTH / 2, GameState.ballRadius * 4, GameState.ballRadius);
+        Ball ball1 = new Ball(newBallCoords, new PointF(0f,0f), GameState.ballRadius, GameState.ballColor, mBallTexture);
+        Ball ball2 = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, GameState.ballColor, mBallTexture);
+        Ball ball3 = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, GameState.ballColor, mBallTexture);
         mBalls.add(ball1);
         mBalls.add(ball2);
         mBalls.add(ball3);
+
+    }
+
+    public void activateBall(PointF initialVelocity){
+
+        if(mCurrentActiveBallID < totalBalls) {
+
+            Ball ball = mBalls.get(mCurrentActiveBallID);
+            ball.setVelocity(initialVelocity);
+            mActiveBalls.add(ball);
+            //TODO seems wasteful to re-add all the active borders whenever we add an active ball
+            updateActiveObjects();
+
+            mCurrentActiveBallID++;
+        }
     }
 
     private void loadBoundaries(){
 
         //TODO eventually move specific code from Borders to here
-        Borders borders = new Borders();
+        Borders borders = new Borders(mWallTexture);
         mBorders = borders.getAllBorders();
     }
 
     private void updateActiveObjects(){
         allActiveObjects = new ArrayList<>();
 
-        for (Ball currentBall : mBalls){
+        for (Ball currentBall : mActiveBalls){
             allActiveObjects.add(currentBall);
         }
 
@@ -138,7 +158,7 @@ public class GameState {
         while (timeElapsed < 1) {
 
             float timeStep = 1 - timeElapsed;
-            System.out.println("time step: " + timeStep);
+            //System.out.println("time step: " + timeStep);
 
             //initialize collision detection engine
             CollisionDetection CD = new CollisionDetection();
@@ -151,8 +171,8 @@ public class GameState {
 
         }
 
-        System.out.println("...");
-        System.out.println("...");
+        //System.out.println("...");
+        //System.out.println("...");
     }
 
     private void collisionDetection(CollisionDetection CD, float timeStep) {
@@ -163,7 +183,7 @@ public class GameState {
             }*/
 
         //go through all balls
-        for (Ball currentBall : mBalls) {
+        for (Ball currentBall : mActiveBalls) {
 
             //temporarily advance the balls location by the time step
             currentBall.moveBallByFrame(timeStep);
@@ -190,7 +210,7 @@ public class GameState {
     }
 
     private void cleanupBalls(){
-        for (Ball currentBall : mBalls){
+        for (Ball currentBall : mActiveBalls){
             currentBall.clearMovedStatus();
         }
     }
@@ -234,7 +254,7 @@ public class GameState {
         CD.updateCollisionCollections(firstCollisions);
 
         //Move all balls to the point of collision
-        for (Ball currentBall : mBalls){
+        for (Ball currentBall : mActiveBalls){
             PointF newDisplacementVector;
 
             newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
@@ -249,12 +269,12 @@ public class GameState {
         CD.handleBallCollisions();
 
         //Update velocities
-        for (Ball currentBall : mBalls){
+        for (Ball currentBall : mActiveBalls){
             currentBall.updateVelocity();
             currentBall.clearCollisionHistory();
         }
 
-        System.out.println(".");
+        //System.out.println(".");
 
     }
 
@@ -269,7 +289,7 @@ public class GameState {
 
     public void handleNoCollisions(float timeStep){
 
-        for (Ball currentBall : mBalls){
+        for (Ball currentBall : mActiveBalls){
             PointF newDisplacementVector = new PointF(currentBall.getXVelocity() * timeStep, currentBall.getYVelocity() * timeStep);
             //Add the current displacement to the balls running tally of total displacement for this frame
             currentBall.addToDisplacementVector(newDisplacementVector);
@@ -284,7 +304,7 @@ public class GameState {
         float[] mModelProjectionMatrix = new float[16];
 
         //Draw all balls
-        for (Ball currentBall : mBalls) {
+        for (Ball currentBall : mActiveBalls) {
 
             //Move ball forward by displacement amount
             Matrix.translateM(currentBall.mModelMatrix, 0, currentBall.mModelMatrix, 0, currentBall.getDisplacementVector().x, currentBall.getDisplacementVector().y, 0);
@@ -308,11 +328,11 @@ public class GameState {
         mVPMatrix = VPMatrix;
     }
 
-    public int loadGLTexture(Context context) {
+    public int loadGLTexture(int imagePointer) {
 
         int[] temp = new int[1];
         // loading texture
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.circle);
+        Bitmap bitmap = BitmapFactory.decodeResource(mActivityContext.getResources(), imagePointer);
 
         // generate one texture pointer
         GLES20.glGenTextures(1, temp, 0);
@@ -332,6 +352,10 @@ public class GameState {
         bitmap.recycle();
 
         return temp[0];
+    }
+
+    public void setContext(Context context){
+        mActivityContext = context;
     }
 
 

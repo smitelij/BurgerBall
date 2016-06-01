@@ -32,9 +32,9 @@ public class Polygon extends Interactable {
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Polygon(float[] borderCoords, int type) {
+    public Polygon(float[] borderCoords, int type, int texturePointer) {
         // initialize vertex byte buffer for shape coordinates
-        super(borderCoords, type, null);
+        super(borderCoords, type, texturePointer);
 
     }
 

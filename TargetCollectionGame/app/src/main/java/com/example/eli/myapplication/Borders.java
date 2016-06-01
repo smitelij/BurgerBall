@@ -45,16 +45,16 @@ public class Borders {
             GameState.FULL_WIDTH, GameState.FULL_HEIGHT, 0.0f }; // top right
 
     private static float borderBottomRightCoords[] = {
-            (GameState.FULL_WIDTH / 2) + GameState.BORDER_WIDTH + 1,  GameState.BORDER_WIDTH, 0.0f,   // top left
-            (GameState.FULL_WIDTH / 2) + GameState.BORDER_WIDTH + 1,  0.0f, 0.0f,   // bottom left
+            (GameState.FULL_WIDTH / 2) + GameState.BORDER_WIDTH + 3,  GameState.BORDER_WIDTH, 0.0f,   // top left
+            (GameState.FULL_WIDTH / 2) + GameState.BORDER_WIDTH + 3,  0.0f, 0.0f,   // bottom left
             GameState.FULL_WIDTH, 0.0f, 0.0f,   // bottom right
             GameState.FULL_WIDTH,  2 * GameState.BORDER_WIDTH , 0.0f }; // top right
 
     private static float borderBottomLeftCoords[] = {
             0.0f,  2 * GameState.BORDER_WIDTH, 0.0f,   // top left
             0.0f, 0.0f, 0.0f,   // bottom left
-            (GameState.FULL_WIDTH / 2) - GameState.BORDER_WIDTH, 0.0f, 0.0f,   // bottom right
-            (GameState.FULL_WIDTH / 2) - GameState.BORDER_WIDTH, GameState.BORDER_WIDTH, 0.0f }; // top right
+            (GameState.FULL_WIDTH / 2) - GameState.BORDER_WIDTH - 3, 0.0f, 0.0f,   // bottom right
+            (GameState.FULL_WIDTH / 2) - GameState.BORDER_WIDTH - 3, GameState.BORDER_WIDTH, 0.0f }; // top right
 
     private static float testCoords[] = {
             160f, 240f, 0f, //top left  (x,y)
@@ -63,28 +63,28 @@ public class Borders {
             180f, 240f, 0f  //top right
     };
 
-    public Borders(){
+    public Borders(int texturePointer){
 
 
         //mBackground = new Polygon(backgroundCoords, GameState.OBSTACLE_POLYGON);
        // mBackground.setColor(GameState.backgroundColor);
 
-        mBorderLeft = new Polygon(borderLeftCoords, GameState.OBSTACLE_POLYGON);
+        mBorderLeft = new Polygon(borderLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         mBorderLeft.setColor(GameState.borderColor);
 
-        mBorderRight = new Polygon(borderRightCoords, GameState.OBSTACLE_POLYGON);
+        mBorderRight = new Polygon(borderRightCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         mBorderRight.setColor(GameState.borderColor);
 
-        mBorderTop = new Polygon(borderTopCoords, GameState.OBSTACLE_POLYGON);
+        mBorderTop = new Polygon(borderTopCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         mBorderTop.setColor(GameState.borderColor);
 
-        mBorderBottomRight = new Polygon(borderBottomRightCoords, GameState.OBSTACLE_POLYGON);
+        mBorderBottomRight = new Polygon(borderBottomRightCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         mBorderBottomRight.setColor(GameState.borderColor);
 
-        mBorderBottomLeft = new Polygon(borderBottomLeftCoords, GameState.OBSTACLE_POLYGON);
+        mBorderBottomLeft = new Polygon(borderBottomLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         mBorderBottomLeft.setColor(GameState.borderColor);
 
-        testP = new Polygon(testCoords, GameState.OBSTACLE_POLYGON);
+        testP = new Polygon(testCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         testP.setColor(GameState.borderColor);
 
         allBorders.add(mBorderLeft);
@@ -93,7 +93,7 @@ public class Borders {
         allBorders.add(mBorderBottomRight);
         allBorders.add(mBorderBottomLeft);
 
-        //allBorders.add(testP);
+        allBorders.add(testP);
 
     }
 

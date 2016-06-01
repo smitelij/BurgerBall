@@ -16,6 +16,8 @@
 package com.example.eli.myapplication;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
 
@@ -27,6 +29,14 @@ import android.view.MotionEvent;
 public class MyGLSurfaceView extends GLSurfaceView {
 
     private final MyGLRenderer mRenderer;
+    private final int mHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+    private final int mWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+
+    private float mResponseRadius;
+    private float mResponseRange;
+    private PointF mResponseCenter;
+    private boolean mFiringBall;
+    private GameState mGame;
 
     public MyGLSurfaceView(Context context, GameState game) {
         super(context);
@@ -36,11 +46,11 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
         // Set the Renderer for drawing on the GLSurfaceView
         mRenderer = new MyGLRenderer(game, context);
-        setEGLConfigChooser(8 , 8, 8, 8, 16, 0);
+        setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         setRenderer(mRenderer);
 
-        // Render the view only when there is a change in the drawing data
-        //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        calculateResponseInfo();
+        mGame = game;
     }
 
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
@@ -59,31 +69,79 @@ public class MyGLSurfaceView extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
 
-                System.out.println("Down.");
-                mRenderer.slowMoFlip();
+                float xDistance = x - mResponseCenter.x;
+                float yDistance = y - mResponseCenter.y;
 
-                float dx = x - mPreviousX;
-                float dy = y - mPreviousY;
+                float distance = (float) Math.sqrt((xDistance*xDistance) + (yDistance*yDistance));
 
-                // reverse direction of rotation above the mid-line
-                if (y > getHeight() / 2) {
-                    dx = dx * -1 ;
+                System.out.println("DISTANCE: " + distance);
+                System.out.println("mResponseRange: " + mResponseRange);
+
+                if (distance <= mResponseRange) {
+                    //mRenderer.slowMoFlip();
+
+                    mFiringBall = true;
+                    mPreviousX = x;
+                    mPreviousY = y;
                 }
 
-                // reverse direction of rotation to left of the mid-line
-                if (x < getWidth() / 2) {
-                    dy = dy * -1 ;
+                return true;
+
+            case MotionEvent.ACTION_UP:
+
+                if (mFiringBall){
+
+                    float xChange = x - mPreviousX;
+                    float yChange = y - mPreviousY;
+
+                    PointF initialVelocity = calculateInitialVelocity(xChange,yChange);
+                    mGame.activateBall(initialVelocity);
                 }
 
-                mRenderer.setAngle(
-                        mRenderer.getAngle() +
-                                ((dx + dy) * TOUCH_SCALE_FACTOR));  // = 180.0f / 320
-                requestRender();
+                return true;
+
         }
 
-        mPreviousX = x;
-        mPreviousY = y;
         return true;
+    }
+
+    private void calculateResponseInfo(){
+        mResponseRadius = mWidth * 0.2f;
+        mResponseRange = (float) Math.sqrt((mResponseRadius)*(mResponseRadius) + (mResponseRadius)*(mResponseRadius));
+
+        float xCoord = mWidth / 2;
+        float yCoord = mHeight;
+
+        mResponseCenter = new PointF(xCoord,yCoord);
+    }
+
+    //TODO should be moved to GameEngine/State eventually
+    private PointF calculateInitialVelocity(float xChange, float yChange){
+        xChange = -xChange;  //flip so it goes in the correct x direction
+
+        float xPercent = (xChange / mResponseRadius);
+        float yPercent = (yChange / mResponseRadius);
+
+        if (xPercent > 1){
+            xPercent = 1;
+        } else if (xPercent < -1){
+            xPercent = -1;
+        }
+
+        if(yPercent > 1){
+            yPercent = 1;
+        } else if (yPercent < 0.1){
+            yPercent = 0.1f;
+        }
+
+
+        float initialXVelocity = xPercent * GameState.MAX_INITIAL_X_VELOCITY;
+        float initialYVelocity = yPercent * GameState.MAX_INITIAL_Y_VELOCITY;
+
+        System.out.println("initial x velocity: " + initialXVelocity);
+        System.out.println("intial y velocity: " + initialYVelocity);
+
+        return new PointF(initialXVelocity,initialYVelocity);
     }
 
 

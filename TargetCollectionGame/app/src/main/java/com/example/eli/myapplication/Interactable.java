@@ -123,12 +123,14 @@ public class Interactable {
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Interactable(float[] borderCoords, int type, Context activityContext) {
+    public Interactable(float[] borderCoords, int type, int texturePointer) {
 
+        mTextureDataHandle = texturePointer;
+        /*
         if (activityContext != null) {
             loadGLTexture(activityContext);
             mTextureDataHandle = textures[0];
-        }
+        }*/
 
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(

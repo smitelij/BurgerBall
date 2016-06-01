@@ -43,7 +43,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
-    private final Context mActivityContext;
 
 
     private float mAngle;
@@ -59,7 +58,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         //REALLY IMPORTANT to keep here!
         //it seems that the drawable objects must be initialized no earlier than this point
         //or else openGL has no reference to them.
-        mGame.loadLevel(mActivityContext);
+        mGame.loadLevel();
 
         setVPMatrix();
 
@@ -190,7 +189,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public MyGLRenderer(GameState game, final Context activityContext){
 
         mGame = game;
-        mActivityContext = activityContext;
+        mGame.setContext(activityContext);
     }
 
     public void slowMoFlip(){
