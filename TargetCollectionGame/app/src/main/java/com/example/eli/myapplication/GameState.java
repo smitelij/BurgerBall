@@ -13,8 +13,8 @@ public class GameState {
     static final float FULL_HEIGHT = 300.0f;
     static final float BORDER_WIDTH = 6.0f;
 
-    static final float MAX_INITIAL_X_VELOCITY = 3f;
-    static final float MAX_INITIAL_Y_VELOCITY = 3f;
+    static final float MAX_INITIAL_X_VELOCITY = 6f;
+    static final float MAX_INITIAL_Y_VELOCITY = 6f;
 
     static final float[] backgroundColor = {0.05f, 0.05f, 0.05f, 1.0f};
     static final float[] borderColor = { 0.8f, 0.8f, 0.8f, 1.0f };
@@ -22,7 +22,7 @@ public class GameState {
 
     static final float ballRadius = 8f;
 
-    static int totalBalls = 3;
+    static int totalBalls = 10;
 
     static final int OBSTACLE_POLYGON = 1000;
     static final int OBSTACLE_BALL = 1001;
@@ -34,11 +34,12 @@ public class GameState {
     private static final int mHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     private static final int mWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
 
-    private static float mResponseRadius = mWidth * 0.2f;
+    private static float mResponseRadius = mWidth * 0.4f;
     private static float mResponseRange = (float) Math.sqrt((mResponseRadius)*(mResponseRadius) + (mResponseRadius)*(mResponseRadius));;
     private static PointF mResponseCenter = new PointF(mWidth / 2, mHeight);
 
-    static final float GRAVITY_CONSTANT = -0.1f;
+    static final PointF GRAVITY_CONSTANT = new PointF(0f,-0.1f);
+    static final float ELASTIC_CONSTANT = 0.9f;
 
 
     public static float[] getInitialBallCoords(){

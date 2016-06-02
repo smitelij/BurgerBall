@@ -45,16 +45,16 @@ public class Borders {
             GameState.FULL_WIDTH, GameState.FULL_HEIGHT, 0.0f }; // top right
 
     private static float borderBottomRightCoords[] = {
-            (GameState.FULL_WIDTH / 2) + GameState.BORDER_WIDTH + 3,  GameState.BORDER_WIDTH, 0.0f,   // top left
-            (GameState.FULL_WIDTH / 2) + GameState.BORDER_WIDTH + 3,  0.0f, 0.0f,   // bottom left
+            (GameState.FULL_WIDTH / 2),  GameState.BORDER_WIDTH * 2, 0.0f,   // top left
+            (GameState.FULL_WIDTH / 2),  0.0f, 0.0f,   // bottom left
             GameState.FULL_WIDTH, 0.0f, 0.0f,   // bottom right
             GameState.FULL_WIDTH,  2 * GameState.BORDER_WIDTH , 0.0f }; // top right
 
     private static float borderBottomLeftCoords[] = {
             0.0f,  2 * GameState.BORDER_WIDTH, 0.0f,   // top left
             0.0f, 0.0f, 0.0f,   // bottom left
-            (GameState.FULL_WIDTH / 2) - GameState.BORDER_WIDTH - 3, 0.0f, 0.0f,   // bottom right
-            (GameState.FULL_WIDTH / 2) - GameState.BORDER_WIDTH - 3, GameState.BORDER_WIDTH, 0.0f }; // top right
+            (GameState.FULL_WIDTH / 2), 0.0f, 0.0f,   // bottom right
+            (GameState.FULL_WIDTH / 2), GameState.BORDER_WIDTH * 2, 0.0f }; // top right
 
     private static float testCoords[] = {
             160f, 240f, 0f, //top left  (x,y)

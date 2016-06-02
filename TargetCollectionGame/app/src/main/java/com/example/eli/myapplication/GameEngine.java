@@ -25,7 +25,7 @@ public class GameEngine {
     //started at -1 because always incremented before it is returned. the first value will be 0.
     static int currentBallID = -1;
 
-    private int totalBalls = 3;
+    private int totalBalls;
 
     //texture stuff
     private int mBallTexture;
@@ -36,9 +36,12 @@ public class GameEngine {
 
     //can't add a new ball while in the middle of a frame, may cause a concurrent modification error.
     //So we'll setup flags to determine whether we are in the middle of a frame, and whether a ball is waiting.
-    private boolean mFrameInProgress;
+    private boolean mBallCollectionInUse;
     private boolean mBallWaiting;
-    private PointF mBallWaitingVelocity;
+
+    //only used for testing latency on ball firing
+    long mPrevTime;
+
 
     public static int getNextBallID(){
         currentBallID++;
@@ -53,7 +56,7 @@ public class GameEngine {
 
     public void loadLevel(){
         //eventually this will depend on the level
-        totalBalls=3;
+        totalBalls=10;
 
         loadTextures();
         initializeBalls();
@@ -83,27 +86,36 @@ public class GameEngine {
 
     public void activateBall(PointF initialVelocity){
 
-        //wait to add balls if in the middle of a frame
-        if (mFrameInProgress){
-            mBallWaiting = true;
-            mBallWaitingVelocity = initialVelocity;
-            return;
-
-        //clear the flags if not in the middle of a frame
-        } else {
-            mBallWaiting = false;
-            mBallWaitingVelocity = null;
-        }
-
         //Add a new ball as long as there are still balls available to add
         if(mCurrentActiveBallID < totalBalls) {
 
             Ball ball = mAllBalls.get(mCurrentActiveBallID);
-            ball.setVelocity(initialVelocity);
-            mActiveBalls.add(ball);
-            allActiveObjects.add(ball);
 
-            mCurrentActiveBallID++;
+            //if initial velocity is null, that means we are activating after a wait,
+            //which means that the initial velocity was already set.
+            if (initialVelocity != null) {
+                ball.setVelocity(initialVelocity);
+            }
+
+            //make sure ball collections aren't in use before adding to them.
+            if (canActivateBall()) {
+                mActiveBalls.add(ball);
+                allActiveObjects.add(ball);
+                mCurrentActiveBallID++;
+            }
+        }
+    }
+
+    private boolean canActivateBall(){
+        //wait to add balls if ball collection is currently in use
+        if (mBallCollectionInUse){
+            mBallWaiting = true;
+            return false;
+
+        //clear the flags if ball collection is not in use
+        } else {
+            mBallWaiting = false;
+            return true;
         }
     }
 
@@ -127,7 +139,6 @@ public class GameEngine {
     //Main method called by MyGLRenderer each frame
     public void advanceFrame(){
 
-        startFrame();
         float timeElapsed = 0f;
 
         //repeat until 1 whole 'frame' has been moved.
@@ -149,9 +160,34 @@ public class GameEngine {
 
         }
 
+        testForDeactivatingBalls();
 
         //System.out.println("...");
         //System.out.println("...");
+    }
+
+    private void testForDeactivatingBalls(){
+
+        ArrayList<Ball> deactivationList = new ArrayList<>();
+
+        lockBalls();
+
+        for (Ball currentBall : mActiveBalls){
+
+            if (currentBall.getPerFrameCollisionCount() > 6){
+                //System.out.println("FRAME COLLISION EXCEEDED 6 DEACTIVATING");
+                deactivationList.add(currentBall);
+            } else {
+                currentBall.clearFrameCollisionCount();
+            }
+        }
+
+        unlockBalls();
+
+        for (Ball deadBall : deactivationList){
+            mActiveBalls.remove(deadBall);
+            allActiveObjects.remove(deadBall);
+        }
     }
 
     private void collisionDetection(CollisionDetection CD, float timeStep) {
@@ -161,6 +197,7 @@ public class GameEngine {
             } catch (Exception e) {
             }*/
 
+        lockBalls();
         //go through all balls
         for (Ball currentBall : mActiveBalls) {
 
@@ -186,6 +223,8 @@ public class GameEngine {
 
         //clear the moved status once we have gone through all balls
         cleanupBalls();
+
+        unlockBalls();
     }
 
     private void cleanupBalls(){
@@ -209,6 +248,8 @@ public class GameEngine {
         // (two balls colliding with each other will not cause multiple first collisions, because each pair is checked only once.)
         ArrayList<CollisionHistory> firstCollisions = CD.getFirstCollision();
 
+        lockBalls();
+
         //no collisions
         if (firstCollisions == null ) {
             //Move all balls forward by timestep
@@ -223,6 +264,8 @@ public class GameEngine {
             timeElapsed = timeElapsed + collisionTime;
         }
 
+        unlockBalls();
+
         return timeElapsed;
     }
 
@@ -235,7 +278,8 @@ public class GameEngine {
         for (Ball currentBall : mActiveBalls){
             PointF newDisplacementVector;
 
-            newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
+            //newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
+            newDisplacementVector = currentBall.calculatePositionChange(collisionTime);
 
             //Add the current displacement to the balls running tally of total displacement for this frame
             currentBall.addToDisplacementVector(newDisplacementVector);
@@ -248,7 +292,7 @@ public class GameEngine {
 
         //Update velocities
         for (Ball currentBall : mActiveBalls){
-            currentBall.updateVelocity();
+            currentBall.updateVelocity(collisionTime);
             currentBall.clearCollisionHistory();
         }
 
@@ -268,18 +312,28 @@ public class GameEngine {
     public void handleNoCollisions(float timeStep){
 
         for (Ball currentBall : mActiveBalls){
-            PointF newDisplacementVector = new PointF(currentBall.getXVelocity() * timeStep, currentBall.getYVelocity() * timeStep);
+            //PointF newDisplacementVector = new PointF(currentBall.getXVelocity() * timeStep, currentBall.getYVelocity() * timeStep);
+            PointF newDisplacementVector = currentBall.calculatePositionChange(timeStep);
+
             //Add the current displacement to the balls running tally of total displacement for this frame
             currentBall.addToDisplacementVector(newDisplacementVector);
 
             //no need to mess with AABB, it should be accurate so no need to cleanup,
             //and it will be updated within the Draw method of each ball.
         }
+
+        //Update velocities
+        for (Ball currentBall : mActiveBalls){
+            currentBall.updateVelocity(timeStep);
+            currentBall.clearCollisionHistory();
+        }
     }
 
     public void drawObjects(){
 
         float[] mModelProjectionMatrix = new float[16];
+
+        lockBalls();
 
         //Draw all balls
         for (Ball currentBall : mActiveBalls) {
@@ -295,13 +349,12 @@ public class GameEngine {
             currentBall.clearDisplacementVector();
         }
 
+        unlockBalls();
+
         //Draw Borders
         for (Polygon currentBorder : mBorders){
             currentBorder.draw(mVPMatrix);
         }
-
-        //end frame, allowing new balls to be activated
-        endFrame();
 
     }
 
@@ -339,17 +392,16 @@ public class GameEngine {
         mActivityContext = context;
     }
 
-    private void startFrame(){
-        mFrameInProgress = true;
+    private void lockBalls(){
+        mBallCollectionInUse = true;
     }
 
-    private void endFrame(){
-        //End of Frame... clear flag so we are able to add in new balls
-        mFrameInProgress = false;
+    private void unlockBalls(){
+        mBallCollectionInUse = false;
 
         //if a ball is waiting (because it couldn't be added while the frame is in progress), then activate it now
         if (mBallWaiting){
-            activateBall(new PointF(mBallWaitingVelocity.x, mBallWaitingVelocity.y));
+            activateBall(null);
         }
     }
 
