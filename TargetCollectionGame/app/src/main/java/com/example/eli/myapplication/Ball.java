@@ -48,6 +48,9 @@ public class Ball extends Interactable{
     //(only > 1 if multiple collisions happened at the exact same time)
     //(includes collisions where this ball is not the main ball)
     private int mNumOfCollisions;
+    private int mDeactivationCounter = 0;
+
+    private int mNumOfCollisionsPerFrame = 0;
 
 
     /**
@@ -72,22 +75,16 @@ public class Ball extends Interactable{
     }
 
     public void moveBallByFrame(float percentOfFrame){
-        //PointF positionChange = calculatePositionChange(percentOfFrame);
-        //updateAABB(positionChange.x, positionChange.y);
-        updateAABB(mVelocity.x * percentOfFrame, mVelocity.y * percentOfFrame);
+        PointF positionChange = calculatePositionChange(percentOfFrame);
+        updateAABB(positionChange.x, positionChange.y);
+        //updateAABB(mVelocity.x * percentOfFrame, mVelocity.y * percentOfFrame);
     }
 
     public PointF calculatePositionChange(float percentOfFrame){
-        float xChange = mVelocity.x * percentOfFrame;
 
-        float gravityAmount = GameState.GRAVITY_CONSTANT * percentOfFrame;
+        PointF avgVelocity = getAvgVelocity(percentOfFrame);
 
-        float afterGravityY = mVelocity.y + gravityAmount;
-        float avgY = (mVelocity.y + afterGravityY) / 2;
-
-        float yChange = avgY * percentOfFrame;
-
-        return new PointF(xChange, yChange);
+        return new PointF(avgVelocity.x * percentOfFrame, avgVelocity.y * percentOfFrame);
     }
 
     public void updateAABB(){
@@ -119,19 +116,6 @@ public class Ball extends Interactable{
 
     public float getColor(int vertex){
         return color[vertex];
-    }
-
-
-    public PointF getVelocity(){
-        return mVelocity;
-    }
-
-    public float getXVelocity(){
-        return mVelocity.x;
-    }
-
-    public float getYVelocity(){
-        return mVelocity.y;
     }
 
     public void setVelocity(PointF newVelocity){
@@ -221,29 +205,75 @@ public class Ball extends Interactable{
 
     public void increaseCollisionCount(){
         mNumOfCollisions++;
+        mNumOfCollisionsPerFrame++;
     }
 
     public int getCollisionCount(){
         return mNumOfCollisions;
     }
 
-    public PointF getAvailableVelocity(){
-        System.out.println("mVelocity: " + mVelocity.x + ";" + mVelocity.y);
-        System.out.println("num of collisions: " + mNumOfCollisions);
-        return new PointF(mVelocity.x / mNumOfCollisions, mVelocity.y / mNumOfCollisions);
-
+    public int getPerFrameCollisionCount(){
+        return mNumOfCollisionsPerFrame;
     }
 
+    public void clearFrameCollisionCount(){
+        mNumOfCollisionsPerFrame = 0;
+    }
+
+    //get a balls current velocity
+    public PointF getVelocity(){
+        return mVelocity;
+    }
+
+    //Get a balls velocity after timeStep (calculates gravity)
+    public PointF getVelocity(float timeStep){
+        return new PointF(mVelocity.x + (GameState.GRAVITY_CONSTANT.x * timeStep), mVelocity.y + (GameState.GRAVITY_CONSTANT.y * timeStep));
+    }
+
+    //Get the available velocity (amount that is free to be transferred) at timeStep
+    public PointF getAvailableVelocity(float timeStep){
+        PointF newVelocity = getVelocity(timeStep);
+
+        return new PointF(newVelocity.x / mNumOfCollisions, newVelocity.y / mNumOfCollisions);
+    }
+
+    //Set a new velocity for a ball (will be updated in update velocity)
     public void addNewVelocity(PointF newVelocity){
-        System.out.println("addedd new velocity: " + newVelocity.x + ";" + newVelocity.y);
+        //System.out.println("addedd new velocity: " + newVelocity.x + ";" + newVelocity.y);
         mNewVelocity.set(mNewVelocity.x + newVelocity.x, mNewVelocity.y + newVelocity.y);
     }
 
-    public void updateVelocity(){
+    //update a balls velocity after time timeStep
+    public void updateVelocity(float timeStep){
+
+        //if mNewVelocity exists, then we have updated the balls new velocity elsewhere
         if (mNewVelocity.length() > 0) {
             mVelocity.set(mNewVelocity.x, mNewVelocity.y);
             mNewVelocity.set(0f, 0f);
+
+        //otherwise, just update based on gravity
+        } else {
+            PointF newVelocity = getVelocity(timeStep);
+            mVelocity.set(newVelocity.x, newVelocity.y);
         }
+    }
+
+    //Get average velocity from current time until timeStep
+    public PointF getAvgVelocity(float timeStep){
+        PointF newVelocity = getVelocity(timeStep);
+        return new PointF((newVelocity.x + mVelocity.x) / 2, (newVelocity.y + mVelocity.y)/2);
+    }
+
+    public void incrementDeactivationCounter(){
+        mDeactivationCounter++;
+    }
+
+    public void clearDeactivationCounter(){
+        mDeactivationCounter = 0;
+    }
+
+    public int getDeactivationCounter(){
+        return mDeactivationCounter;
     }
 
 
