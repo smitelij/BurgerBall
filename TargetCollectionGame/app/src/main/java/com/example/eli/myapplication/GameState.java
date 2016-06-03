@@ -8,6 +8,14 @@ import android.graphics.PointF;
  */
 public class GameState {
 
+    static final float FRAME_SIZE = 1f;
+
+    //num of collisions per frame size of 1 that will deactivate a ball.
+    //For example, if frame size is 1, and a ball has 8 collisions in the span of 1 frame,
+    //the ball will be deactivated. If frame size is 1/2, then the ball will need to have
+    //4 collisions in the span of 1 frame.
+    static final int DEACTIVATION_CONSTANT = 8;
+
     static final float FULL_WIDTH = 200.0f;
     static final float FULL_HEIGHT = 300.0f;
     static final float BORDER_WIDTH = 6.0f;
@@ -20,8 +28,6 @@ public class GameState {
     static final float[] ballColor = {0.9f, 0.2f, 0.9f, 1.0f};
 
     static final float ballRadius = 8f;
-
-    static int totalBalls = 10;
 
     static final int OBSTACLE_POLYGON = 1000;
     static final int OBSTACLE_BALL = 1001;

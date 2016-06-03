@@ -52,7 +52,7 @@ public class CollisionDetection {
 
         //Initialize arraylist
         ArrayList<CollisionHistory> firstCollision = new ArrayList<>();
-        float firstCollisionTime = 1f; //time should always be less than 1
+        float firstCollisionTime = GameState.FRAME_SIZE; //time should always be less than 1
 
         //loop through all finding the earliest collision
         for (CollisionHistory collision : mCollisions){

@@ -153,9 +153,9 @@ public class GameEngine {
         //repeat until 1 whole 'frame' has been moved.
         //If there is a collision, we will only advance up until the collision point,
         //and then repeat until we reach the end of the frame.
-        while (timeElapsed < 1) {
+        while (timeElapsed < GameState.FRAME_SIZE) {
 
-            float timeStep = 1 - timeElapsed;
+            float timeStep = GameState.FRAME_SIZE - timeElapsed;
             //System.out.println("time step: " + timeStep);
 
             //initialize collision detection engine
@@ -183,8 +183,7 @@ public class GameEngine {
 
         for (Ball currentBall : mActiveBalls){
 
-            if (currentBall.getPerFrameCollisionCount() > 6){
-                //System.out.println("FRAME COLLISION EXCEEDED 6 DEACTIVATING");
+            if (currentBall.getPerFrameCollisionCount() > (GameState.FRAME_SIZE * GameState.DEACTIVATION_CONSTANT)){
                 deactivationList.add(currentBall);
             } else {
                 currentBall.clearFrameCollisionCount();
@@ -252,8 +251,8 @@ public class GameEngine {
 
         //from this point on, referring to 'collisions' means the set of first collisions, by time.
         //this will usually be one collision, but it is possible for there to be multiple first collisions if:
-        // 1- multiple balls collide with boundaries at the same time
-        // 2- one ball collides with multiple boundaries at the same time
+        // 1- multiple balls collide with objects at the same time
+        // 2- one ball collides with multiple objects at the same time
         // (two balls colliding with each other will not cause multiple first collisions, because each pair is checked only once.)
         ArrayList<CollisionHistory> firstCollisions = CD.getFirstCollision();
 
@@ -264,8 +263,8 @@ public class GameEngine {
             //Move all balls forward by timestep
             handleNoCollisions(timeStep);
             //Any target collisions will be valid, since there were no trajectory affecting collisions
-            handleTargetCollisions(CD, 1);
-            timeElapsed = 1;
+            handleTargetCollisions(CD, GameState.FRAME_SIZE);
+            timeElapsed = GameState.FRAME_SIZE;
 
             //one or multiple collisions
         } else {
