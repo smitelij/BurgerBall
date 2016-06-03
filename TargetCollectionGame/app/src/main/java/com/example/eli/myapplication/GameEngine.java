@@ -16,16 +16,19 @@ import java.util.ArrayList;
 public class GameEngine {
 
     private ArrayList<Interactable> allActiveObjects;
+
     private ArrayList<Ball> mAllBalls;
     private ArrayList<Ball> mActiveBalls;
+
     private ArrayList<Polygon> mBorders;
+    private ArrayList<Polygon> mObstacles;
+
+    private ArrayList<Target> mTargets;
+
     private float[] mVPMatrix = new float[16];
-    private Context mActivityContext;
+    private static Context mActivityContext;
 
-    //started at -1 because always incremented before it is returned. the first value will be 0.
-    static int currentBallID = -1;
-
-    private int totalBalls;
+    private int mTotalBalls;
 
     //texture stuff
     private int mBallTexture;
@@ -39,15 +42,6 @@ public class GameEngine {
     private boolean mBallCollectionInUse;
     private boolean mBallWaiting;
 
-    //only used for testing latency on ball firing
-    long mPrevTime;
-
-
-    public static int getNextBallID(){
-        currentBallID++;
-        return currentBallID;
-    }
-
     public GameEngine(){
 
         //Eventually this will be moved out of the constructor
@@ -56,17 +50,15 @@ public class GameEngine {
 
     public void loadLevel(){
         //eventually this will depend on the level
-        totalBalls=10;
 
-        loadTextures();
+        Level currentLevel = new Level(1);
+        mTotalBalls=currentLevel.getNumOfBalls();
+
         initializeBalls();
         loadBoundaries();
+        loadObstacles(currentLevel);
+        loadTargets(currentLevel);
         initializeActiveObjects();
-    }
-
-    private void loadTextures(){
-        mBallTexture = loadGLTexture(R.drawable.circle);
-        mWallTexture = loadGLTexture(R.drawable.brick);
     }
 
     private void initializeBalls(){
@@ -76,9 +68,9 @@ public class GameEngine {
         float[] newBallCoords = GameState.getInitialBallCoords();
 
         //create balls and add them to collection
-        for(int index=0; index < GameState.totalBalls; index++) {
+        for(int index=0; index < mTotalBalls; index++) {
 
-            Ball ball = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, GameState.ballColor, mBallTexture);
+            Ball ball = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, GameState.ballColor, loadGLTexture(GameState.TEXTURE_BALL));
             mAllBalls.add(ball);
         }
 
@@ -87,7 +79,7 @@ public class GameEngine {
     public void activateBall(PointF initialVelocity){
 
         //Add a new ball as long as there are still balls available to add
-        if(mCurrentActiveBallID < totalBalls) {
+        if(mCurrentActiveBallID < mTotalBalls) {
 
             Ball ball = mAllBalls.get(mCurrentActiveBallID);
 
@@ -102,6 +94,7 @@ public class GameEngine {
                 mActiveBalls.add(ball);
                 allActiveObjects.add(ball);
                 mCurrentActiveBallID++;
+                System.out.println("Ball activated." );
             }
         }
     }
@@ -122,9 +115,17 @@ public class GameEngine {
     private void loadBoundaries(){
 
         //TODO eventually move specific code from Borders to here
-        Borders borders = new Borders(mWallTexture);
+        Borders borders = new Borders(loadGLTexture(GameState.TEXTURE_WALL));
         mBorders = borders.getAllBorders();
 
+    }
+
+    private void loadObstacles(Level level){
+        mObstacles = level.getObstacles();
+    }
+
+    private void loadTargets(Level level){
+        mTargets = level.getTargets();
     }
 
     private void initializeActiveObjects(){
@@ -133,6 +134,14 @@ public class GameEngine {
         //No active balls yet, so we only need to add borders
         for (Polygon currentBorder : mBorders){
             allActiveObjects.add(currentBorder);
+        }
+
+        for (Polygon obstacle : mObstacles){
+            allActiveObjects.add(obstacle);
+        }
+
+        for (Target target : mTargets){
+            allActiveObjects.add(target);
         }
     }
 
@@ -223,7 +232,6 @@ public class GameEngine {
 
         //clear the moved status once we have gone through all balls
         cleanupBalls();
-
         unlockBalls();
     }
 
@@ -240,6 +248,7 @@ public class GameEngine {
         //==================
 
         //...All that matters is the first collision...
+        //Target collisions don't matter here because they don't affect trajectories
 
         //from this point on, referring to 'collisions' means the set of first collisions, by time.
         //this will usually be one collision, but it is possible for there to be multiple first collisions if:
@@ -251,9 +260,11 @@ public class GameEngine {
         lockBalls();
 
         //no collisions
-        if (firstCollisions == null ) {
+        if (firstCollisions == null) {
             //Move all balls forward by timestep
             handleNoCollisions(timeStep);
+            //Any target collisions will be valid, since there were no trajectory affecting collisions
+            handleTargetCollisions(CD, 1);
             timeElapsed = 1;
 
             //one or multiple collisions
@@ -261,6 +272,8 @@ public class GameEngine {
             float collisionTime = CD.getFirstCollisionTime();
             //move all balls forward by collision time, and update velocity for colliding balls
             handleCollisionsForBalls(CD, firstCollisions, collisionTime);
+            //Only target collisions before collision time will be valid
+            handleTargetCollisions(CD, collisionTime);
             timeElapsed = timeElapsed + collisionTime;
         }
 
@@ -309,7 +322,7 @@ public class GameEngine {
         currentBall.updatePrevAABB();
     }
 
-    public void handleNoCollisions(float timeStep){
+    private void handleNoCollisions(float timeStep){
 
         for (Ball currentBall : mActiveBalls){
             //PointF newDisplacementVector = new PointF(currentBall.getXVelocity() * timeStep, currentBall.getYVelocity() * timeStep);
@@ -326,6 +339,16 @@ public class GameEngine {
         for (Ball currentBall : mActiveBalls){
             currentBall.updateVelocity(timeStep);
             currentBall.clearCollisionHistory();
+        }
+    }
+
+    private void handleTargetCollisions(CollisionDetection CD, float firstCollisionTime){
+        ArrayList<Target> hitTargets = new ArrayList<>();
+
+        hitTargets = CD.getTargetCollisions(firstCollisionTime);
+
+        for (Target target : hitTargets){
+            mTargets.remove(target);
         }
     }
 
@@ -351,9 +374,20 @@ public class GameEngine {
 
         unlockBalls();
 
+
         //Draw Borders
         for (Polygon currentBorder : mBorders){
             currentBorder.draw(mVPMatrix);
+        }
+
+        //Draw obstacles
+        for (Polygon currentObstacle : mObstacles){
+            currentObstacle.draw(mVPMatrix);
+        }
+
+        //Draw targets
+        for (Target currentTarget : mTargets){
+            currentTarget.draw(mVPMatrix);
         }
 
     }
@@ -362,7 +396,7 @@ public class GameEngine {
         mVPMatrix = VPMatrix;
     }
 
-    public int loadGLTexture(int imagePointer) {
+    public static int loadGLTexture(int imagePointer) {
 
         int[] temp = new int[1];
         // loading texture
@@ -404,6 +438,7 @@ public class GameEngine {
             activateBall(null);
         }
     }
+
 
 
 }

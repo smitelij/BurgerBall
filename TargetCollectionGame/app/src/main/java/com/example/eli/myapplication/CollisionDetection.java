@@ -57,6 +57,11 @@ public class CollisionDetection {
         //loop through all finding the earliest collision
         for (CollisionHistory collision : mCollisions){
 
+            //Don't care about target collisions here-  they don't affect any trajectories
+            if(collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
+                continue;
+            }
+
             float curCollisionTime = collision.getTime();
 
             //Set defaults
@@ -75,6 +80,11 @@ public class CollisionDetection {
                 firstCollision.add(collision);
             }
 
+        }
+
+        //caller of this function expects a null value if there are no first collisions.
+        if (firstCollision.size()==0){
+            return null;
         }
 
         return firstCollision;
@@ -151,6 +161,10 @@ public class CollisionDetection {
             return doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
         }
 
+        if (object.getType()== GameState.OBSTACLE_TARGET){
+            return doTargetCollisionDetection(ball, (Target) object, timeStep);
+        }
+
         //should never get here
         return false;
     }
@@ -175,6 +189,27 @@ public class CollisionDetection {
         //calculate more collision info, such as timing
         //System.out.println("collision between ball " + ball1.getID() + " & ball " + ball2.getID() + ". distance: " + distance);
         calculateBallBallCollisionInfo(ball1, ball2, timeStep);
+        return true;
+    }
+
+    private boolean doTargetCollisionDetection(Ball ball, Target target, float timeStep){
+        PointF ballCenter;
+        PointF targetCenter;
+
+        PointF distanceVector;
+        float distance;
+
+        ballCenter = ball.getCenter();
+        targetCenter = target.getCenter();
+
+        distanceVector = new PointF(ballCenter.x - targetCenter.x, ballCenter.y - targetCenter.y);
+        distance = distanceVector.length();
+
+        if (distance >= (ball.getRadius() + target.getRadius())){
+            return false;
+        }
+
+        calculateBallPointCollisionInfo(ball,targetCenter,target,timeStep,target.getRadius());
         return true;
     }
 
@@ -243,13 +278,14 @@ public class CollisionDetection {
         mCollisions.add(new CollisionHistory(collisionTime, boundaryAxis, ball2, ball1));
     }
 
-    private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle, float timeStep){
+    private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle, float timeStep, float radius){
 
         //get necessary information to calculate quadratic
+        PointF boundaryAxis = new PointF(0f,0f);
         PointF ball1PrevCenter = ball.getPrevCenter();
         PointF distanceFromVertex = new PointF(ball1PrevCenter.x - vertex.x, ball1PrevCenter.y - vertex.y);
         PointF velocityDifference = ball.getAvgVelocity(timeStep);
-        float distanceThreshold = ball.getRadius();
+        float distanceThreshold = ball.getRadius() + radius;
 
         //calculate the collision time using the quadratic formula
         float collisionTime = (float) quadraticCollisionTime(velocityDifference, distanceFromVertex, distanceThreshold);
@@ -259,8 +295,11 @@ public class CollisionDetection {
             collisionTime = 0.01f;
         }
 
-        //update the boundary axis based on the collision-point location of the ball (this will make velocity calculation more accurate)
-        PointF boundaryAxis = updateBoundaryAxis(ball,collisionTime,vertex);
+        //If we are handling a nearest-vertex collision (and not a target collision), then...
+        if (radius == 0) {
+            //update the boundary axis based on the collision-point location of the ball (this will make velocity calculation more accurate)
+            boundaryAxis = updateBoundaryAxis(ball, collisionTime, vertex);
+        }
 
         //add this collision to the collection
         mCollisions.add(new CollisionHistory(collisionTime, boundaryAxis, obstacle, ball));
@@ -377,7 +416,7 @@ public class CollisionDetection {
         //Calculate info based on whether the ball collided with a point or a flat wall.
         if (pHistory.mNearestVertexAxis){
             //If mNearestVertexAxis, then we know ball collided with the corner of an obstacle
-            calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep);
+            calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0);
         } else {
             //Otherwise, we know the ball collided on a normal boundary of the obstacle
             calculateBallBoundaryCollisionInfo(ball, pHistory, obstacle, timeStep);
@@ -600,6 +639,19 @@ public class CollisionDetection {
                 currentCollision.getBall().increaseCollisionCount();
             }
         }
+    }
+
+    public ArrayList<Target> getTargetCollisions(float firstCollisionTime){
+        ArrayList<Target> hitTargets = new ArrayList<>();
+
+        for (CollisionHistory collision : mCollisions){
+            if (collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
+                if (collision.getTime() <= firstCollisionTime){
+                    hitTargets.add((Target) collision.getObstacle());
+                }
+            }
+        }
+        return hitTargets;
     }
 
     private void vectorPrint(PointF vector, String msg){

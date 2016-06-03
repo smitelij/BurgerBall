@@ -164,7 +164,6 @@ public class Interactable {
         GLES20.glBindAttribLocation(mProgram,0,"a_TexCoordinate");
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
         String error = GLES20.glGetProgramInfoLog(mProgram);
-        System.out.println("ERROR " + error);
 
 
         mType = type;
@@ -377,7 +376,7 @@ public class Interactable {
     public boolean hasObjectMoved(){
 
         //Since Polygon==Border currently, and borders never move, we always return true.
-        if (mType== GameState.OBSTACLE_POLYGON){
+        if ((mType == GameState.OBSTACLE_POLYGON)||(mType == GameState.OBSTACLE_TARGET)){
             return true;
 
         //if not a polygon, we know it will be a ball, so we can call the sub class method

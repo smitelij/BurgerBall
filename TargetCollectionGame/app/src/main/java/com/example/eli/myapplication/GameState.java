@@ -1,6 +1,5 @@
 package com.example.eli.myapplication;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PointF;
 
@@ -26,6 +25,7 @@ public class GameState {
 
     static final int OBSTACLE_POLYGON = 1000;
     static final int OBSTACLE_BALL = 1001;
+    static final int OBSTACLE_TARGET = 1002;
 
     //currently only used for collision detection, move into that class if never used again
     static final float LARGE_NUMBER = 99999f;
@@ -41,12 +41,16 @@ public class GameState {
     static final PointF GRAVITY_CONSTANT = new PointF(0f,-0.1f);
     static final float ELASTIC_CONSTANT = 0.9f;
 
+    static final int TEXTURE_WALL = R.drawable.brick;
+    static final int TEXTURE_BALL = R.drawable.circle;
+    static final int TEXTURE_TARGET = R.drawable.burger2;
+
 
     public static float[] getInitialBallCoords(){
-        return getBallCoords(GameState.FULL_WIDTH / 2, GameState.ballRadius * 4, GameState.ballRadius);
+        return createCircleCoords(GameState.FULL_WIDTH / 2, GameState.ballRadius * 4, GameState.ballRadius);
     }
 
-    public static float[] getBallCoords(float ballCenterX, float ballCenterY, float ballRadius){
+    public static float[] createCircleCoords(float ballCenterX, float ballCenterY, float ballRadius){
         return new float[]{
                 ballCenterX - ballRadius,  ballCenterY + ballRadius, 0.0f,   // top left
                 ballCenterX - ballRadius, ballCenterY - ballRadius, 0.0f,   // bottom left
@@ -86,6 +90,7 @@ public class GameState {
 
         return new PointF(initialXVelocity,initialYVelocity);
     }
+
 
 
 

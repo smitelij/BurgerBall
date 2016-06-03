@@ -35,8 +35,7 @@ public class Ball extends Interactable{
     private PointF mPrevVelocity;
 
     float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
-    private int mID;
-    private boolean isActive;
+    private boolean mIsActive;
     private PointF mDisplacementVector = new PointF(0f, 0f);
 
     //used for collision detection, tracks whether we have advanced this ball yet for the current frame
@@ -60,16 +59,14 @@ public class Ball extends Interactable{
 
         //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
         super(borderCoords, GameState.OBSTACLE_BALL, texturePointer);
-        setColor(color);
+        //setColor(color);
         updatePrevAABB();
 
-        //shouldn't need this once ball is moved to Ball class
         Matrix.setIdentityM(mModelMatrix, 0);
 
         mVelocity = velocity;
         mRadius = radius;
-        mID = GameEngine.getNextBallID();
-        isActive = true;
+        mIsActive = true;
         mCollisions = new ArrayList<>();
 
     }
@@ -151,10 +148,6 @@ public class Ball extends Interactable{
         center = new PointF(xCenter, yCenter);
 
         return center;
-    }
-
-    public int getID(){
-        return mID;
     }
 
     public PointF getDisplacementVector(){
@@ -262,18 +255,6 @@ public class Ball extends Interactable{
     public PointF getAvgVelocity(float timeStep){
         PointF newVelocity = getVelocity(timeStep);
         return new PointF((newVelocity.x + mVelocity.x) / 2, (newVelocity.y + mVelocity.y)/2);
-    }
-
-    public void incrementDeactivationCounter(){
-        mDeactivationCounter++;
-    }
-
-    public void clearDeactivationCounter(){
-        mDeactivationCounter = 0;
-    }
-
-    public int getDeactivationCounter(){
-        return mDeactivationCounter;
     }
 
 
