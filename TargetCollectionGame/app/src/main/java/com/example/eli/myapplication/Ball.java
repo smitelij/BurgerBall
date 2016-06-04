@@ -74,22 +74,15 @@ public class Ball extends Interactable{
     public void moveBallByFrame(float percentOfFrame){
         PointF positionChange = calculatePositionChange(percentOfFrame);
         updateAABB(positionChange.x, positionChange.y);
-        //updateAABB(mVelocity.x * percentOfFrame, mVelocity.y * percentOfFrame);
     }
 
     public PointF calculatePositionChange(float percentOfFrame){
 
+        //This isn't precisely accurate- we would need much more complicated calculations
+        //to perfectly account for gravities affect on displacement. However, taking the average
+        //velocity (beginning / end of frame) should be more than accurate enough for our purposes.
         PointF avgVelocity = getAvgVelocity(percentOfFrame);
-
         return new PointF(avgVelocity.x * percentOfFrame, avgVelocity.y * percentOfFrame);
-    }
-
-    public void updateAABB(){
-        mMinXCoord = mMinXCoord + mVelocity.x;
-        mMaxXCoord = mMaxXCoord + mVelocity.x;
-
-        mMinYCoord = mMinYCoord + mVelocity.y;
-        mMaxYCoord = mMaxYCoord + mVelocity.y;
     }
 
 

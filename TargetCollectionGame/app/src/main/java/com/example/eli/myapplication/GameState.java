@@ -14,7 +14,7 @@ public class GameState {
     //For example, if frame size is 1, and a ball has 8 collisions in the span of 1 frame,
     //the ball will be deactivated. If frame size is 1/2, then the ball will need to have
     //4 collisions in the span of 1 frame.
-    static final int DEACTIVATION_CONSTANT = 8;
+    static final int DEACTIVATION_CONSTANT = 10;
 
     static final float FULL_WIDTH = 200.0f;
     static final float FULL_HEIGHT = 300.0f;

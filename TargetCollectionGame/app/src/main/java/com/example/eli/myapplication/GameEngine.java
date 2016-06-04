@@ -165,7 +165,9 @@ public class GameEngine {
             collisionDetection(CD, timeStep);
 
             //Handle collisions (update velocities / displacements as necessary)
-            timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
+            if (CD.didCollisionOccur()) {
+                timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
+            }
 
         }
 
@@ -217,10 +219,11 @@ public class GameEngine {
 
                 //do a first test on their bounding boxes
                 //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
-                if (CD.testBoundingBoxes(currentBall, curObject)) {
+                if (CD.coarseCollisionTesting(currentBall, curObject)) {
 
                     //There may have been a collision, further testing is necessary.
-                    CD.doCollisionDetection(currentBall, curObject, timeStep);
+                    //Any collisions detected will be saved in CD within a CollisionHistory arraylist.
+                    CD.detailedCollisionTesting(currentBall, curObject, timeStep);
 
                 }
             }

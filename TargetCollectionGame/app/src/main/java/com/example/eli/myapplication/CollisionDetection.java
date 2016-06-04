@@ -151,25 +151,23 @@ public class CollisionDetection {
         return minHistoryItem;
     }
 
-    public boolean doCollisionDetection(Ball ball, Interactable object, float timeStep){
+    public void detailedCollisionTesting(Ball ball, Interactable object, float timeStep){
 
         if (object.getType()== GameState.OBSTACLE_BALL){
-            return doBallCollisionDetection(ball, (Ball) object, timeStep);
+            doBallCollisionDetection(ball, (Ball) object, timeStep);
         }
 
         if (object.getType()== GameState.OBSTACLE_POLYGON){
-            return doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
+            doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
         }
 
         if (object.getType()== GameState.OBSTACLE_TARGET){
-            return doTargetCollisionDetection(ball, (Target) object, timeStep);
+            doTargetCollisionDetection(ball, (Target) object, timeStep);
         }
 
-        //should never get here
-        return false;
     }
 
-    private boolean doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep){
+    private void doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep){
         PointF ball1center;
         PointF ball2center;
 
@@ -183,16 +181,18 @@ public class CollisionDetection {
         distance = distanceVector.length();
 
         if (distance >= (ball1.getRadius() + ball2.getRadius())){
-            return false;
+            return;
         }
 
-        //calculate more collision info, such as timing
-        //System.out.println("collision between ball " + ball1.getID() + " & ball " + ball2.getID() + ". distance: " + distance);
+        //We now can be sure that there was a collision.
+        //Calculate more collision info, such as timing, and save the collision event
         calculateBallBallCollisionInfo(ball1, ball2, timeStep);
-        return true;
     }
 
-    private boolean doTargetCollisionDetection(Ball ball, Target target, float timeStep){
+    //This is almost exactly the same as doBallCollisionDetection.
+    //However, I think it is more clear to have a separate method, so we can name variables more
+    // accurately, and avoid checking the type for any different code that is needed.
+    private void doTargetCollisionDetection(Ball ball, Target target, float timeStep){
         PointF ballCenter;
         PointF targetCenter;
 
@@ -206,11 +206,12 @@ public class CollisionDetection {
         distance = distanceVector.length();
 
         if (distance >= (ball.getRadius() + target.getRadius())){
-            return false;
+            return;
         }
 
-        calculateBallPointCollisionInfo(ball,targetCenter,target,timeStep,target.getRadius());
-        return true;
+        //We now can be sure that there was a collision.
+        //Calculate more collision info, such as timing, and save the collision event
+        calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius());
     }
 
     private void calculateBallBoundaryCollisionInfo(Ball ball, penetrationHistory pHistory, Interactable obstacle, float timeStep){
@@ -329,48 +330,35 @@ public class CollisionDetection {
         }
     }
 
-    private boolean doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
+    private void doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
 
-
-        PointF ballCenter = new PointF();
-        PointF obstacleCenter = new PointF();
-        PointF[] obstacleCoords;
-
-        PointF normalAxis = new PointF();
-        float radius;
-
-        boolean gapDetected;
-
-        //Get vertexes for obstacle
-        //Get radius/center for ball
-        //gather info
-        ballCenter.set(ball.getCenter());
-        obstacleCenter.set(obstacle.getCenter());
-        obstacleCoords = obstacle.get2dCoordArray();
-        radius = ball.getRadius();
         //reset projection history
         clearProjectionHistory();
 
-        //find distance to closest vertex and normalize
+        //gather info
+        PointF ballCenter = ball.getCenter();
+        PointF[] obstacleCoords = obstacle.get2dCoordArray();
+        float radius = ball.getRadius();
+
+        //First, we will check the nearest vertex axis.
+        //find distance to closest vertex
         PointF nearestVertex = getNearestVertex(obstacleCoords, ballCenter);
-        vectorPrint(nearestVertex, "&&&&nearestVertex");
         PointF nearestVertexToBall = new PointF(nearestVertex.x - ballCenter.x,nearestVertex.y - ballCenter.y);
-        vectorPrint(nearestVertexToBall, "-----boundary axis vector");
 
         //normalize vector
         float nearestVertexLength = nearestVertexToBall.length();
-        normalAxis = new PointF(nearestVertexToBall.x / nearestVertexLength, nearestVertexToBall.y / nearestVertexLength);
+        PointF normalAxis = new PointF(nearestVertexToBall.x / nearestVertexLength, nearestVertexToBall.y / nearestVertexLength);
 
         //Determine if a gap exists in the projection
-        gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, nearestVertex, true);
+        boolean gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, nearestVertex, true);
 
         if (gapDetected) {
             //definitely no collision, exit
-            return false;
+            return;
         }
 
-        //or else we need to keep on going
-
+        //or else we need to keep on going.
+        //Now, do a projection test on every vertex pair.
         //calculate normal axis for each vertex pair, and project all the points onto each normal axis
         for (int i = 0; i < obstacleCoords.length; i++) {
             normalAxis = makeNormalVectorBetweenPoints(obstacleCoords, i);
@@ -380,15 +368,13 @@ public class CollisionDetection {
 
             if (gapDetected) {
                 //definitely no collision, exit
-                return false;
+                return;
             }
         }
 
-        //System.out.println("time step: " + timeStep);
-
         //Collision has occurred.
+        //Need to calculate timing and save collision info
         getBoundaryCollisionInfo(ball, obstacle, timeStep);
-        return true;
     }
 
     private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index){
@@ -601,17 +587,21 @@ public class CollisionDetection {
         return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
     }
 
-    //pre checks before getting into in depth checks
-    public boolean testBoundingBoxes(Ball ball, Interactable obstacle){
+    //pre checks before getting into detailed testing
+    public boolean coarseCollisionTesting(Ball ball, Interactable obstacle){
 
-        //first, we need to make sure the other object has already been moved this frame.
-        if (!obstacle.hasObjectMoved()){
-            return false;
+        //if the other object is a ball, we need to make sure it has already moved this frame.
+        if (obstacle.getType() == GameState.OBSTACLE_BALL){
+            Ball tempBall = (Ball) obstacle;
+            if (!tempBall.hasBallMoved()){
+                return false;
+            }
         }
 
-        //test x collision
+        //Test Bounding boxes
+        //x axis
         if (((ball.getMaxX()) >= obstacle.getMinX()) && (obstacle.getMaxX() >= ball.getMinX())){
-            //test y collision
+            //y axis
             if (((ball.getMaxY()) >= obstacle.getMinY()) && (obstacle.getMaxY() >= ball.getMinY())) {
                 return true;
             }
@@ -656,6 +646,14 @@ public class CollisionDetection {
 
     private void vectorPrint(PointF vector, String msg){
         //System.out.println(msg + ": " + vector.x + ";" + vector.y);
+    }
+
+    public boolean didCollisionOccur(){
+        if (mCollisions.size() > 0){
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

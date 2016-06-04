@@ -54,6 +54,12 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        // Disable depth testing -- we're 2D only.
+
+        //Disable backface culling
+
+        // Enable transparency
+
         //REALLY IMPORTANT to keep here!
         //it seems that the drawable objects must be initialized no earlier than this point
         //or else openGL has no reference to them.
