@@ -55,10 +55,14 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Disable depth testing -- we're 2D only.
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
 
         //Disable backface culling
+        GLES20.glDisable(GLES20.GL_CULL_FACE);
 
         // Enable transparency
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         //REALLY IMPORTANT to keep here!
         //it seems that the drawable objects must be initialized no earlier than this point
