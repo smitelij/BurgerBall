@@ -51,6 +51,8 @@ public class GameState {
     static final int TEXTURE_BALL = R.drawable.circle;
     static final int TEXTURE_TARGET = R.drawable.burger2;
 
+    static final boolean showFPS = true;
+
 
     public static float[] getInitialBallCoords(){
         return createCircleCoords(GameState.FULL_WIDTH / 2, GameState.ballRadius * 4, GameState.ballRadius);
@@ -97,9 +99,13 @@ public class GameState {
         return new PointF(initialXVelocity,initialYVelocity);
     }
 
+    public static void vectorPrint(PointF vector, String msg){
+        System.out.println(msg + ": " + vector.x + ";" + vector.y);
+    }
 
-
-
+    public static float dotProduct(PointF vector1, PointF vector2){
+        return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
+    }
 
 
 }

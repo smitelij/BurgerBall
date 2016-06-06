@@ -97,6 +97,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             }
         }
 
+        if (! mGame.isLevelActive()){
+            return;
+        }
+
         mGame.advanceFrame();
         mGame.drawObjects();
 

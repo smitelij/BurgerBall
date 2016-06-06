@@ -15,6 +15,13 @@ import java.util.ArrayList;
  */
 public class GameEngine {
 
+
+    //All of these are just used to show the FPS the game is running at.
+    private float mPrevTime = 0;
+    private int frameCounter = 0;
+    private float[] timesPerFrame = new float[10];
+    private float sumTotal = 0;
+
     private ArrayList<Interactable> allActiveObjects;
 
     private ArrayList<Ball> mAllBalls;
@@ -30,17 +37,15 @@ public class GameEngine {
 
     private int mTotalBalls;
 
-    //texture stuff
-    private int mBallTexture;
-    private int mWallTexture;
-    private int mObstacleTexture;
-
     private int mCurrentActiveBallID = 0;
+    private int deactivatedBallCount = 0;
 
     //can't add a new ball while in the middle of a frame, may cause a concurrent modification error.
     //So we'll setup flags to determine whether we are in the middle of a frame, and whether a ball is waiting.
     private boolean mBallCollectionInUse;
     private boolean mBallWaiting;
+
+    private boolean mLevelOver = false;
 
     public GameEngine(){
 
@@ -148,6 +153,8 @@ public class GameEngine {
     //Main method called by MyGLRenderer each frame
     public void advanceFrame(){
 
+        updateFPSinfo();
+
         float timeElapsed = 0f;
 
         //repeat until 1 whole 'frame' has been moved.
@@ -165,16 +172,13 @@ public class GameEngine {
             collisionDetection(CD, timeStep);
 
             //Handle collisions (update velocities / displacements as necessary)
-            if (CD.didCollisionOccur()) {
-                timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
-            }
+            //Also handles NO collisions
+            timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
 
         }
 
         testForDeactivatingBalls();
 
-        //System.out.println("...");
-        //System.out.println("...");
     }
 
     private void testForDeactivatingBalls(){
@@ -195,8 +199,14 @@ public class GameEngine {
         unlockBalls();
 
         for (Ball deadBall : deactivationList){
+            deactivatedBallCount++;
             mActiveBalls.remove(deadBall);
             allActiveObjects.remove(deadBall);
+        }
+
+        if (deactivatedBallCount == mTotalBalls){
+            mLevelOver = true;
+            showFinalAvgFPS();
         }
     }
 
@@ -214,19 +224,8 @@ public class GameEngine {
             //temporarily advance the balls location by the time step
             currentBall.moveBallByFrame(timeStep);
 
-            //go through all objects that could be hit
-            for (Interactable curObject : allActiveObjects) {
-
-                //do a first test on their bounding boxes
-                //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
-                if (CD.coarseCollisionTesting(currentBall, curObject)) {
-
-                    //There may have been a collision, further testing is necessary.
-                    //Any collisions detected will be saved in CD within a CollisionHistory arraylist.
-                    CD.detailedCollisionTesting(currentBall, curObject, timeStep);
-
-                }
-            }
+            //do collision testing between the current ball and each active object
+            collisionTestAllActiveObjects(CD, currentBall, timeStep);
 
             //set the ball to 'moved' so it is included on future collision tests in this frame
             currentBall.setBallMoved();
@@ -237,82 +236,120 @@ public class GameEngine {
         unlockBalls();
     }
 
+    private void collisionTestAllActiveObjects(CollisionDetection CD, Ball currentBall, float timeStep){
+        //go through all objects that could be hit
+        for (Interactable curObject : allActiveObjects) {
+
+            //do a first test on their bounding boxes
+            //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
+            if (CD.coarseCollisionTesting(currentBall, curObject)) {
+
+                //There may have been a collision, further testing is necessary.
+                //Any collisions detected will be saved in CD within a CollisionHistory arraylist.
+                CD.detailedCollisionTesting(currentBall, curObject, timeStep);
+
+            }
+        }
+    }
+
     private void cleanupBalls(){
         for (Ball currentBall : mActiveBalls){
             currentBall.clearMovedStatus();
         }
     }
 
-    //return timeElapsed
     private float collisionHandling(CollisionDetection CD, float timeStep, float timeElapsed){
         //==================
         //collision handling
         //==================
 
+        //initialize collision handling object
+        CollisionHandling CH = new CollisionHandling (CD.getCollisions());
+
         //...All that matters is the first collision...
-        //Target collisions don't matter here because they don't affect trajectories
+        //Target collisions don't count here because they don't affect trajectories
 
         //from this point on, referring to 'collisions' means the set of first collisions, by time.
         //this will usually be one collision, but it is possible for there to be multiple first collisions if:
         // 1- multiple balls collide with objects at the same time
         // 2- one ball collides with multiple objects at the same time
         // (two balls colliding with each other will not cause multiple first collisions, because each pair is checked only once.)
-        ArrayList<CollisionHistory> firstCollisions = CD.getFirstCollision();
+        ArrayList<CollisionHistory> firstCollisions = CH.getFirstCollision();
 
-        lockBalls();
-
-        //no collisions
+        //no trajectory-affecting collisions
         if (firstCollisions == null) {
             //Move all balls forward by timestep
-            handleNoCollisions(timeStep);
+            handleNoCollisionsForBalls(timeStep);
+
             //Any target collisions will be valid, since there were no trajectory affecting collisions
-            handleTargetCollisions(CD, GameState.FRAME_SIZE);
+            handleTargetCollisions(CH, timeStep);
+
             timeElapsed = GameState.FRAME_SIZE;
 
-            //one or multiple collisions
+        //one or multiple collisions
         } else {
-            float collisionTime = CD.getFirstCollisionTime();
+            //we can just grab the first member here since they all have the same time
+            float collisionTime = firstCollisions.get(0).getTime();
             //move all balls forward by collision time, and update velocity for colliding balls
-            handleCollisionsForBalls(CD, firstCollisions, collisionTime);
+            handleCollisionsForBalls(CH, firstCollisions, collisionTime);
+
             //Only target collisions before collision time will be valid
-            handleTargetCollisions(CD, collisionTime);
+            handleTargetCollisions(CH, collisionTime);
+
             timeElapsed = timeElapsed + collisionTime;
         }
-
-        unlockBalls();
 
         return timeElapsed;
     }
 
-    private void handleCollisionsForBalls(CollisionDetection CD, ArrayList<CollisionHistory> firstCollisions, float collisionTime){
-
-        //Keep track of ball collisions vs boundary collisions
-        CD.updateCollisionCollections(firstCollisions);
+    private void handleCollisionsForBalls(CollisionHandling CH, ArrayList<CollisionHistory> firstCollisions, float collisionTime){
 
         //Move all balls to the point of collision
-        for (Ball currentBall : mActiveBalls){
-            PointF newDisplacementVector;
+        moveBallsToCollisionInstant(collisionTime, true);
 
-            //newDisplacementVector = new PointF(currentBall.getXVelocity() * collisionTime, currentBall.getYVelocity() * collisionTime);
-            newDisplacementVector = currentBall.calculatePositionChange(collisionTime);
+        //Keep track of ball collisions vs boundary collisions
+        CH.updateCollisionCollections(firstCollisions);
+
+        //Calculate new velocity for balls that have collided
+        CH.handleBoundaryCollisions();  //Do boundary collisions first... more info in method header
+        CH.handleBallCollisions();
+
+        //Update velocities (not done above, for cases that one ball collides with multiple things...
+        //then we don't want to update the calculated velocity until after going through all collisions)
+        updateVelocities(collisionTime);
+
+    }
+
+    private void handleNoCollisionsForBalls(float timeStep){
+
+        //first, move all the balls to the 'collision point'
+        // (in this case, just means the end of the frame)
+        moveBallsToCollisionInstant(timeStep, false);
+
+        //update the velocities of all the balls (because gravity is affecting it)
+        updateVelocities(timeStep);
+    }
+
+    private void moveBallsToCollisionInstant(float collisionTime, boolean cleanupAABB){
+
+        lockBalls();
+
+        //Go through all active balls
+        for (Ball currentBall : mActiveBalls){
+            //calculate displacement that will result in new position
+            PointF newDisplacementVector = currentBall.calculatePositionChange(collisionTime);
 
             //Add the current displacement to the balls running tally of total displacement for this frame
             currentBall.addToDisplacementVector(newDisplacementVector);
-            cleanupAABB(currentBall, newDisplacementVector);
+
+            //Only cleanup AABB if necessary (only when there are collisions in the frame)
+            if (cleanupAABB) {
+                cleanupAABB(currentBall, newDisplacementVector);
+            }
+
         }
 
-        //Calculate new velocity for balls that have collided
-        CD.handleBoundaryCollisions();  //Do boundary collisions first... more info in method header
-        CD.handleBallCollisions();
-
-        //Update velocities
-        for (Ball currentBall : mActiveBalls){
-            currentBall.updateVelocity(collisionTime);
-            currentBall.clearCollisionHistory();
-        }
-
-        //System.out.println(".");
-
+        unlockBalls();
     }
 
     private void cleanupAABB(Ball currentBall, PointF displacementVector){
@@ -324,30 +361,25 @@ public class GameEngine {
         currentBall.updatePrevAABB();
     }
 
-    private void handleNoCollisions(float timeStep){
+
+    private void updateVelocities(float timeStep){
+
+        lockBalls();
 
         for (Ball currentBall : mActiveBalls){
-            //PointF newDisplacementVector = new PointF(currentBall.getXVelocity() * timeStep, currentBall.getYVelocity() * timeStep);
-            PointF newDisplacementVector = currentBall.calculatePositionChange(timeStep);
 
-            //Add the current displacement to the balls running tally of total displacement for this frame
-            currentBall.addToDisplacementVector(newDisplacementVector);
-
-            //no need to mess with AABB, it should be accurate so no need to cleanup,
-            //and it will be updated within the Draw method of each ball.
-        }
-
-        //Update velocities
-        for (Ball currentBall : mActiveBalls){
+            //will either use any new velocity that was calculated in the event of a collision,
+            // or else just factor in the current gravity and return a new velocity.
             currentBall.updateVelocity(timeStep);
             currentBall.clearCollisionHistory();
         }
+
+        unlockBalls();
     }
 
-    private void handleTargetCollisions(CollisionDetection CD, float firstCollisionTime){
-        ArrayList<Target> hitTargets = new ArrayList<>();
+    private void handleTargetCollisions(CollisionHandling CH, float firstCollisionTime){
 
-        hitTargets = CD.getTargetCollisions(firstCollisionTime);
+        ArrayList<Target> hitTargets = CH.getTargetCollisions(firstCollisionTime);
 
         for (Target target : hitTargets){
             mTargets.remove(target);
@@ -438,6 +470,57 @@ public class GameEngine {
         //if a ball is waiting (because it couldn't be added while the frame is in progress), then activate it now
         if (mBallWaiting){
             activateBall(null);
+        }
+    }
+
+    private void updateFPSinfo(){
+
+        if (GameState.showFPS == false){
+            return;
+        }
+
+        if (mPrevTime != 0) {
+            float currentTime = System.nanoTime();
+            float timeLastFrame = currentTime - mPrevTime;
+            timesPerFrame[frameCounter % 10] = timeLastFrame;
+            sumTotal = sumTotal + timeLastFrame;
+            frameCounter++;
+            mPrevTime = currentTime;
+            if (frameCounter % 10 == 0){
+                System.out.println("Frames per second: " + calculateFPS());
+            }
+        } else {
+            mPrevTime = System.nanoTime();
+        }
+    }
+
+    private float calculateFPS(){
+        float sumTime = 0;
+
+        for (int index = 0; index < 10; index++){
+            sumTime = sumTime + timesPerFrame[index];
+        }
+
+        float avgTimeMillis = sumTime / 10;
+        float avgTimeSecs = avgTimeMillis / 1000000000;
+
+        return (1/avgTimeSecs);
+    }
+
+    private void showFinalAvgFPS(){
+        if (GameState.showFPS == false){
+            return;
+        }
+
+        float avgFPS = 1 / ((sumTotal / frameCounter) / 1000000000);
+        System.out.println("!!!FINAL AVG FPS: " + avgFPS);
+    }
+
+    public boolean isLevelActive(){
+        if (mLevelOver){
+            return false;
+        } else {
+            return true;
         }
     }
 
