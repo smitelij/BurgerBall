@@ -96,6 +96,7 @@ public class GameEngine {
 
             //make sure ball collections aren't in use before adding to them.
             if (canActivateBall()) {
+                //To activate a ball, all we need to do is add it to the collections.
                 mActiveBalls.add(ball);
                 allActiveObjects.add(ball);
                 mCurrentActiveBallID++;
