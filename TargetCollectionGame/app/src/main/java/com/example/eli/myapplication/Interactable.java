@@ -263,12 +263,6 @@ public class Interactable {
         // Set color for drawing the triangle
         //GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
-
-        // Enable blending
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-
-
         mTextureBuffer.position(0);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false,
                 0, mTextureBuffer);
@@ -371,41 +365,6 @@ public class Interactable {
 
     public int getType(){
         return mType;
-    }
-
-    public boolean hasObjectMoved(){
-
-        //Since Polygon==Border currently, and borders never move, we always return true.
-        if ((mType == GameState.OBSTACLE_POLYGON)||(mType == GameState.OBSTACLE_TARGET)){
-            return true;
-
-        //if not a polygon, we know it will be a ball, so we can call the sub class method
-        } else {
-            Ball tempBall = (Ball) this;
-            return tempBall.hasBallMoved();
-        }
-    }
-
-    public void loadGLTexture(Context context) {
-        // loading texture
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.circle);
-
-        // generate one texture pointer
-        GLES20.glGenTextures(1, textures, 0);
-        // ...and bind it to our array
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-
-        // create nearest filtered texture
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-        // Use Android GLUtils to specify a two-dimensional texture image from our bitmap
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-
-        // Clean up
-        bitmap.recycle();
     }
 
 

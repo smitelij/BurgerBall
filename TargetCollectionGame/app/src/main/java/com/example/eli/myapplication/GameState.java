@@ -8,6 +8,14 @@ import android.graphics.PointF;
  */
 public class GameState {
 
+    static final float FRAME_SIZE = 1f;
+
+    //num of collisions per frame size of 1 that will deactivate a ball.
+    //For example, if frame size is 1, and a ball has 8 collisions in the span of 1 frame,
+    //the ball will be deactivated. If frame size is 1/2, then the ball will need to have
+    //4 collisions in the span of 1 frame.
+    static final int DEACTIVATION_CONSTANT = 10;
+
     static final float FULL_WIDTH = 200.0f;
     static final float FULL_HEIGHT = 300.0f;
     static final float BORDER_WIDTH = 6.0f;
@@ -20,8 +28,6 @@ public class GameState {
     static final float[] ballColor = {0.9f, 0.2f, 0.9f, 1.0f};
 
     static final float ballRadius = 8f;
-
-    static int totalBalls = 10;
 
     static final int OBSTACLE_POLYGON = 1000;
     static final int OBSTACLE_BALL = 1001;
@@ -44,6 +50,8 @@ public class GameState {
     static final int TEXTURE_WALL = R.drawable.brick;
     static final int TEXTURE_BALL = R.drawable.circle;
     static final int TEXTURE_TARGET = R.drawable.burger2;
+
+    static final boolean showFPS = true;
 
 
     public static float[] getInitialBallCoords(){
@@ -91,9 +99,13 @@ public class GameState {
         return new PointF(initialXVelocity,initialYVelocity);
     }
 
+    public static void vectorPrint(PointF vector, String msg){
+        System.out.println(msg + ": " + vector.x + ";" + vector.y);
+    }
 
-
-
+    public static float dotProduct(PointF vector1, PointF vector2){
+        return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
+    }
 
 
 }

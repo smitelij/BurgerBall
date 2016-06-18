@@ -27,67 +27,8 @@ public class CollisionDetection {
     private ArrayList<penetrationHistory> pHistory = new ArrayList<penetrationHistory>();
     private ArrayList<CollisionHistory> mCollisions = new ArrayList<>();
 
-    private ArrayList<CollisionHistory> mBoundaryCollisions = new ArrayList<>();
-    private ArrayList<CollisionHistory> mBallCollisions = new ArrayList<>();
-
     public ArrayList<CollisionHistory> getCollisions(){
         return mCollisions;
-    }
-    public float getFirstCollisionTime(){
-        ArrayList<CollisionHistory> collisions = new ArrayList<>();
-        collisions = getFirstCollision();
-
-        if (collisions.size() == 0)
-            System.out.println("no collisions found, bad error.");
-
-        //If getFirstCollision returns multiple collisions, they will all have the same time, so we can use the first.
-        return collisions.get(0).getTime();
-    }
-    public ArrayList<CollisionHistory> getFirstCollision() {
-
-        //sanity check
-        if (mCollisions.size() == 0){
-            return null;
-        }
-
-        //Initialize arraylist
-        ArrayList<CollisionHistory> firstCollision = new ArrayList<>();
-        float firstCollisionTime = 1f; //time should always be less than 1
-
-        //loop through all finding the earliest collision
-        for (CollisionHistory collision : mCollisions){
-
-            //Don't care about target collisions here-  they don't affect any trajectories
-            if(collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
-                continue;
-            }
-
-            float curCollisionTime = collision.getTime();
-
-            //Set defaults
-            if (firstCollision.size() == 0){
-                firstCollision.add(collision);
-                firstCollisionTime = curCollisionTime;
-
-            //If current collision is the earliest thus far
-            } else if (curCollisionTime < firstCollisionTime){
-                firstCollision.clear();
-                firstCollision.add(collision);
-                firstCollisionTime = curCollisionTime;
-
-            //If current collision tied for the earliest, add it to the list
-            } else if (curCollisionTime == firstCollisionTime){
-                firstCollision.add(collision);
-            }
-
-        }
-
-        //caller of this function expects a null value if there are no first collisions.
-        if (firstCollision.size()==0){
-            return null;
-        }
-
-        return firstCollision;
     }
 
     public void addProjectionToHistory(PointF axis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
@@ -151,25 +92,26 @@ public class CollisionDetection {
         return minHistoryItem;
     }
 
-    public boolean doCollisionDetection(Ball ball, Interactable object, float timeStep){
+    public void detailedCollisionTesting(Ball ball, Interactable object, float timeStep){
 
         if (object.getType()== GameState.OBSTACLE_BALL){
-            return doBallCollisionDetection(ball, (Ball) object, timeStep);
+            doBallCollisionDetection(ball, (Ball) object, timeStep);
+            return;
         }
 
         if (object.getType()== GameState.OBSTACLE_POLYGON){
-            return doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
+            doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
+            return;
         }
 
         if (object.getType()== GameState.OBSTACLE_TARGET){
-            return doTargetCollisionDetection(ball, (Target) object, timeStep);
+            doTargetCollisionDetection(ball, (Target) object, timeStep);
+            return;
         }
 
-        //should never get here
-        return false;
     }
 
-    private boolean doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep){
+    private void doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep){
         PointF ball1center;
         PointF ball2center;
 
@@ -183,16 +125,18 @@ public class CollisionDetection {
         distance = distanceVector.length();
 
         if (distance >= (ball1.getRadius() + ball2.getRadius())){
-            return false;
+            return;
         }
 
-        //calculate more collision info, such as timing
-        //System.out.println("collision between ball " + ball1.getID() + " & ball " + ball2.getID() + ". distance: " + distance);
+        //We now can be sure that there was a collision.
+        //Calculate more collision info, such as timing, and save the collision event
         calculateBallBallCollisionInfo(ball1, ball2, timeStep);
-        return true;
     }
 
-    private boolean doTargetCollisionDetection(Ball ball, Target target, float timeStep){
+    //This is almost exactly the same as doBallCollisionDetection.
+    //However, I think it is more clear to have a separate method, so we can name variables more
+    // accurately, and avoid checking the type for any different code that is needed.
+    private void doTargetCollisionDetection(Ball ball, Target target, float timeStep){
         PointF ballCenter;
         PointF targetCenter;
 
@@ -206,11 +150,12 @@ public class CollisionDetection {
         distance = distanceVector.length();
 
         if (distance >= (ball.getRadius() + target.getRadius())){
-            return false;
+            return;
         }
 
-        calculateBallPointCollisionInfo(ball,targetCenter,target,timeStep,target.getRadius());
-        return true;
+        //We now can be sure that there was a collision.
+        //Calculate more collision info, such as timing, and save the collision event
+        calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius());
     }
 
     private void calculateBallBoundaryCollisionInfo(Ball ball, penetrationHistory pHistory, Interactable obstacle, float timeStep){
@@ -224,7 +169,7 @@ public class CollisionDetection {
         PointF prevVelocityStep = new PointF(velocity.x * timeStep, velocity.y * timeStep);
 
         //Calculate the angle of the ball's velocity against the boundary axis
-        double prevAngle = Math.acos(dotProduct(boundaryAxis, velocity) / (boundaryAxis.length() * velocity.length()));
+        double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, velocity) / (boundaryAxis.length() * velocity.length()));
 
         //Use prev angle and basic trig to calculate how far the ball traveled through the obstacle (hypotenuse)
         double hypotenuse = Math.abs(penetration) / Math.cos(prevAngle);
@@ -329,48 +274,35 @@ public class CollisionDetection {
         }
     }
 
-    private boolean doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
+    private void doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
 
-
-        PointF ballCenter = new PointF();
-        PointF obstacleCenter = new PointF();
-        PointF[] obstacleCoords;
-
-        PointF normalAxis = new PointF();
-        float radius;
-
-        boolean gapDetected;
-
-        //Get vertexes for obstacle
-        //Get radius/center for ball
-        //gather info
-        ballCenter.set(ball.getCenter());
-        obstacleCenter.set(obstacle.getCenter());
-        obstacleCoords = obstacle.get2dCoordArray();
-        radius = ball.getRadius();
         //reset projection history
         clearProjectionHistory();
 
-        //find distance to closest vertex and normalize
+        //gather info
+        PointF ballCenter = ball.getCenter();
+        PointF[] obstacleCoords = obstacle.get2dCoordArray();
+        float radius = ball.getRadius();
+
+        //First, we will check the nearest vertex axis.
+        //find distance to closest vertex
         PointF nearestVertex = getNearestVertex(obstacleCoords, ballCenter);
-        vectorPrint(nearestVertex, "&&&&nearestVertex");
         PointF nearestVertexToBall = new PointF(nearestVertex.x - ballCenter.x,nearestVertex.y - ballCenter.y);
-        vectorPrint(nearestVertexToBall, "-----boundary axis vector");
 
         //normalize vector
         float nearestVertexLength = nearestVertexToBall.length();
-        normalAxis = new PointF(nearestVertexToBall.x / nearestVertexLength, nearestVertexToBall.y / nearestVertexLength);
+        PointF normalAxis = new PointF(nearestVertexToBall.x / nearestVertexLength, nearestVertexToBall.y / nearestVertexLength);
 
         //Determine if a gap exists in the projection
-        gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, nearestVertex, true);
+        boolean gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, nearestVertex, true);
 
         if (gapDetected) {
             //definitely no collision, exit
-            return false;
+            return;
         }
 
-        //or else we need to keep on going
-
+        //or else we need to keep on going.
+        //Now, do a projection test on every vertex pair.
         //calculate normal axis for each vertex pair, and project all the points onto each normal axis
         for (int i = 0; i < obstacleCoords.length; i++) {
             normalAxis = makeNormalVectorBetweenPoints(obstacleCoords, i);
@@ -380,15 +312,13 @@ public class CollisionDetection {
 
             if (gapDetected) {
                 //definitely no collision, exit
-                return false;
+                return;
             }
         }
 
-        //System.out.println("time step: " + timeStep);
-
         //Collision has occurred.
+        //Need to calculate timing and save collision info
         getBoundaryCollisionInfo(ball, obstacle, timeStep);
-        return true;
     }
 
     private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index){
@@ -434,117 +364,6 @@ public class CollisionDetection {
         return collisionAxis;
     }
 
-
-    //A reasonable question- Why are we splitting this into two methods?
-    // Why don't we just go through all collisions, and check obstacle type, to determine
-    //which calculateVelocity method to use?
-    // ...
-    // In order to better handle an edge case involving a ball simultaneously colliding with
-    // a boundary and another ball, it makes more sense to handle boundary collisions first
-    public void handleBoundaryCollisions(){
-        for (CollisionHistory currentCollision : mBoundaryCollisions){
-            calculateVelocityBorderCollision(currentCollision);
-        }
-    }
-
-    public void handleBallCollisions(){
-        for (CollisionHistory currentCollision : mBallCollisions){
-            calculateVelocityBallCollision(currentCollision);
-        }
-    }
-
-    private void calculateVelocityBorderCollision(CollisionHistory collision){
-        /*
-        System.out.println("Border center: " + collision.getObstacle().getCenter());
-        System.out.println("Boundary axis: " + collision.getBoundaryAxis());
-        System.out.println("Collision time: " + collision.getTime());
-        System.out.println("Ball center: " + collision.getBall().getCenter());
-        System.out.println("Ball old velocity: " + collision.getBall().getVelocity().x + ";" + collision.getBall().getVelocity().y);
-        */
-
-
-        Ball ball = collision.getBall();
-        float velocityChange;
-        PointF velocityChangeVector;
-        PointF newVelocity;
-        PointF boundaryAxis = collision.getBoundaryAxis();
-        PointF oldVelocity = ball.getVelocity(collision.getTime());
-
-        velocityChange = 2 * dotProduct(oldVelocity, boundaryAxis);
-        velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
-        newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
-        newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
-        ball.setVelocity(newVelocity);
-
-        //System.out.println("Ball new velocity: " + newVelocity.x + ";" + newVelocity.y);
-
-    }
-
-    private void calculateVelocityBallCollision(CollisionHistory collision){
-
-        //System.out.println("Ball collision " + collision.hashCode());
-        //System.out.println("time: " + collision.getTime());
-
-        //get balls
-        Ball ball1 = collision.getBall();
-        Ball ball2 = (Ball) collision.getObstacle();
-
-        //get tangent vector and normal vector of the collision
-        PointF UTangentVector = collision.getBoundaryAxis();
-        PointF UNormalVector = new PointF(UTangentVector.y, -UTangentVector.x);
-        //System.out.println("boundary axis length: " + collision.getBoundaryAxis().length());
-
-        //get velocities for balls
-        PointF ball1velocity = ball1.getAvailableVelocity(collision.getTime());  //if a ball collides with more than one other ball,
-        PointF ball2velocity = ball2.getAvailableVelocity(collision.getTime());  //available velocity will differ from normal velocity
-        //System.out.println("ball " + ball1.getID() + " available velocity: " + ball1velocity.x + ";" + ball1velocity.y);
-        //System.out.println("ball " + ball2.getID() + " available velocity: " + ball2velocity.x + ";" + ball2velocity.y);
-
-        //determine component velocities for ball1 / ball2 in the tangent / normal directions
-        float velocity1tangent = dotProduct(ball1velocity, UTangentVector);
-        float velocity1normal = dotProduct(ball1velocity, UNormalVector);
-        float velocity2tangent = dotProduct(ball2velocity, UTangentVector);
-        float velocity2normal = dotProduct(ball2velocity, UNormalVector);
-
-        //calculate new tangential velocities (they are the same, no force between objects in tangential direction)
-        float newVelocity1tangent = velocity1tangent;
-        float newVelocity2tangent = velocity2tangent;
-
-        //calculate new normal velocities ( same as the normal component of the other ball)
-        float newVelocity1normal = velocity2normal;
-        float newVelocity2normal = velocity1normal;
-
-        //convert scalar tangential & normal values into vectors
-        PointF newVelocity1normalVector = new PointF(newVelocity1normal * UNormalVector.x, newVelocity1normal * UNormalVector.y);
-        PointF newVelocity1tangentVector = new PointF(newVelocity1tangent * UTangentVector.x, newVelocity1tangent * UTangentVector.y);
-        PointF newVelocity2normalVector = new PointF(newVelocity2normal * UNormalVector.x, newVelocity2normal * UNormalVector.y);
-        PointF newVelocity2tangentVector = new PointF(newVelocity2tangent * UTangentVector.x, newVelocity2tangent * UTangentVector.y);
-
-        //add tangential and normal components together to get sum velocity
-        PointF newVelocity1 = new PointF(newVelocity1normalVector.x + newVelocity1tangentVector.x, newVelocity1normalVector.y + newVelocity1tangentVector.y);
-        PointF newVelocity2 = new PointF(newVelocity2normalVector.x + newVelocity2tangentVector.x, newVelocity2normalVector.y + newVelocity2tangentVector.y);
-
-        //subtract for elasticity
-        newVelocity1.set(newVelocity1.x * GameState.ELASTIC_CONSTANT, newVelocity1.y * GameState.ELASTIC_CONSTANT);
-        newVelocity2.set(newVelocity2.x * GameState.ELASTIC_CONSTANT, newVelocity2.y * GameState.ELASTIC_CONSTANT);
-
-        //set velocity
-        ball1.addNewVelocity(newVelocity1);
-        ball2.addNewVelocity(newVelocity2);
-        //System.out.println("ball " + ball1.getID() + " new velocity: " + newVelocity1.x + ";" + newVelocity1.y);
-        //System.out.println("ball " + ball2.getID() + " new velocity: " + newVelocity2.x + ";" + newVelocity2.y);
-    }
-
-
-    private double getAngleOfVector(PointF vector){
-        double collisionAngle = Math.atan((double) vector.y / vector.x);
-        if ((vector.y < 0) && (vector.x < 0)){
-            collisionAngle = collisionAngle + 3.14159265359;
-        }
-
-        return collisionAngle;
-    }
-
     private PointF getNearestVertex(PointF[] obstacleCoords, PointF ballCenter){
         float smallestLength = GameState.LARGE_NUMBER;
         float currentLength;
@@ -569,7 +388,7 @@ public class CollisionDetection {
         float vertexMax = GameState.SMALL_NUMBER;
 
         for (int i = 0; i < obstacleCoords.length; i++) {
-            float vertexProjection = dotProduct(normalAxis, obstacleCoords[i]);
+            float vertexProjection = GameState.dotProduct(normalAxis, obstacleCoords[i]);
 
             if (vertexProjection > vertexMax)
                 vertexMax = vertexProjection;
@@ -578,7 +397,7 @@ public class CollisionDetection {
         }
 
         //project circle points onto normal axis (max is radius, min is negative radius)
-        float circleProjection = dotProduct(normalAxis, ballCenter);
+        float circleProjection = GameState.dotProduct(normalAxis, ballCenter);
         float circleMin = circleProjection - radius;
         float circleMax = circleProjection + radius;
 
@@ -597,65 +416,27 @@ public class CollisionDetection {
 
     }
 
-    private float dotProduct(PointF vector1, PointF vector2){
-        return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
-    }
+    //pre checks before getting into detailed testing
+    public boolean coarseCollisionTesting(Ball ball, Interactable obstacle){
 
-    //pre checks before getting into in depth checks
-    public boolean testBoundingBoxes(Ball ball, Interactable obstacle){
-
-        //first, we need to make sure the other object has already been moved this frame.
-        if (!obstacle.hasObjectMoved()){
-            return false;
+        //if the other object is a ball, we need to make sure it has already moved this frame.
+        if (obstacle.getType() == GameState.OBSTACLE_BALL){
+            Ball tempBall = (Ball) obstacle;
+            if (!tempBall.hasBallMoved()){
+                return false;
+            }
         }
 
-        //test x collision
+        //Test Bounding boxes
+        //x axis
         if (((ball.getMaxX()) >= obstacle.getMinX()) && (obstacle.getMaxX() >= ball.getMinX())){
-            //test y collision
+            //y axis
             if (((ball.getMaxY()) >= obstacle.getMinY()) && (obstacle.getMaxY() >= ball.getMinY())) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    public void updateCollisionCollections(ArrayList<CollisionHistory> collisions){
-
-        for (CollisionHistory currentCollision : collisions) {
-
-            if (currentCollision.getObstacle().getType() == GameState.OBSTACLE_BALL) {
-
-                Ball currentBall = currentCollision.getBall();
-                Ball otherBall = (Ball) currentCollision.getObstacle();
-
-                currentBall.increaseCollisionCount();
-                otherBall.increaseCollisionCount();
-
-                mBallCollisions.add(currentCollision);
-
-            } else {
-                mBoundaryCollisions.add(currentCollision);
-                currentCollision.getBall().increaseCollisionCount();
-            }
-        }
-    }
-
-    public ArrayList<Target> getTargetCollisions(float firstCollisionTime){
-        ArrayList<Target> hitTargets = new ArrayList<>();
-
-        for (CollisionHistory collision : mCollisions){
-            if (collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
-                if (collision.getTime() <= firstCollisionTime){
-                    hitTargets.add((Target) collision.getObstacle());
-                }
-            }
-        }
-        return hitTargets;
-    }
-
-    private void vectorPrint(PointF vector, String msg){
-        //System.out.println(msg + ": " + vector.x + ";" + vector.y);
     }
 
 }

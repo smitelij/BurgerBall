@@ -54,6 +54,16 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        // Disable depth testing -- we're 2D only.
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+
+        //Disable backface culling
+        GLES20.glDisable(GLES20.GL_CULL_FACE);
+
+        // Enable transparency
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
         //REALLY IMPORTANT to keep here!
         //it seems that the drawable objects must be initialized no earlier than this point
         //or else openGL has no reference to them.
@@ -85,6 +95,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 Thread.sleep(1500);
             } catch (Exception e) {
             }
+        }
+
+        if (! mGame.isLevelActive()){
+            return;
         }
 
         mGame.advanceFrame();
