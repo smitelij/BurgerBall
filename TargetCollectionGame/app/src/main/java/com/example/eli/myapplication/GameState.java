@@ -20,7 +20,7 @@ public class GameState {
     //========================
 
     //How far objects will advance per frame. Should be set lower when FPS is higher, and higher when FPS is lower.
-    static final float FRAME_SIZE = 1f;
+    static final float FRAME_SIZE = 0.5f;
     //this is a strange flag that will change the frame size automatically, based on how fast the game is running.
     // Seems to make it pretty choppy, but we'll keep it as an option for now.
     static final boolean VARIABLE_FRAME_SIZE = false;
@@ -30,7 +30,7 @@ public class GameState {
     static final boolean FRAME_RATE_CAP = false;
     //Maximum 'frames' (calls to onDrawFrame in MyGLRenderer) that are allowed per second.
     //Does nothing if FRAME_RATE_CAP is set to false
-    static final long FRAME_RATE_CAP_SIZE = 8;
+    static final long FRAME_RATE_CAP_SIZE = 36;
     //This setting will determine an automatic frame rate cap based on past performance.
     //It will do nothing if FRAME_RATE_CAP is set to false.
     static final boolean AUTO_CAP_FRAME_RATE_SIZE = false;
@@ -70,7 +70,7 @@ public class GameState {
     static final float[] ballColor = {0.9f, 0.2f, 0.9f, 1.0f};*/
 
     //Size of the ball. May eventually move it to a level-controlled variable to allow more flexibility
-    static final float ballRadius = 8f;
+    static final float ballRadius = 12f;
 
     //Get dimensions of screen
     private static final int mHeight = Resources.getSystem().getDisplayMetrics().heightPixels;

@@ -27,33 +27,33 @@ public class Borders {
             GameState.FULL_WIDTH - GameState.BORDER_WIDTH, GameState.FULL_HEIGHT - GameState.BORDER_WIDTH, 0.0f};  //top right
 
     private static float borderLeftCoords[] = {
-            0.0f,  GameState.FULL_HEIGHT, 0.0f,   // top left
-            0.0f, 0.0f, 0.0f,   // bottom left
+            0.0f - (GameState.BORDER_WIDTH * 2),  GameState.FULL_HEIGHT, 0.0f,   // top left
+            0.0f - (GameState.BORDER_WIDTH * 2), 0.0f, 0.0f,   // bottom left
             GameState.BORDER_WIDTH, 0.0f, 0.0f,   // bottom right
             GameState.BORDER_WIDTH, GameState.FULL_HEIGHT, 0.0f }; // top right
 
     private static float borderRightCoords[] = {
             GameState.FULL_WIDTH - GameState.BORDER_WIDTH,  GameState.FULL_HEIGHT, 0.0f,   // top left
             GameState.FULL_WIDTH - GameState.BORDER_WIDTH,  0.0f, 0.0f,   // bottom left
-            GameState.FULL_WIDTH,  0.0f, 0.0f,   // bottom right
-            GameState.FULL_WIDTH,  GameState.FULL_HEIGHT, 0.0f }; // top right
+            GameState.FULL_WIDTH + (GameState.BORDER_WIDTH * 2),  0.0f, 0.0f,   // bottom right
+            GameState.FULL_WIDTH + (GameState.BORDER_WIDTH * 2),  GameState.FULL_HEIGHT, 0.0f }; // top right
 
     private static float borderTopCoords[] = {
-            0.0f,  GameState.FULL_HEIGHT, 0.0f,   // top left
+            0.0f,  GameState.FULL_HEIGHT + (GameState.BORDER_WIDTH * 3), 0.0f,   // top left
             0.0f, GameState.FULL_HEIGHT - GameState.BORDER_WIDTH, 0.0f,   // bottom left
             GameState.FULL_WIDTH, GameState.FULL_HEIGHT - GameState.BORDER_WIDTH, 0.0f,   // bottom right
-            GameState.FULL_WIDTH, GameState.FULL_HEIGHT, 0.0f }; // top right
+            GameState.FULL_WIDTH, GameState.FULL_HEIGHT + (GameState.BORDER_WIDTH * 3), 0.0f }; // top right
 
     private static float borderBottomRightCoords[] = {
             (GameState.FULL_WIDTH / 2),  GameState.BORDER_WIDTH * 2, 0.0f,   // top left
-            (GameState.FULL_WIDTH / 2),  0.0f, 0.0f,   // bottom left
-            GameState.FULL_WIDTH, 0.0f, 0.0f,   // bottom right
+            (GameState.FULL_WIDTH / 2),  0.0f - (GameState.BORDER_WIDTH * 2), 0.0f,   // bottom left
+            GameState.FULL_WIDTH, 0.0f - (GameState.BORDER_WIDTH * 2), 0.0f,   // bottom right
             GameState.FULL_WIDTH,  2 * GameState.BORDER_WIDTH , 0.0f }; // top right
 
     private static float borderBottomLeftCoords[] = {
             0.0f,  2 * GameState.BORDER_WIDTH, 0.0f,   // top left
-            0.0f, 0.0f, 0.0f,   // bottom left
-            (GameState.FULL_WIDTH / 2), 0.0f, 0.0f,   // bottom right
+            0.0f, 0.0f - (GameState.BORDER_WIDTH * 2), 0.0f,   // bottom left
+            (GameState.FULL_WIDTH / 2), 0.0f - (GameState.BORDER_WIDTH * 2), 0.0f,   // bottom right
             (GameState.FULL_WIDTH / 2), GameState.BORDER_WIDTH * 2, 0.0f }; // top right
 
     private static float testCoords[] = {
@@ -84,11 +84,14 @@ public class Borders {
         mBorderBottomLeft = new Polygon(borderBottomLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         //mBorderBottomLeft.setColor(GameState.borderColor);
 
+        testP = new Polygon(testCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+
         allBorders.add(mBorderLeft);
         allBorders.add(mBorderRight);
         allBorders.add(mBorderTop);
         allBorders.add(mBorderBottomRight);
         allBorders.add(mBorderBottomLeft);
+        allBorders.add(testP);
 
     }
 

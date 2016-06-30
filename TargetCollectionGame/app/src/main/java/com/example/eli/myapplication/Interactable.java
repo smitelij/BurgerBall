@@ -100,13 +100,17 @@ public class Interactable {
     private PointF[] m2dCoordArray;
 
     private FloatBuffer mTextureBuffer;  // buffer holding the texture coordinates
-    private float texture[] = {
-            // Mapping coordinates for the vertices
-            0.0f, 0.0f,     // top left     (V2)
-            1.0f, 0.0f,     // bottom left  (V1)
+
+    private float mXCoefficient;
+    private float mYCoefficient;
+
+    private float texture[];/* = {
+            // Mapping coordinates for the vertices (y,x)
+            0.0f, 0.0f,     // bottom left     (V2)
+            1.0f, 0.0f,     // top left  (V1)
             1.0f, 1.0f,     // top right    (V4)
             0.0f, 1.0f      // bottom right (V3)
-    };
+    };*/
 
 
     //texture pointer
@@ -116,6 +120,9 @@ public class Interactable {
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Interactable(float[] borderCoords, int type, int texturePointer) {
+
+        calculateTextureCoefficients(borderCoords);
+        setTextureMappingCoords();
 
         mTextureDataHandle = texturePointer;
         /*
@@ -365,6 +372,54 @@ public class Interactable {
 
     public int getType(){
         return mType;
+    }
+
+    private void calculateTextureCoefficients(float[] borderCoords){
+        float minX = GameState.LARGE_NUMBER;
+        float maxX = GameState.SMALL_NUMBER;
+        float minY = GameState.LARGE_NUMBER;
+        float maxY = GameState.SMALL_NUMBER;
+
+        for (int index=0; index<borderCoords.length;index++){
+            //x coordinates will always be in the first location
+            if (index % 3 == 0){
+                if (borderCoords[index] < minX)
+                    minX = borderCoords[index];
+                if (borderCoords[index] > maxX)
+                    maxX = borderCoords[index];
+            //y coordinates are in the second location
+            } else if (index % 3 == 1){
+                if (borderCoords[index] < minY)
+                    minY = borderCoords[index];
+                if (borderCoords[index] > maxY)
+                    maxY = borderCoords[index];
+            }
+            //and the third location (z) is unused
+
+        }
+
+        float xDifference = maxX - minX;
+        float yDifference = maxY - minY;
+
+        if (xDifference > yDifference){
+            mXCoefficient = xDifference / yDifference;
+            mYCoefficient = 1;
+        } else {
+            mYCoefficient = yDifference / xDifference;
+            mXCoefficient = 1;
+        }
+    }
+
+    private void setTextureMappingCoords(){
+        texture = new float[]{
+                // Mapping coordinates for the vertices (y,x)
+                0.0f, 0.0f,     // bottom left     (V2)
+                1.0f * mYCoefficient, 0.0f,     // top left  (V1)
+                1.0f * mYCoefficient, 1.0f * mXCoefficient,     // top right    (V4)
+                0.0f, 1.0f * mXCoefficient      // bottom right (V3)
+        };
+
+
     }
 
 

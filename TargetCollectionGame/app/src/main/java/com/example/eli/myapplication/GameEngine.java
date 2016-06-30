@@ -129,13 +129,14 @@ public class GameEngine {
                 ball.setVelocity(initialVelocity);
             }
 
-            //check if we can add the ball right now
+            //check if we can activate the ball right now
             if (canActivateBall(ball)) {
+                //'activating' the ball is as easy as adding to the collections
                 mActiveBalls.add(ball);
                 allActiveObjects.add(ball);
                 mCurrentActiveBallID++;
                 mLevelActive = true;
-                mBallWaiting = false;
+                mBallWaiting = false; //clear the flag in case it got actiated
                 System.out.println("Ball activated." );
             //if we can't activate the ball, set the waiting flag.
             } else {
@@ -146,22 +147,30 @@ public class GameEngine {
 
     }
 
+    //-----------------
+    //This function does checks to see if we can currently activate a ball.
+    //PARAMS:
+    //  newBall- Ball object, used to get the current ball radius
+    //RETURNS:
+    // True if we can activate the ball, false if we can't.
+    //
     private boolean canActivateBall(Ball newBall){
         //Checks before we can activate a ball:
         //1: The ball collection must not be in use
         //2: The firing zone must be clear
         if ((mBallCollectionInUse)||(!isFiringZoneClear(newBall))){
-            mBallWaiting = true;
             return false;
 
-        //Or else we can activate the ball, because ball collection is not in use.
-        // clear the flags.
+        //Or else we can activate the ball.
         } else {
-            mBallWaiting = false;
             return true;
         }
     }
 
+    //-------------------------
+    //This function checks if any other balls are currently in the firing zone.
+    //By firing zone, we just mean the starting location of the new ball.
+    //Used for a check in canActivateBall.
     private boolean isFiringZoneClear(Ball newBall){
 
         PointF newBallCenter = newBall.getCenter();
@@ -525,8 +534,8 @@ public class GameEngine {
         // create nearest filtered texture
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 
         // Use Android GLUtils to specify a two-dimensional texture image from our bitmap
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
