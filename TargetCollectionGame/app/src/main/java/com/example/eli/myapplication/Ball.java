@@ -42,7 +42,7 @@ public class Ball extends Interactable{
     boolean mHasMovedForward;
 
     //Keeps track of the collisions that were detected in the current frame with this ball as the main ball.
-    ArrayList<CollisionHistory> mCollisions;
+    ArrayList<Collision> mCollisions;
     //Keeps track of how many objects this ball collided with in this frame
     //(only > 1 if multiple collisions happened at the exact same time)
     //(includes collisions where this ball is not the main ball)
@@ -55,7 +55,7 @@ public class Ball extends Interactable{
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Ball(float[] borderCoords, PointF velocity, float radius, float[] color, int texturePointer) {
+    public Ball(float[] borderCoords, PointF velocity, float radius, int texturePointer) {
 
         //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
         super(borderCoords, GameState.OBSTACLE_BALL, texturePointer);
@@ -167,12 +167,12 @@ public class Ball extends Interactable{
         mHasMovedForward = false;
     }
 
-    public void addCollision(CollisionHistory currentCollision){
+    public void addCollision(Collision currentCollision){
         mCollisions.add(currentCollision);
         mNumOfCollisions++;
     }
 
-    public ArrayList<CollisionHistory> getCollisions(){
+    public ArrayList<Collision> getCollisions(){
         return mCollisions;
     }
 

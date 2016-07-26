@@ -1,5 +1,6 @@
 package com.example.eli.myapplication;
 
+import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -11,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
+
+    public final static String LEVEL_MESSAGE = "com.example.eli.myapplication.LEVEL_MESSAGE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,5 +53,45 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void sendMessage(View view) {
+        Intent intent = new Intent(this, OpenGLES20Activity.class);
+        String levelMsg;
+
+        switch (view.getId()){
+
+            case (R.id.level1):
+                levelMsg = "level1";
+                intent.putExtra(LEVEL_MESSAGE, levelMsg);
+                startActivity(intent);
+                break;
+
+            case (R.id.level2):
+                levelMsg = "level2";
+                intent.putExtra(LEVEL_MESSAGE, levelMsg);
+                startActivity(intent);
+                break;
+
+            case (R.id.level3):
+                levelMsg = "level3";
+                intent.putExtra(LEVEL_MESSAGE, levelMsg);
+                startActivity(intent);
+                break;
+
+            case (R.id.level4):
+                levelMsg = "level4";
+                intent.putExtra(LEVEL_MESSAGE, levelMsg);
+                startActivity(intent);
+                break;
+
+            case (R.id.level5):
+                levelMsg = "level5";
+                intent.putExtra(LEVEL_MESSAGE, levelMsg);
+                startActivity(intent);
+                break;
+
+        }
+    }
+
 }
 

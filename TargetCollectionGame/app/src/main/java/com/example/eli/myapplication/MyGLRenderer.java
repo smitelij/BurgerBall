@@ -43,6 +43,12 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
 
+    private long mEndTime;
+    private long mStartTime = 0;
+    private long[] sleepTimes = new long[10];
+    private int frameCount = 0;
+    private long mFrameRateCap = (1000 / GameState.FRAME_RATE_CAP_SIZE);
+
 
     private float mAngle;
     private int mSlowMo = 0;
@@ -50,6 +56,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+
+        System.out.println("on surface created.");
 
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -68,8 +76,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         //it seems that the drawable objects must be initialized no earlier than this point
         //or else openGL has no reference to them.
         mGame.loadLevel();
+        //mGame.drawObjects();
 
         setVPMatrix();
+
+        mGame.drawObjects();
 
     }
 
@@ -86,23 +97,31 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 unused) {
-
-        // Draw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
+/*
         if (mSlowMo==1) {
             try {
                 Thread.sleep(1500);
             } catch (Exception e) {
             }
-        }
+        } */
 
         if (! mGame.isLevelActive()){
+
+            mGame.drawObjects(); /*
+            if (! mGame.hasLevelBeenRendered()){
+                //mGame.drawObjects();
+            }
+            */
+
             return;
         }
 
         mGame.advanceFrame();
         mGame.drawObjects();
+
+        if (GameState.FRAME_RATE_CAP){
+            capFrameRate();
+        }
 
     }
 
@@ -207,6 +226,56 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     public void slowMoFlip(){
         mSlowMo = (mSlowMo+1) % 2;
+    }
+
+    private void capFrameRate(){
+
+        if (mStartTime == 0){
+            mStartTime = System.currentTimeMillis();
+            return;
+        }
+
+        mEndTime = System.currentTimeMillis();
+
+        if (GameState.AUTO_CAP_FRAME_RATE_SIZE){
+            if ((frameCount % 10) == 0) {
+                long avgFrameSizeLastTen = (long) (mGame.getAvgFrameLength() * .94);
+                long avgSleepTimeLastTen = getAvgSleepTime();
+                System.out.println("Avg frame size: " + avgFrameSizeLastTen);
+                System.out.println("Avg sleep time: " + avgSleepTimeLastTen);
+                long desiredSleepTime = (long) (mFrameRateCap * 0.25);
+                long diffFromDesiredSleep = avgSleepTimeLastTen - desiredSleepTime;
+                System.out.println("Diff from desired sleep: " + diffFromDesiredSleep);
+                mFrameRateCap = avgFrameSizeLastTen - (diffFromDesiredSleep/2);
+            }
+
+            if (mFrameRateCap <= 0){
+                mFrameRateCap = (1000 / GameState.FRAME_RATE_CAP_SIZE);
+            }
+        }
+
+        long sleepTime = mFrameRateCap - (mEndTime - mStartTime);
+        sleepTimes[frameCount % 10] = sleepTime;
+        frameCount++;
+        System.out.println("MS per frame:" + mFrameRateCap);
+        System.out.println("Length of last frame: " + (mEndTime - mStartTime));
+        System.out.println("Sleep time: " + sleepTime);
+        if (sleepTime > 0) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (Exception e) {
+            }
+        }
+        mStartTime = System.currentTimeMillis();
+
+    }
+
+    private long getAvgSleepTime(){
+        long sum = 0;
+        for (int index = 0; index < 10; index++){
+            sum = sum + sleepTimes[index];
+        }
+        return sum/10;
     }
 }
 

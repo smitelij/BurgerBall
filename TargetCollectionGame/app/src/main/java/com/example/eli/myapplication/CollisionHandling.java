@@ -9,15 +9,15 @@ import java.util.ArrayList;
  */
 public class CollisionHandling {
 
-    ArrayList<CollisionHistory> mCollisions;
-    ArrayList<CollisionHistory> mBoundaryCollisions = new ArrayList<>();
-    ArrayList<CollisionHistory> mBallCollisions = new ArrayList<>();
+    ArrayList<Collision> mCollisions;
+    ArrayList<Collision> mBoundaryCollisions = new ArrayList<>();
+    ArrayList<Collision> mBallCollisions = new ArrayList<>();
 
-    public CollisionHandling(ArrayList<CollisionHistory> allCollisions){
+    public CollisionHandling(ArrayList<Collision> allCollisions){
         mCollisions = allCollisions;
     }
 
-    public ArrayList<CollisionHistory> getFirstCollision() {
+    public ArrayList<Collision> getFirstCollision() {
 
         //sanity check
         if (mCollisions.size() == 0){
@@ -25,11 +25,11 @@ public class CollisionHandling {
         }
 
         //Initialize arraylist
-        ArrayList<CollisionHistory> firstCollision = new ArrayList<>();
-        float firstCollisionTime = GameState.FRAME_SIZE; //time should always be less than 1
+        ArrayList<Collision> firstCollision = new ArrayList<>();
+        float firstCollisionTime = GameState.LARGE_NUMBER; //time should always be less than this big number...
 
         //loop through all finding the earliest collision
-        for (CollisionHistory collision : mCollisions){
+        for (Collision collision : mCollisions){
 
             //Don't care about target collisions here-  they don't affect any trajectories
             if(collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
@@ -72,18 +72,18 @@ public class CollisionHandling {
     // In order to better handle an edge case involving a ball simultaneously colliding with
     // a boundary and another ball, it makes more sense to handle boundary collisions first
     public void handleBoundaryCollisions(){
-        for (CollisionHistory currentCollision : mBoundaryCollisions){
+        for (Collision currentCollision : mBoundaryCollisions){
             calculateVelocityBorderCollision(currentCollision);
         }
     }
 
     public void handleBallCollisions(){
-        for (CollisionHistory currentCollision : mBallCollisions){
+        for (Collision currentCollision : mBallCollisions){
             calculateVelocityBallCollision(currentCollision);
         }
     }
 
-    private void calculateVelocityBorderCollision(CollisionHistory collision){
+    private void calculateVelocityBorderCollision(Collision collision){
         /*
         System.out.println("Border center: " + collision.getObstacle().getCenter());
         System.out.println("Boundary axis: " + collision.getBoundaryAxis());
@@ -110,7 +110,7 @@ public class CollisionHandling {
 
     }
 
-    private void calculateVelocityBallCollision(CollisionHistory collision){
+    private void calculateVelocityBallCollision(Collision collision){
 
         //System.out.println("Ball collision " + collision.hashCode());
         //System.out.println("time: " + collision.getTime());
@@ -165,9 +165,9 @@ public class CollisionHandling {
         //System.out.println("ball " + ball2.getID() + " new velocity: " + newVelocity2.x + ";" + newVelocity2.y);
     }
 
-    public void updateCollisionCollections(ArrayList<CollisionHistory> collisions){
+    public void updateCollisionCollections(ArrayList<Collision> collisions){
 
-        for (CollisionHistory currentCollision : collisions) {
+        for (Collision currentCollision : collisions) {
 
             if (currentCollision.getObstacle().getType() == GameState.OBSTACLE_BALL) {
 
@@ -189,7 +189,7 @@ public class CollisionHandling {
     public ArrayList<Target> getTargetCollisions(float firstCollisionTime){
         ArrayList<Target> hitTargets = new ArrayList<>();
 
-        for (CollisionHistory collision : mCollisions){
+        for (Collision collision : mCollisions){
             if (collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
                 if (collision.getTime() <= firstCollisionTime){
                     hitTargets.add((Target) collision.getObstacle());

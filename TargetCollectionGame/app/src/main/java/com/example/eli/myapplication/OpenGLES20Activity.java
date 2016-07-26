@@ -32,6 +32,7 @@ public class OpenGLES20Activity extends Activity {
         // Create a GLSurfaceView instance and set it
         // as the ContentView for this Activity
         mGLView = new MyGLSurfaceView(this, game);
+        mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         setContentView(mGLView);
     }
 

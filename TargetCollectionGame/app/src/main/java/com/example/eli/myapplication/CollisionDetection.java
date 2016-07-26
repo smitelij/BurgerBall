@@ -6,17 +6,20 @@ import java.util.ArrayList;
 
 
 /**
- * Created by Eli on 4/3/2016.
+ * This class contains the methods used to detect collisions between balls and obstacles.
+ * It is intended to be initialized once per frame step within the GameEngine loop, because
+ * a collection of Collisions is maintained between each iteration. This collection is
+ * reviewed upon completion of collision detection by the CollisionHandling class.
  */
 public class CollisionDetection {
 
-    private class penetrationHistory{
+    private class Penetration {
         PointF mNormalAxis;
         float mPenetrationDistance;
         PointF mVertex;
         boolean mNearestVertexAxis;
 
-        penetrationHistory(PointF normalAxis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
+        Penetration(PointF normalAxis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
             mNormalAxis = normalAxis;
             mPenetrationDistance = penetrationDistance;
             mVertex = vertex;
@@ -24,34 +27,34 @@ public class CollisionDetection {
         }
     }
 
-    private ArrayList<penetrationHistory> pHistory = new ArrayList<penetrationHistory>();
-    private ArrayList<CollisionHistory> mCollisions = new ArrayList<>();
+    private ArrayList<Penetration> penetrationHistory = new ArrayList<Penetration>();
+    private ArrayList<Collision> mCollisions = new ArrayList<>();
 
-    public ArrayList<CollisionHistory> getCollisions(){
+    public ArrayList<Collision> getCollisions(){
         return mCollisions;
     }
 
-    public void addProjectionToHistory(PointF axis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
-        pHistory.add(new penetrationHistory(axis, penetrationDistance, vertex, nearestVertexAxis));
+    public void addPenetrationToHistory(PointF axis, float penetrationDistance, PointF vertex, boolean nearestVertexAxis){
+        penetrationHistory.add(new Penetration(axis, penetrationDistance, vertex, nearestVertexAxis));
     }
 
-    public void clearProjectionHistory(){
-        pHistory.clear();
+    public void clearPenetrationHistory(){
+        penetrationHistory.clear();
     }
 
     //closest axis = minimum penetration
-    public penetrationHistory findClosestAxis(Ball ball, Polygon obstacle){
+    public Penetration findClosestAxis(Ball ball, Polygon obstacle){
 
          //sanity check
-        if (pHistory.size() == 0) {
+        if (penetrationHistory.size() == 0) {
             return null;
         }
 
         //set the defaults
-        penetrationHistory minHistoryItem = pHistory.get(0);
-        float minPenetration = pHistory.get(0).mPenetrationDistance;
+        Penetration minHistoryItem = penetrationHistory.get(0);
+        float minPenetration = penetrationHistory.get(0).mPenetrationDistance;
 
-        for (penetrationHistory history : pHistory){
+        for (Penetration history : penetrationHistory){
 
             //Since penetration distances are negative numbers, we want to find the largest value (i.e. closest to zero)
             //to find the minimum penetration.
@@ -92,6 +95,13 @@ public class CollisionDetection {
         return minHistoryItem;
     }
 
+    /**
+     * This helper method reduces complexity by calling one of three collision detection
+     * methods, based on the obstacle type. One other approach I considered was having
+     * each object type (Ball / Target / Obstacle) override an abstract collision detection method
+     * in Interactable. However, I rejected this due to the increased complexity this would add
+     * to each object class, preferring to keep all collision detection code isolated in one class.
+     */
     public void detailedCollisionTesting(Ball ball, Interactable object, float timeStep){
 
         if (object.getType()== GameState.OBSTACLE_BALL){
@@ -158,13 +168,24 @@ public class CollisionDetection {
         calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius());
     }
 
-    private void calculateBallBoundaryCollisionInfo(Ball ball, penetrationHistory pHistory, Interactable obstacle, float timeStep){
+    /**
+     * This method calculates the precise collision time between a ball and an obstacle.
+     * It makes use of a penetration object, which contains data about how far into an obstacle
+     * the ball penetrated, as well as the ball velocity and the current time step.
+     *
+     * PARAMS:
+     *   ball - The current ball
+     *   penetration - Object containing information about the penetration distance and axis
+     *   obstacle - The obstacle that has been struck
+     *   timeStep - The step (length) of the current iteration
+     */
+    private void calculateBallBoundaryCollisionInfo(Ball ball, Penetration penetration, Interactable obstacle, float timeStep){
 
-        //grab information from pHistory
-        PointF boundaryAxis = pHistory.mNormalAxis;
-        float penetration = pHistory.mPenetrationDistance;
+        //grab information from the penetration object
+        PointF boundaryAxis = penetration.mNormalAxis;
+        float penetrationDistance = penetration.mPenetrationDistance;
 
-        //get general info
+        //get general info about the ball and frame
         PointF velocity = ball.getAvgVelocity(timeStep);
         PointF prevVelocityStep = new PointF(velocity.x * timeStep, velocity.y * timeStep);
 
@@ -172,7 +193,7 @@ public class CollisionDetection {
         double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, velocity) / (boundaryAxis.length() * velocity.length()));
 
         //Use prev angle and basic trig to calculate how far the ball traveled through the obstacle (hypotenuse)
-        double hypotenuse = Math.abs(penetration) / Math.cos(prevAngle);
+        double hypotenuse = Math.abs(penetrationDistance) / Math.cos(prevAngle);
 
         //Calculate the collision time, based on the percent of velocity used before the collision, and the time step.
         //For example, if a ball uses 50% of velocity before colliding, and the time step was 0.5, then the collision occurred at 0.25.
@@ -184,8 +205,9 @@ public class CollisionDetection {
             collisionTime = 0.01f;
         }
 
-        //add this collision to the collection
-        mCollisions.add(new CollisionHistory(collisionTime, boundaryAxis, obstacle, ball));
+        //add this collision to the collection of collisions this frame
+        Collision curCollision = new Collision(collisionTime, boundaryAxis, obstacle, ball);
+        mCollisions.add(curCollision);
     }
 
 
@@ -220,7 +242,7 @@ public class CollisionDetection {
         PointF boundaryAxis = makeNormalVectorBetweenPoints(vertexArray, 0);
 
         //add this collision to the collection
-        mCollisions.add(new CollisionHistory(collisionTime, boundaryAxis, ball2, ball1));
+        mCollisions.add(new Collision(collisionTime, boundaryAxis, ball2, ball1));
     }
 
     private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle, float timeStep, float radius){
@@ -247,7 +269,7 @@ public class CollisionDetection {
         }
 
         //add this collision to the collection
-        mCollisions.add(new CollisionHistory(collisionTime, boundaryAxis, obstacle, ball));
+        mCollisions.add(new Collision(collisionTime, boundaryAxis, obstacle, ball));
     }
 
     //To calculate the collision time of two objects, we need three pieces of information:
@@ -277,7 +299,7 @@ public class CollisionDetection {
     private void doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
 
         //reset projection history
-        clearProjectionHistory();
+        clearPenetrationHistory();
 
         //gather info
         PointF ballCenter = ball.getCenter();
@@ -341,7 +363,7 @@ public class CollisionDetection {
     private void getBoundaryCollisionInfo(Ball ball, Polygon obstacle, float timeStep){
 
         //Find the most likely axis of penetration, based on depth of penetration.
-        penetrationHistory pHistory = findClosestAxis(ball, obstacle);
+        Penetration pHistory = findClosestAxis(ball, obstacle);
 
         //Calculate info based on whether the ball collided with a point or a flat wall.
         if (pHistory.mNearestVertexAxis){
@@ -410,13 +432,27 @@ public class CollisionDetection {
             return true;
         } else {
             //Penetration will be a negative number; because a positive number indicates a gap
-            addProjectionToHistory(normalAxis, Math.max(result1,result2), vertex, nearestVertexAxis);
+            addPenetrationToHistory(normalAxis, Math.max(result1, result2), vertex, nearestVertexAxis);
             return false;
         }
 
     }
 
-    //pre checks before getting into detailed testing
+    /**
+     * This method performs pre-checks to determine if two objects may reasonably be colliding.
+     * This consists of:
+     *  1) Making sure that if the obstacle is a ball, it has already been moved this frame
+     *     (If a ball hasn't moved yet, we must wait until later to test it)
+     *  2) Checking the bounding boxes, to see if they intersect on both the y and x axis.
+     *
+     * PARAMS
+     *   ball - The current ball being tested
+     *   obstacle - The current Interactable object being tested
+     *
+     * RETURNS
+     *   A boolean, true meaning they may be colliding, and detailed collision testing is needed.
+     *   False meaning they are definitely not colliding.
+     */
     public boolean coarseCollisionTesting(Ball ball, Interactable obstacle){
 
         //if the other object is a ball, we need to make sure it has already moved this frame.

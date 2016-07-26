@@ -31,6 +31,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
     private final MyGLRenderer mRenderer;
 
     private boolean mFiringBall;
+    private boolean firstBall = true;
     private GameEngine mGame;
 
     public MyGLSurfaceView(Context context, GameEngine game) {
@@ -43,6 +44,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
         mRenderer = new MyGLRenderer(game, context);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         setRenderer(mRenderer);
+        requestRender();
 
         mGame = game;
     }
@@ -55,6 +57,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
         // MotionEvent reports input details from the touch screen
         // and other input controls. In this case, you are only
         // interested in events where the touch position changed.
+
+        requestRender();
 
         float x = e.getX();
         float y = e.getY();
@@ -89,6 +93,11 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
                     PointF initialVelocity = GameState.calculateInitialVelocity(xChange,yChange);
                     mGame.activateBall(initialVelocity);
+                    if (firstBall) {
+                        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                        firstBall = false;
+                    }
+
                 }
 
                 return true;
