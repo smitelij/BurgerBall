@@ -98,6 +98,21 @@ public class MyGLSurfaceView extends GLSurfaceView {
                         firstBall = false;
                     }
 
+                    mGame.disableVelocityArrow();
+
+                }
+
+                return true;
+
+            case MotionEvent.ACTION_MOVE:
+
+                if (mFiringBall){
+
+                    float xChange = x - mPreviousX;
+                    float yChange = y - mPreviousY;
+
+                    mGame.redrawArrow(xChange,yChange);
+
                 }
 
                 return true;

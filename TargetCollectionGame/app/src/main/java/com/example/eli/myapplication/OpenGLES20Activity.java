@@ -16,22 +16,27 @@
 package com.example.eli.myapplication;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 
 public class OpenGLES20Activity extends Activity {
 
+    public final static String END_LEVEL_SCORE = "com.example.eli.myapplication.END_LEVEL_SCORE";
     private GLSurfaceView mGLView;
+    private GameEngine mGame;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        GameEngine game = new GameEngine();
+        Intent intent = getIntent();
+        String levelString = intent.getStringExtra(MainActivity.LEVEL_MESSAGE);
+        mGame = new GameEngine(levelString, this);
 
         // Create a GLSurfaceView instance and set it
         // as the ContentView for this Activity
-        mGLView = new MyGLSurfaceView(this, game);
+        mGLView = new MyGLSurfaceView(this, mGame);
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         setContentView(mGLView);
     }
@@ -54,4 +59,19 @@ public class OpenGLES20Activity extends Activity {
         // this is a good place to re-allocate them.
         mGLView.onResume();
     }
+
+    @Override
+    protected void onDestroy(){
+        int score = mGame.getScore();
+
+        Intent data = new Intent();
+        data.putExtra(END_LEVEL_SCORE, score);
+        setResult(RESULT_OK, data);
+
+        super.onDestroy();
+
+    }
+
+
+
 }

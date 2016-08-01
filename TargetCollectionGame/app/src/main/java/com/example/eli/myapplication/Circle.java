@@ -9,10 +9,18 @@ public class Circle extends Drawable{
 
     public float[] mModelMatrix = new float[16];
     private float mRadius;
+    float[] mBorderCoords; // top right
 
     public Circle(float[] borderCoords, int texturePointer) {
         super(borderCoords,texturePointer);
     }
+
+
+    public void setCoords(float[] newCoords){
+        mBorderCoords = newCoords;
+        super.setCoords(newCoords);
+    }
+
 
 
 

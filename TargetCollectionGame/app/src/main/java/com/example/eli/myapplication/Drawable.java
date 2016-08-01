@@ -67,10 +67,10 @@ public class Drawable {
                     "precision mediump float;" +
                     "uniform vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);" +
+                    "  gl_FragColor = (vColor * texture2D(u_Texture, v_TexCoordinate));" +
                     "}";
 
-    private final FloatBuffer vertexBuffer;
+    private FloatBuffer vertexBuffer;
     private final ShortBuffer drawListBuffer;
     private final int mProgram;
     private int mPositionHandle;
@@ -96,7 +96,7 @@ public class Drawable {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
-    float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
+    float mColor[] = { 1f, 1f, 1f, 1f };
 
     public float colorConstant = 0.01f;
 
@@ -122,7 +122,6 @@ public class Drawable {
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
     public Drawable(float[] borderCoords, int texturePointer) {
-
 
         calculateTextureCoefficients(borderCoords);
         setTextureMappingCoords();
@@ -225,10 +224,10 @@ public class Drawable {
                 vertexStride, vertexBuffer);
 
         // get handle to fragment shader's vColor member
-        //mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // Set color for drawing the triangle
-        //GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);
 
         mTextureBuffer.position(0);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false,
@@ -256,13 +255,23 @@ public class Drawable {
     }
 
     public void setCoords(float[] newCoords){
+
+        System.out.println("set new coords.");
         mBorderCoords = newCoords;
+
+        ByteBuffer bb = ByteBuffer.allocateDirect(
+                // (# of coordinate values * 4 bytes per float)
+                mBorderCoords.length * 4);
+        bb.order(ByteOrder.nativeOrder());
+        vertexBuffer = bb.asFloatBuffer();
+        vertexBuffer.put(mBorderCoords);
+        vertexBuffer.position(0);
     }
 
 
 
     public void setColor(float[] vertexColors){
-        color = vertexColors;
+        mColor = vertexColors;
 
         //System.out.println("Change:" + change);
         //System.out.println("Vertex:" + vertex);
@@ -270,8 +279,12 @@ public class Drawable {
 
     }
 
+    public void setAlpha(float alphaValue){
+        mColor[3] = alphaValue;
+    }
+
     public float getColor(int vertex){
-        return color[vertex];
+        return mColor[vertex];
     }
 
     private void calculateTextureCoefficients(float[] borderCoords){

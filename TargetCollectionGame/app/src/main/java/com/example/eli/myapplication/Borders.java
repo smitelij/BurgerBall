@@ -15,7 +15,8 @@ public class Borders {
     private Polygon mBorderBottomLeft;
     private Polygon mBackground;
 
-    private Polygon testP;
+    //private Polygon testP;
+   // private Polygon testP2;
 
     public ArrayList<Polygon> allBorders = new ArrayList<>();
 
@@ -56,12 +57,20 @@ public class Borders {
             (GameState.FULL_WIDTH / 2), 0.0f - (GameState.BORDER_WIDTH * 2), 0.0f,   // bottom right
             (GameState.FULL_WIDTH / 2), GameState.BORDER_WIDTH * 2, 0.0f }; // top right
 
+    /*
     private static float testCoords[] = {
             160f, 240f, 0f, //top left  (x,y)
-            110f, 180f, 0f,  // bottom left
+            120f, 190f, 0f,  // bottom left
             180f, 220f, 0f,  //bottom right
             180f, 240f, 0f  //top right
     };
+
+    private static float testCoords2[] = {
+            60f, 240f, 0f, //top left  (x,y)
+            60f, 220f, 0f,  // bottom left
+            110f, 205f, 0f,  //bottom right
+            100f, 240f, 0f  //top right
+    };*/
 
     public Borders(int texturePointer){
 
@@ -84,14 +93,16 @@ public class Borders {
         mBorderBottomLeft = new Polygon(borderBottomLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
         //mBorderBottomLeft.setColor(GameState.borderColor);
 
-        testP = new Polygon(testCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        //testP = new Polygon(testCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        //testP2 = new Polygon(testCoords2, GameState.OBSTACLE_POLYGON, texturePointer);
 
         allBorders.add(mBorderLeft);
         allBorders.add(mBorderRight);
         allBorders.add(mBorderTop);
         allBorders.add(mBorderBottomRight);
         allBorders.add(mBorderBottomLeft);
-        allBorders.add(testP);
+        //allBorders.add(testP);
+        //allBorders.add(testP2);
 
     }
 

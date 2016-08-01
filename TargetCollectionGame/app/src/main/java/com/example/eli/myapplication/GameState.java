@@ -103,10 +103,11 @@ public class GameState {
     static final float SMALL_NUMBER = -99999f;
 
     //Location of texture files
-    static final int TEXTURE_WALL = R.drawable.brick;
+    static final int TEXTURE_WALL = R.drawable.largebrick;
     static final int TEXTURE_BALL = R.drawable.circle;
     static final int TEXTURE_TARGET = R.drawable.burger2;
     static final int TEXTURE_SELECTION_CIRCLE = R.drawable.selectioncircle;
+    static final int TEXTURE_SELECTION_ARROW = R.drawable.selectionarrow;
 
     //texture number renderings
     static final int TEXTURE_DIGIT_0 = R.drawable.digit0;
@@ -139,6 +140,15 @@ public class GameState {
         float adjustedRadius = mResponseRadius * xRatioAndroidToArena;
 
         return createCircleCoords(adjustedResponseCenter.x, adjustedResponseCenter.y, adjustedRadius);
+    }
+
+    //Initialize as empty so we don't display anything until the user begins dragging
+    public static float[] getVelocityArrowCoords(){
+        return new float[]{
+                0f,  1f, 0.0f,   // top left
+                0f, 1f, 0.0f,   // bottom left
+                0f, 1f, 0.0f,   // bottom right
+                0f, 1f, 0.0f }; //top right
     }
 
     //--------------------------
@@ -179,18 +189,9 @@ public class GameState {
     //  A PointF the represents velocity.
     public static PointF calculateInitialVelocity(float xChange, float yChange){
 
-        float angle = (float) Math.atan(yChange / Math.abs(xChange));
+        float angle = calculateFiringAngle(xChange,yChange);
 
-        //Calculate the percent the user has pulled back, based on the response radius
-        float pullBackLength = (float) Math.sqrt((xChange * xChange) + (yChange * yChange));
-        float percentVelocity = pullBackLength / mResponseRadius;
-
-        if (percentVelocity > 1){
-            percentVelocity = 1;
-        }
-        if (percentVelocity < 0){
-            percentVelocity = 0.01f;
-        }
+        float percentVelocity = calculateFiringVelocity(xChange,yChange);
 
         float xVelocityPercent;
         float yVelocityPercent;
@@ -210,6 +211,26 @@ public class GameState {
         return new PointF(initialXVelocity,initialYVelocity);
     }
 
+    public static float calculateFiringAngle(float xChange, float yChange){
+        return (float) Math.atan(yChange / Math.abs(xChange));
+    }
+
+    public static float calculateFiringVelocity(float xChange, float yChange){
+
+        //Calculate the percent the user has pulled back, based on the response radius
+        float pullBackLength = (float) Math.sqrt((xChange * xChange) + (yChange * yChange));
+        float percentVelocity = pullBackLength / mResponseRadius;
+
+        if (percentVelocity > 1){
+            percentVelocity = 1;
+        }
+        if (percentVelocity < 0){
+            percentVelocity = 0.01f;
+        }
+
+        return percentVelocity;
+    }
+
     //------------------------
     //Useful function to quickly print both components of a vector to the console
     public static void vectorPrint(PointF vector, String msg){
@@ -220,6 +241,40 @@ public class GameState {
     //Calculate the dot product of two vectors
     public static float dotProduct(PointF vector1, PointF vector2){
         return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
+    }
+
+    public static float[] updateVelocityArrow(float angle, float height){
+
+        float adjustedRadius = mResponseRadius * xRatioAndroidToArena;
+        PointF adjustedResponseCenter = new PointF(mResponseCenter.x * xRatioAndroidToArena, (GameState.BORDER_WIDTH * 4));
+
+        float[] baseCoords = { - 5, (adjustedRadius * height), 0.0f,           //top left
+                                -5, GameState.ballRadius, 0.0f,   //bottom left
+                                5, GameState.ballRadius, 0.0f,   //bottom right
+                                5, (adjustedRadius * height), 0.0f          //top right
+        };
+
+        double cosAngle = Math.cos((double) angle);
+        double sinAngle = Math.sin((double) angle);
+
+        PointF baseTopLeft = new PointF(-5, (adjustedRadius*height));
+        PointF baseBottomLeft = new PointF(-5, GameState.ballRadius);
+        PointF baseBottomRight = new PointF(5, GameState.ballRadius);
+        PointF baseTopRight = new PointF(5, (adjustedRadius*height));
+
+        PointF rotatedTopLeft = new PointF( (float) ((baseTopLeft.x * cosAngle) - (baseTopLeft.y * sinAngle)), (float) ((baseTopLeft.y * cosAngle) + (baseTopLeft.x * sinAngle)));
+        PointF rotatedBottomLeft = new PointF( (float) ((baseBottomLeft.x * cosAngle) - (baseBottomLeft.y * sinAngle)), (float) ((baseBottomLeft.y * cosAngle) + (baseBottomLeft.x * sinAngle)));
+        PointF rotatedBottomRight = new PointF( (float) ((baseBottomRight.x * cosAngle) - (baseBottomRight.y * sinAngle)), (float) ((baseBottomRight.y * cosAngle) + (baseBottomRight.x * sinAngle)));
+        PointF rotatedTopRight = new PointF( (float) ((baseTopRight.x * cosAngle) - (baseTopRight.y * sinAngle)), (float) ((baseTopRight.y * cosAngle) + (baseTopRight.x * sinAngle)));
+
+        float[] finalCoords = { rotatedTopLeft.x + adjustedResponseCenter.x, rotatedTopLeft.y + adjustedResponseCenter.y, 0.0f,
+                                rotatedBottomLeft.x + adjustedResponseCenter.x, rotatedBottomLeft.y + adjustedResponseCenter.y, 0.0f,
+                                rotatedBottomRight.x + adjustedResponseCenter.x, rotatedBottomRight.y + adjustedResponseCenter.y, 0.0f,
+                                rotatedTopRight.x + adjustedResponseCenter.x, rotatedTopRight.y + adjustedResponseCenter.y, 0.0f,
+        };
+
+        return finalCoords;
+
     }
 
 

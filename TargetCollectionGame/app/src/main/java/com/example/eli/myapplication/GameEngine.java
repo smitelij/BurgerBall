@@ -1,6 +1,8 @@
 package com.example.eli.myapplication;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
@@ -71,14 +73,31 @@ public class GameEngine {
     private float discrepancyCounter = 0;
 
     private Circle selectionCircle;
+    private Circle ghostBall;
+    private Circle velocityArrow;
+    private boolean mIsVelocityArrowActive;
+
     private int[] digitTextures = new int[10];
     private int currentScore = 100000;
+
+    private int mChapter;
+    private int mLevel;
+
+    private Activity mParentActivity;
 
 
     //--------------------
     //Initialize the GameEngine class
     //
-    public GameEngine(){
+    public GameEngine(String levelString, Activity parentActivity){
+
+        System.out.println(levelString);
+        String[] parts = levelString.split("\\.");
+        String chapterPart = parts[0];
+        String levelPart = parts[1];
+        mChapter = Integer.parseInt(chapterPart);
+        mLevel = Integer.parseInt(levelPart);
+        mParentActivity = parentActivity;
     }
 
     //--------------------
@@ -88,7 +107,7 @@ public class GameEngine {
     public void loadLevel(){
 
         //Initialize the level
-        Level currentLevel = new Level(1);
+        Level currentLevel = new Level(mLevel);
         mTotalBalls=currentLevel.getNumOfBalls(); //grab the number of total balls
 
         initializeBalls();  //Initialize the balls
@@ -100,7 +119,18 @@ public class GameEngine {
     }
 
     private void initializeDrawables(){
+
+        //Selection circle
         selectionCircle = new Circle(GameState.getSelectionCircleCoords(), loadGLTexture(GameState.TEXTURE_SELECTION_CIRCLE));
+        selectionCircle.setAlpha(0.3f);
+
+        //Ghost ball
+        ghostBall = new Circle(GameState.getInitialBallCoords(), loadGLTexture(GameState.TEXTURE_BALL));
+        ghostBall.setAlpha(0.3f);
+
+        //Velocity arrow
+        velocityArrow = new Circle(GameState.getInitialBallCoords(), loadGLTexture(GameState.TEXTURE_SELECTION_ARROW));
+        velocityArrow.setAlpha(0.3f);
 
         initializeScoreDigits();
     }
@@ -226,6 +256,8 @@ public class GameEngine {
 
         PointF newBallCenter = newBall.getCenter();
 
+        lockBalls();
+
         for (Ball currentBall : mActiveBalls){
             PointF currentBallCenter = currentBall.getCenter();
 
@@ -237,6 +269,8 @@ public class GameEngine {
                 return false;
             }
         }
+
+        unlockBallsAlreadyWaiting();
 
         //if we made it through all balls, and none collided with the new ball, then the firing zone is clear.
         return true;
@@ -325,18 +359,11 @@ public class GameEngine {
 
         System.out.println("current Score: " + currentScore);
 
-
         int scoreDigit1 = currentScore % 10;
         int scoreDigit10 = (currentScore % 100) / 10;
         int scoreDigit100 = (currentScore % 1000) / 100;
         int scoreDigit1000 = (currentScore % 10000) / 1000;
         int scoreDigit10000 = (currentScore % 100000) / 10000;
-
-        System.out.println("SCORE DIGIT1: " + scoreDigit1);
-        System.out.println("SCORE DIGIT10: " + scoreDigit10);
-        System.out.println("SCORE DIGIT100: " + scoreDigit100);
-        System.out.println("SCORE DIGIT1000: " + scoreDigit1000);
-        System.out.println("SCORE DIGIT10000: " + scoreDigit10000);
 
         scoreDigits[0].updateTexture(digitTextures[scoreDigit1]);
         scoreDigits[1].updateTexture(digitTextures[scoreDigit10]);
@@ -376,9 +403,16 @@ public class GameEngine {
         }
 
         if ((mActiveBalls.size() == 0) || (mTargets.size() == 0)){
-            mLevelActive = false;
-            showFinalAvgFPS();
+            endLevel();
         }
+    }
+
+    private void endLevel(){
+        mLevelActive = false;
+        showFinalAvgFPS();
+
+        mParentActivity.finish();
+
     }
 
     /**
@@ -639,6 +673,11 @@ public class GameEngine {
 
         if (mCurrentActiveBallID != mAllBalls.size()){
             selectionCircle.draw(mVPMatrix);
+            ghostBall.draw(mVPMatrix);
+
+            if (mIsVelocityArrowActive) {
+                velocityArrow.draw(mVPMatrix);
+            }
         }
 
         for (ScoreDigits currentDigit : scoreDigits){
@@ -682,6 +721,10 @@ public class GameEngine {
 
     private void lockBalls(){
         mBallCollectionInUse = true;
+    }
+
+    private void unlockBallsAlreadyWaiting(){
+        mBallCollectionInUse = false;
     }
 
     private void unlockBalls(){
@@ -795,6 +838,33 @@ public class GameEngine {
     public boolean hasLevelBeenRendered(){
         return mInitialRender;
     }
+
+    public void disableVelocityArrow(){
+        mIsVelocityArrowActive = false;
+    }
+
+    public void redrawArrow(float xChange, float yChange){
+
+        mIsVelocityArrowActive = true;
+
+        float angle = GameState.calculateFiringAngle(xChange, yChange);
+        float height = GameState.calculateFiringVelocity(xChange,yChange);
+
+        if (xChange > 0){
+            angle = (float) (3.1415 / 2) - angle;
+        } else {
+            angle = (float) -(3.1415 / 2) + angle;
+        }
+
+        float[] newCoords = GameState.updateVelocityArrow(angle, height);
+
+        velocityArrow.setCoords(newCoords);
+    }
+
+    public int getScore(){
+        return currentScore;
+    }
+
 
 
 }

@@ -14,6 +14,7 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity {
 
     public final static String LEVEL_MESSAGE = "com.example.eli.myapplication.LEVEL_MESSAGE";
+    public final static int START_LEVEL = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,42 +57,59 @@ public class MainActivity extends AppCompatActivity {
 
     public void sendMessage(View view) {
         Intent intent = new Intent(this, OpenGLES20Activity.class);
-        String levelMsg;
+
+        //default
+        String levelMsg = "1.1";
 
         switch (view.getId()){
 
             case (R.id.level1):
-                levelMsg = "level1";
+                levelMsg = "1.1";
                 intent.putExtra(LEVEL_MESSAGE, levelMsg);
-                startActivity(intent);
                 break;
 
             case (R.id.level2):
-                levelMsg = "level2";
+                levelMsg = "1.2";
                 intent.putExtra(LEVEL_MESSAGE, levelMsg);
-                startActivity(intent);
                 break;
 
             case (R.id.level3):
-                levelMsg = "level3";
+                levelMsg = "1.3";
                 intent.putExtra(LEVEL_MESSAGE, levelMsg);
-                startActivity(intent);
                 break;
 
             case (R.id.level4):
-                levelMsg = "level4";
+                levelMsg = "1.4";
                 intent.putExtra(LEVEL_MESSAGE, levelMsg);
-                startActivity(intent);
                 break;
 
             case (R.id.level5):
-                levelMsg = "level5";
+                levelMsg = "1.5";
                 intent.putExtra(LEVEL_MESSAGE, levelMsg);
-                startActivity(intent);
                 break;
 
         }
+
+        startActivityForResult(intent, START_LEVEL);
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        int finalScore = 0;
+
+        if (requestCode == START_LEVEL) {
+
+            if (resultCode == RESULT_OK){
+                if (data.hasExtra(OpenGLES20Activity.END_LEVEL_SCORE)){
+                    finalScore = data.getExtras().getInt(OpenGLES20Activity.END_LEVEL_SCORE);
+                }
+                System.out.println("final score: " + finalScore);
+            }
+        }
+    }
+
 
 }
 
