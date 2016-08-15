@@ -89,12 +89,11 @@ public class Ball extends Interactable{
 
     /**
      * Encapsulates the OpenGL ES instructions for drawing this shape.
-     *
-     * @param mvpMatrix - The Model View Project matrix in which to draw
-     * this shape.
+     * PARAMS : mvpMatrix - not used
      */
     public void draw(float[] mvpMatrix) {
-        super.draw(mvpMatrix);
+        //Each ball should keep its own copy of the model projection matrix to be drawn with
+        super.draw(mModelProjectionMatrix);
         updatePrevAABB();
     }
 

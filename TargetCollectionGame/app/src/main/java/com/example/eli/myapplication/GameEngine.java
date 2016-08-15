@@ -352,7 +352,22 @@ public class GameEngine {
     //Main method called by MyGLRenderer each frame
     public void advanceFrame(){
 
+        //Handle things that should happen before the frame is advanced.
+        //(Add waiting balls, keep track of FPS, etc)
+        preAdvanceFrame();
 
+        //This is the bulk of the advance frame logic.
+        //Here we will advance through a frame, potentially step by step if collisions occur,
+        //keeping track of all collisions and adjusting velocities accordingly.
+        advanceFrameCollisionChecks();
+
+        //Handle logic after the frame has been moved.
+        //(Update score, move balls forward, check end conditions, etc)
+        postAdvanceFrame();
+
+    }
+
+    private void preAdvanceFrame(){
         mCurrentFrameSize = getFrameSize();
 
         updateFPSinfo();
@@ -360,7 +375,10 @@ public class GameEngine {
         if (mBallWaiting){
             activateBall(null);
         }
+    }
 
+    private void advanceFrameCollisionChecks(){
+        //start each frame at 0
         float timeElapsed = 0f;
 
         //repeat until 1 whole 'frame' has been moved.
@@ -368,8 +386,8 @@ public class GameEngine {
         //and then repeat until we reach the end of the frame.
         while (timeElapsed < mCurrentFrameSize) {
 
+            //At first, we try to advance the whole frame (or whatever is remaining), and see if any collisions happen.
             float timeStep = mCurrentFrameSize - timeElapsed;
-            //System.out.println("time step: " + timeStep);
 
             //initialize collision detection engine
             CollisionDetection CD = new CollisionDetection();
@@ -379,14 +397,17 @@ public class GameEngine {
 
             //Handle collisions (update velocities / displacements as necessary)
             //Also handles NO collisions
+            //If there is a collision, timeElapsed is updated to the collision time.
             timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
 
         }
+    }
 
+    private void postAdvanceFrame(){
+        moveBallsForward();
         updateScore();
         testForDeactivatingBalls();
         endLevelChecks();
-
     }
 
     private void updateScore(){
@@ -672,28 +693,16 @@ public class GameEngine {
         }
     }
 
-    public void drawObjects(){
-
-        //System.out.println("objects being drawn.");
-
-        // Draw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-        drawInteractables();
-
-        drawNonInteractables();
-
-    }
-
-    private void drawInteractables(){
-
-        //Draw all balls
+    private void moveBallsForward(){
+        //Go through all balls
         for (Ball currentBall : mAllBalls) {
 
+            //skip inactive balls
             if (!currentBall.isBallActive()){
                 continue;
             }
 
+            //get current model matrix
             float[] modelMatrix = currentBall.getModelMatrix();
             float[] modelProjectionMatrix = new float[16];
 
@@ -702,115 +711,88 @@ public class GameEngine {
             //move into projection coordinates
             Matrix.multiplyMM(modelProjectionMatrix, 0, mVPMatrix, 0, modelMatrix, 0);
 
+            //save model matrix and model projection matrix
+            // (model matrix will be used next frame, and model projection matrix will be used to draw this frame)
             currentBall.setModelMatrix(modelMatrix);
             currentBall.setModelProjectionMatrix(modelProjectionMatrix);
 
             //clear displacement vector for next frame
             currentBall.clearDisplacementVector();
         }
+    }
 
-/*
+    public void drawObjects(){
 
-        for (Ball currentBall : mAllBalls){
-            if (!currentBall.isBallActive()){
-                continue;
+        // Draw background color
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+        //Draw all drawable objects
+        for (Drawable object : allDrawableObjects) {
+            if (shouldObjectBeDrawn(object)) {
+                object.draw(mVPMatrix);
             }
-
-            currentBall.draw(currentBall.getModelProjectionMatrix());
         }
 
-        /*
+    }
 
-        //Draw Borders
-        for (Obstacle currentBorder : mBorders){
-            currentBorder.draw(mVPMatrix);
-        }
+    private boolean shouldObjectBeDrawn(Drawable object){
 
-        //Draw obstacles
-        for (Obstacle currentObstacle : mObstacles){
-            currentObstacle.draw(mVPMatrix);
-        }
+        //certain objects have cases where they should not be drawn.
+        //here we go through these specific cases
+        switch (object.getType()) {
 
-        //Draw targets
-        for (Target currentTarget : mTargets){
-            currentTarget.draw(mVPMatrix);
-        }
-
-        */
-
-        for (Drawable object : allDrawableObjects){
-
-            //TODO use switch statement instead of multiple if statements
-            if (object.getType()==GameState.INTERACTABLE_BALL){
-
+            //----BALL----
+            // Balls should not be drawn if they are not active.
+            case GameState.INTERACTABLE_BALL:
                 Ball currentBall = (Ball) object;
-
                 if (!currentBall.isBallActive()){
-                    continue;
+                    return false;
                 }
+                break;
 
-                //TODO is there some way not to draw this differently than all other drawables? that would be nice...
-                currentBall.draw(currentBall.getModelProjectionMatrix());
-                //TODO instead of using continues, just use a skip variable, and then one continue at the very end if skip is true
-                continue;
-
-            }
-
-            if (object.getType()==GameState.DRAWABLE_GHOST_CIRCLES){
+            //----FIRING AIDS
+            // This is the ghost ball and the outer selection ring that appears
+            // while you still have balls remaining. They should not be drawn
+            // if the current active ball is the last ball.
+            case GameState.DRAWABLE_GHOST_CIRCLES:
                 if (mCurrentActiveBallID == mAllBalls.size()) {
-                    System.out.println("NOT drawing ghost circles.");
-                    continue;
+                    return false;
                 }
-            }
+                break;
 
-            if (object.getType()==GameState.DRAWABLE_VELOCITY_ARROW){
-                if ((mCurrentActiveBallID == mAllBalls.size()) || (!mIsVelocityArrowActive)){
-                    continue;
+
+            //----VELOCITY ARROW
+            // This is another firing aid. More specifically then the above ones though,
+            // it should only be drawn when the flag mIsVelocityArrowActive is true.
+            case GameState.DRAWABLE_VELOCITY_ARROW:
+                if ((!mIsVelocityArrowActive) || (mCurrentActiveBallID == mAllBalls.size())){
+                    return false;
                 }
-            }
+                break;
 
-            if (object.getType() == GameState.DRAWABLE_BALLS_REMAINING){
+
+            //-----BALLS REMAINING ICON
+            // This is an icon/counter displaying the number of balls remaining. Whether each
+            // icon should be drawn is determined based on the index of that icon and comparing
+            // it to the current active ball ID.
+            case GameState.DRAWABLE_BALLS_REMAINING:
                 BallsRemainingIcon currentIcon = (BallsRemainingIcon) object;
-
                 if ( (mAllBalls.size() - mCurrentActiveBallID)  <= currentIcon.getIndex()) {
-                    continue;
+                    return false;
                 }
-            }
-
-            object.draw(mVPMatrix);
+                break;
 
         }
 
+        //If we passed all the checks, it is ok to draw this object.
+        return true;
     }
 
-    private void drawNonInteractables(){
-
-        /*
-
-        if (mCurrentActiveBallID != mAllBalls.size()){
-            selectionCircle.draw(mVPMatrix);
-            ghostBall.draw(mVPMatrix);
-
-            if (mIsVelocityArrowActive) {
-                velocityArrow.draw(mVPMatrix);
-            }
-        }
-
-        for (ScoreDigits currentDigit : scoreDigits){
-            currentDigit.draw(mVPMatrix);
-        }
-
-        for (Circle currentIcon : ballsRemainingCounter){
-            currentIcon.draw(mVPMatrix);
-        }
-
-        */
-
-    }
 
     public void updateVPMatrix(float[] VPMatrix){
         mVPMatrix = VPMatrix;
     }
+
 
     public static int loadGLTexture(int imagePointer) {
 
@@ -961,8 +943,6 @@ public class GameEngine {
         } else {
             angle = (float) -(3.1415 / 2) + angle;
         }
-
-        System.out.println("ANGLE: " + angle);
 
         float[] newCoords = GameState.updateVelocityArrow(angle, height);
 
