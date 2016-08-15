@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class Level {
 
-    ArrayList<Polygon> mObstacles = new ArrayList<>();
+    ArrayList<Obstacle> mObstacles = new ArrayList<>();
     ArrayList<Target> mTargets = new ArrayList<>();
     int mNumOfBalls;
     int levelIndex;
@@ -38,8 +38,8 @@ public class Level {
 
                 int obstacleTexture = GameEngine.loadGLTexture(GameState.TEXTURE_WALL);
 
-                Polygon obstacle1 = new Polygon(obstacle1coords, GameState.OBSTACLE_POLYGON, obstacleTexture);
-                Polygon obstacle2 = new Polygon(obstacle2coords, GameState.OBSTACLE_POLYGON, obstacleTexture);
+                Obstacle obstacle1 = new Obstacle(obstacle1coords, obstacleTexture);
+                Obstacle obstacle2 = new Obstacle(obstacle2coords, obstacleTexture);
 
                 mObstacles.add(obstacle1);
                 mObstacles.add(obstacle2);
@@ -60,7 +60,7 @@ public class Level {
 
     }
 
-    public ArrayList<Polygon> getObstacles(){
+    public ArrayList<Obstacle> getObstacles(){
         return mObstacles;
     }
 

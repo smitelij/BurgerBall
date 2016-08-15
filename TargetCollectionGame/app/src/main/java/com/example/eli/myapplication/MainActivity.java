@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -102,12 +103,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == START_LEVEL) {
 
             if (resultCode == RESULT_OK){
-                if (data.hasExtra(OpenGLES20Activity.END_LEVEL_SCORE)){
-                    finalScore = data.getExtras().getInt(OpenGLES20Activity.END_LEVEL_SCORE);
+                if (data.hasExtra(GameEngine.END_LEVEL_SCORE)){
+                    finalScore = data.getExtras().getInt(GameEngine.END_LEVEL_SCORE);
                 }
-                System.out.println("final score: " + finalScore);
+                System.out.println("final score1: " + finalScore);
             }
         }
+
+        System.out.println("final score2: " + finalScore);
+        TextView scoreLabel = (TextView) findViewById(R.id.Level1ScoreText);
+        scoreLabel.setText(finalScore + "");
+        scoreLabel.setVisibility(View.VISIBLE);
     }
 
 

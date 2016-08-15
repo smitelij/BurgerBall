@@ -15,26 +15,19 @@
  */
 package com.example.eli.myapplication;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
-import android.opengl.GLES20;
-import android.opengl.Matrix;
-
 /**
- * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
+ * A two-dimensional border
  */
-public class Polygon extends Interactable {
+public class Obstacle extends Interactable {
 
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Polygon(float[] borderCoords, int type, int texturePointer) {
+    public Obstacle(float[] borderCoords, int texturePointer) {
         // initialize vertex byte buffer for shape coordinates
-        super(borderCoords, type, texturePointer);
+        super(borderCoords, texturePointer);
+        setType(GameState.INTERACTABLE_OBSTACLE);
 
     }
 

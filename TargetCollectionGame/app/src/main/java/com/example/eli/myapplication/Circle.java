@@ -13,6 +13,7 @@ public class Circle extends Drawable{
 
     public Circle(float[] borderCoords, int texturePointer) {
         super(borderCoords,texturePointer);
+        setType(GameState.DRAWABLE_CIRCLE);
     }
 
 

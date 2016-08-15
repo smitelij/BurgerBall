@@ -110,8 +110,11 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Score: "
-                android:id="@+id/textView2"
-                android:layout_column="18" />
+                android:id="@+id/Level1ScoreText"
+                android:layout_column="18"
+                android:textColor="#ffffff"
+                android:enabled="false"
+                android:visibility="invisible" />
         </TableRow>
 
         <TableRow
@@ -132,8 +135,10 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Score"
-                android:id="@+id/textView3"
-                android:layout_column="18" />
+                android:id="@+id/Level2ScoreText"
+                android:layout_column="18"
+                android:textColor="#ffffff"
+                android:visibility="invisible" />
         </TableRow>
 
         <TableRow
@@ -154,8 +159,10 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Score"
-                android:id="@+id/textView4"
-                android:layout_column="18" />
+                android:id="@+id/Level3ScoreText"
+                android:layout_column="18"
+                android:textColor="#ffffff"
+                android:visibility="invisible" />
         </TableRow>
 
         <TableRow
@@ -176,8 +183,10 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Score"
-                android:id="@+id/textView5"
-                android:layout_column="18" />
+                android:id="@+id/Level4ScoreText"
+                android:layout_column="18"
+                android:textColor="#ffffff"
+                android:visibility="invisible" />
         </TableRow>
 
         <TableRow
@@ -198,8 +207,10 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Score"
-                android:id="@+id/textView6"
-                android:layout_column="18" />
+                android:id="@+id/Level5ScoreText"
+                android:layout_column="18"
+                android:textColor="#ffffff"
+                android:visibility="invisible" />
         </TableRow>
 
         <TableRow

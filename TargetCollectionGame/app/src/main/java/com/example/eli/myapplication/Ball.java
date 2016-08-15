@@ -26,7 +26,8 @@ import android.opengl.Matrix;
 public class Ball extends Interactable{
 
 
-    public float[] mModelMatrix = new float[16];
+    private float[] mModelMatrix = new float[16];
+    private float[] mModelProjectionMatrix = new float[16];
     private float mRadius;
    // private float[] mVelocity = new float[2];
     private PointF mVelocity;
@@ -58,7 +59,8 @@ public class Ball extends Interactable{
     public Ball(float[] borderCoords, PointF velocity, float radius, int texturePointer) {
 
         //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
-        super(borderCoords, GameState.OBSTACLE_BALL, texturePointer);
+        super(borderCoords, texturePointer);
+        setType(GameState.INTERACTABLE_BALL);
         //setColor(color);
         updatePrevAABB();
 
@@ -66,7 +68,6 @@ public class Ball extends Interactable{
 
         mVelocity = velocity;
         mRadius = radius;
-        mIsActive = true;
         mCollisions = new ArrayList<>();
 
     }
@@ -248,6 +249,34 @@ public class Ball extends Interactable{
     public PointF getAvgVelocity(float timeStep){
         PointF newVelocity = getVelocity(timeStep);
         return new PointF((newVelocity.x + mVelocity.x) / 2, (newVelocity.y + mVelocity.y)/2);
+    }
+
+    protected boolean isBallActive(){
+        return mIsActive;
+    }
+
+    protected void activateBall(){
+        mIsActive = true;
+    }
+
+    protected void deactivateBall(){
+        mIsActive = false;
+    }
+
+    protected float[] getModelMatrix(){
+        return mModelMatrix;
+    }
+
+    protected float[] getModelProjectionMatrix(){
+        return mModelProjectionMatrix;
+    }
+
+    protected void setModelProjectionMatrix(float[] modelProjectionMatrix){
+        mModelProjectionMatrix = modelProjectionMatrix;
+    }
+
+    protected void setModelMatrix(float[] modelMatrix){
+        mModelMatrix = modelMatrix;
     }
 
 

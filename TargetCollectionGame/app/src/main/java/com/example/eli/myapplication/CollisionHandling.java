@@ -32,7 +32,7 @@ public class CollisionHandling {
         for (Collision collision : mCollisions){
 
             //Don't care about target collisions here-  they don't affect any trajectories
-            if(collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
+            if(collision.getObstacle().getType() == GameState.INTERACTABLE_TARGET){
                 continue;
             }
 
@@ -85,7 +85,7 @@ public class CollisionHandling {
 
     private void calculateVelocityBorderCollision(Collision collision){
         /*
-        System.out.println("Border center: " + collision.getObstacle().getCenter());
+        System.out.println("Obstacle center: " + collision.getObstacle().getCenter());
         System.out.println("Boundary axis: " + collision.getBoundaryAxis());
         System.out.println("Collision time: " + collision.getTime());
         System.out.println("Ball center: " + collision.getBall().getCenter());
@@ -169,7 +169,7 @@ public class CollisionHandling {
 
         for (Collision currentCollision : collisions) {
 
-            if (currentCollision.getObstacle().getType() == GameState.OBSTACLE_BALL) {
+            if (currentCollision.getObstacle().getType() == GameState.INTERACTABLE_BALL) {
 
                 Ball currentBall = currentCollision.getBall();
                 Ball otherBall = (Ball) currentCollision.getObstacle();
@@ -190,7 +190,7 @@ public class CollisionHandling {
         ArrayList<Target> hitTargets = new ArrayList<>();
 
         for (Collision collision : mCollisions){
-            if (collision.getObstacle().getType() == GameState.OBSTACLE_TARGET){
+            if (collision.getObstacle().getType() == GameState.INTERACTABLE_TARGET){
                 if (collision.getTime() <= firstCollisionTime){
                     hitTargets.add((Target) collision.getObstacle());
                 }

@@ -8,17 +8,17 @@ import java.util.ArrayList;
 
 public class Borders {
 
-    private Polygon mBorderLeft;
-    private Polygon mBorderRight;
-    private Polygon mBorderTop;
-    private Polygon mBorderBottomRight;
-    private Polygon mBorderBottomLeft;
-    private Polygon mBackground;
+    private Obstacle mBorderLeft;
+    private Obstacle mBorderRight;
+    private Obstacle mBorderTop;
+    private Obstacle mBorderBottomRight;
+    private Obstacle mBorderBottomLeft;
+    private Obstacle mBackground;
 
-    //private Polygon testP;
-   // private Polygon testP2;
+    //private Obstacle testP;
+   // private Obstacle testP2;
 
-    public ArrayList<Polygon> allBorders = new ArrayList<>();
+    public ArrayList<Obstacle> allBorders = new ArrayList<>();
 
 
     private static float backgroundCoords[] = {
@@ -75,26 +75,26 @@ public class Borders {
     public Borders(int texturePointer){
 
 
-        //mBackground = new Polygon(backgroundCoords, GameEngine.OBSTACLE_POLYGON);
+        //mBackground = new Obstacle(backgroundCoords, GameEngine.INTERACTABLE_OBSTACLE);
        // mBackground.setColor(GameEngine.backgroundColor);
 
-        mBorderLeft = new Polygon(borderLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        mBorderLeft = new Obstacle(borderLeftCoords, texturePointer);
         //mBorderLeft.setColor(GameState.borderColor);
 
-        mBorderRight = new Polygon(borderRightCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        mBorderRight = new Obstacle(borderRightCoords, texturePointer);
         //mBorderRight.setColor(GameState.borderColor);
 
-        mBorderTop = new Polygon(borderTopCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        mBorderTop = new Obstacle(borderTopCoords, texturePointer);
         //mBorderTop.setColor(GameState.borderColor);
 
-        mBorderBottomRight = new Polygon(borderBottomRightCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        mBorderBottomRight = new Obstacle(borderBottomRightCoords, texturePointer);
         //mBorderBottomRight.setColor(GameState.borderColor);
 
-        mBorderBottomLeft = new Polygon(borderBottomLeftCoords, GameState.OBSTACLE_POLYGON, texturePointer);
+        mBorderBottomLeft = new Obstacle(borderBottomLeftCoords, texturePointer);
         //mBorderBottomLeft.setColor(GameState.borderColor);
 
-        //testP = new Polygon(testCoords, GameState.OBSTACLE_POLYGON, texturePointer);
-        //testP2 = new Polygon(testCoords2, GameState.OBSTACLE_POLYGON, texturePointer);
+        //testP = new Obstacle(testCoords, GameState.INTERACTABLE_OBSTACLE, texturePointer);
+        //testP2 = new Obstacle(testCoords2, GameState.INTERACTABLE_OBSTACLE, texturePointer);
 
         allBorders.add(mBorderLeft);
         allBorders.add(mBorderRight);
@@ -108,12 +108,12 @@ public class Borders {
 
     public void drawAllBorders(float[] mProjectionMatrix){
 
-        for (Polygon border : allBorders){
+        for (Obstacle border : allBorders){
             border.draw(mProjectionMatrix);
         }
     }
 
-    public ArrayList<Polygon> getAllBorders(){
+    public ArrayList<Obstacle> getAllBorders(){
         return allBorders;
     }
 }

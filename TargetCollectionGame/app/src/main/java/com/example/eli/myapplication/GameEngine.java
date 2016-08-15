@@ -19,6 +19,8 @@ import java.util.ArrayList;
  */
 public class GameEngine {
 
+    public final static String END_LEVEL_SCORE = "com.example.eli.myapplication.END_LEVEL_SCORE";
+
     //All active objects that need to be collision checked are added to this collection
     private ArrayList<Interactable> allInteractableObjects;
 
@@ -29,9 +31,10 @@ public class GameEngine {
 
     private ArrayList<Ball> mAllBalls;     //Collection of all balls
     private ArrayList<Ball> mActiveBalls;  //Collection of only active balls
+    private int mNumActiveBalls = 0;
 
-    private ArrayList<Polygon> mBorders;    //Collection of outer borders
-    private ArrayList<Polygon> mObstacles;  //Collection of other (inner) boundaries
+    private ArrayList<Obstacle> mBorders;    //Collection of outer borders
+    private ArrayList<Obstacle> mObstacles;  //Collection of other (inner) boundaries
 
     private ArrayList<Target> mTargets;  //Collection of targets
 
@@ -44,7 +47,6 @@ public class GameEngine {
 
     //can't add a new ball while in the middle of a frame, may cause a concurrent modification error.
     //So we'll setup flags to determine whether we are in the middle of a frame, and whether a ball is waiting.
-    private boolean mBallCollectionInUse;  //True while the ball collection is in use
     private boolean mBallWaiting;          //True if we are waiting to add a ball
 
     //Boolean that is true while the level is active (after the first ball has been fired, and before end conditions are met)
@@ -76,9 +78,11 @@ public class GameEngine {
     private Circle ghostBall;
     private Circle velocityArrow;
     private boolean mIsVelocityArrowActive;
+    private Circle[] ballsRemainingCounter;
 
     private int[] digitTextures = new int[10];
     private int currentScore = 100000;
+    private int currentBallTexture;
 
     private int mChapter;
     private int mLevel;
@@ -110,29 +114,57 @@ public class GameEngine {
         Level currentLevel = new Level(mLevel);
         mTotalBalls=currentLevel.getNumOfBalls(); //grab the number of total balls
 
+        allInteractableObjects = new ArrayList<>();
+        allDrawableObjects = new ArrayList<>();
+
         initializeBalls();  //Initialize the balls
         loadBoundaries();  //Load outer boundaries (don't need a reference to current level, because currently outer boundaries are always the same)
         loadObstacles(currentLevel);  //Load level specific boundaries
         loadTargets(currentLevel);  //Load level specific targets
+        initializeInteractableObjects();  //Add all active objects to the active-objects collection
         initializeDrawables();
-        initializeActiveObjects();  //Add all active objects to the active-objects collection
     }
 
     private void initializeDrawables(){
 
         //Selection circle
-        selectionCircle = new Circle(GameState.getSelectionCircleCoords(), loadGLTexture(GameState.TEXTURE_SELECTION_CIRCLE));
-        selectionCircle.setAlpha(0.3f);
+        selectionCircle = new SelectionCircle();
+        allDrawableObjects.add(selectionCircle);
 
         //Ghost ball
-        ghostBall = new Circle(GameState.getInitialBallCoords(), loadGLTexture(GameState.TEXTURE_BALL));
-        ghostBall.setAlpha(0.3f);
+        ghostBall = new GhostBall(currentBallTexture);
+        allDrawableObjects.add(ghostBall);
+
+        //Balls remaining counter
+        initializeBallsRemainingCounter();
 
         //Velocity arrow
-        velocityArrow = new Circle(GameState.getInitialBallCoords(), loadGLTexture(GameState.TEXTURE_SELECTION_ARROW));
-        velocityArrow.setAlpha(0.3f);
+        velocityArrow = new VelocityArrow();
+        allDrawableObjects.add(velocityArrow);
 
         initializeScoreDigits();
+    }
+
+    private void initializeBallsRemainingCounter(){
+
+        float boxWidth = GameState.BORDER_WIDTH;
+        ballsRemainingCounter = new Circle[mTotalBalls];
+
+        for (int index = 0; index < mTotalBalls; index++){
+
+            float separationAmount = (float) (index * 1.5);
+
+            float[] coords = new float[]{
+                    GameState.FULL_WIDTH - (boxWidth * (separationAmount)) - boxWidth, boxWidth, 0f,                      //top left
+                    GameState.FULL_WIDTH - (boxWidth * (separationAmount)) - boxWidth, 0, 0f,         //bottom left
+                    GameState.FULL_WIDTH - (boxWidth * separationAmount), 0, 0f,             //bottom right
+                    GameState.FULL_WIDTH - (boxWidth * separationAmount), boxWidth, 0f                           //top right
+            };
+
+            ballsRemainingCounter[index] = new BallsRemainingIcon(coords, currentBallTexture, index);
+            allDrawableObjects.add(ballsRemainingCounter[index]);
+        }
+
     }
 
     private void initializeScoreDigits(){
@@ -149,6 +181,7 @@ public class GameEngine {
                     GameState.FULL_WIDTH - (boxWidth * index), GameState.FULL_HEIGHT, 0f                           //top right
             };
             scoreDigits[index] = new ScoreDigits(coords, digitTextures[9]);
+            allDrawableObjects.add(scoreDigits[index]);
         }
 
     }
@@ -173,7 +206,8 @@ public class GameEngine {
     //
     private void initializeBalls(){
         mAllBalls = new ArrayList<>();
-        mActiveBalls = new ArrayList<>();
+
+        currentBallTexture = loadGLTexture(GameState.TEXTURE_BALL);
 
         //Get initial ball coordinates
         float[] newBallCoords = GameState.getInitialBallCoords();
@@ -181,9 +215,12 @@ public class GameEngine {
         //create balls and add them to collection
         for(int index=0; index < mTotalBalls; index++) {
 
-            Ball ball = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, loadGLTexture(GameState.TEXTURE_BALL));
+            Ball ball = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, currentBallTexture);
             mAllBalls.add(ball);
+            allDrawableObjects.add(ball);
+            allInteractableObjects.add(ball);
         }
+
 
     }
 
@@ -213,11 +250,12 @@ public class GameEngine {
             //check if we can activate the ball right now
             if (canActivateBall(ball)) {
                 //'activating' the ball is as easy as adding to the collections
-                mActiveBalls.add(ball);
-                allInteractableObjects.add(ball);
+                //mActiveBalls.add(ball);
+                ball.activateBall();
                 mCurrentActiveBallID++;
+                mNumActiveBalls++;
                 mLevelActive = true;
-                mBallWaiting = false; //clear the flag in case it got actiated
+                mBallWaiting = false; //clear the flag in case it got activated
                 System.out.println("Ball activated." );
             //if we can't activate the ball, set the waiting flag.
             } else {
@@ -237,9 +275,8 @@ public class GameEngine {
     //
     private boolean canActivateBall(Ball newBall){
         //Checks before we can activate a ball:
-        //1: The ball collection must not be in use
-        //2: The firing zone must be clear
-        if ((mBallCollectionInUse)||(!isFiringZoneClear(newBall))){
+        //1: The firing zone must be clear
+        if (!isFiringZoneClear(newBall)){
             return false;
 
         //Or else we can activate the ball.
@@ -256,9 +293,12 @@ public class GameEngine {
 
         PointF newBallCenter = newBall.getCenter();
 
-        lockBalls();
+        for (Ball currentBall : mAllBalls){
 
-        for (Ball currentBall : mActiveBalls){
+            if (!currentBall.isBallActive()){
+                continue;
+            }
+
             PointF currentBallCenter = currentBall.getCenter();
 
             PointF distanceVector = new PointF(newBallCenter.x - currentBallCenter.x, newBallCenter.y - currentBallCenter.y);
@@ -269,8 +309,6 @@ public class GameEngine {
                 return false;
             }
         }
-
-        unlockBallsAlreadyWaiting();
 
         //if we made it through all balls, and none collided with the new ball, then the firing zone is clear.
         return true;
@@ -292,20 +330,22 @@ public class GameEngine {
         mTargets = level.getTargets();
     }
 
-    private void initializeActiveObjects(){
-        allInteractableObjects = new ArrayList<>();
+    private void initializeInteractableObjects(){
 
         //No active balls yet, so we only need to add borders
-        for (Polygon currentBorder : mBorders){
+        for (Obstacle currentBorder : mBorders){
             allInteractableObjects.add(currentBorder);
+            allDrawableObjects.add(currentBorder);
         }
 
-        for (Polygon obstacle : mObstacles){
+        for (Obstacle obstacle : mObstacles){
             allInteractableObjects.add(obstacle);
+            allDrawableObjects.add(obstacle);
         }
 
         for (Target target : mTargets){
             allInteractableObjects.add(target);
+            allDrawableObjects.add(target);
         }
     }
 
@@ -316,6 +356,10 @@ public class GameEngine {
         mCurrentFrameSize = getFrameSize();
 
         updateFPSinfo();
+
+        if (mBallWaiting){
+            activateBall(null);
+        }
 
         float timeElapsed = 0f;
 
@@ -357,8 +401,6 @@ public class GameEngine {
             currentScore = 0;
         }
 
-        System.out.println("current Score: " + currentScore);
-
         int scoreDigit1 = currentScore % 10;
         int scoreDigit10 = (currentScore % 100) / 10;
         int scoreDigit100 = (currentScore % 1000) / 100;
@@ -377,21 +419,23 @@ public class GameEngine {
 
         ArrayList<Ball> deactivationList = new ArrayList<>();
 
-        lockBalls();
+        for (Ball currentBall : mAllBalls){
 
-        for (Ball currentBall : mActiveBalls){
+            if (!currentBall.isBallActive()){
+                continue;
+            }
 
             if (currentBall.getPerFrameCollisionCount() > (mCurrentFrameSize * GameState.DEACTIVATION_CONSTANT)){
                 deactivationList.add(currentBall);
+                currentBall.deactivateBall();
+                mNumActiveBalls--;
             } else {
                 currentBall.clearFrameCollisionCount();
             }
         }
 
-        unlockBalls();
-
         for (Ball deadBall : deactivationList){
-            mActiveBalls.remove(deadBall);
+            //mActiveBalls.remove(deadBall);
             allInteractableObjects.remove(deadBall);
         }
 
@@ -402,7 +446,7 @@ public class GameEngine {
             return;
         }
 
-        if ((mActiveBalls.size() == 0) || (mTargets.size() == 0)){
+        if ((mNumActiveBalls == 0) || (mTargets.size() == 0)){
             endLevel();
         }
     }
@@ -410,6 +454,11 @@ public class GameEngine {
     private void endLevel(){
         mLevelActive = false;
         showFinalAvgFPS();
+
+        System.out.println("FINAL SCORE: " + currentScore);
+        Intent data = new Intent();
+        data.putExtra(END_LEVEL_SCORE, currentScore);
+        mParentActivity.setResult(mParentActivity.RESULT_OK, data);
 
         mParentActivity.finish();
 
@@ -427,12 +476,12 @@ public class GameEngine {
             } catch (Exception e) {
             }*/
 
-        //Need to lock ball collection to prevent new balls from being
-        //added while we are accessing the collection
-        lockBalls();
-
         //go through all active balls
-        for (Ball currentBall : mActiveBalls) {
+        for (Ball currentBall : mAllBalls) {
+
+            if (!currentBall.isBallActive()){
+                continue;
+            }
 
             //temporarily advance the balls location by the time step
             currentBall.moveBallByFrame(timeStep);
@@ -447,7 +496,6 @@ public class GameEngine {
         //clear the moved status once we have gone through all balls
         cleanupBalls();
 
-        unlockBalls();
     }
 
     /**
@@ -482,7 +530,12 @@ public class GameEngine {
     }
 
     private void cleanupBalls(){
-        for (Ball currentBall : mActiveBalls){
+        for (Ball currentBall : mAllBalls){
+
+            if (! currentBall.isBallActive()){
+                continue;
+            }
+
             currentBall.clearMovedStatus();
         }
     }
@@ -561,10 +614,13 @@ public class GameEngine {
 
     private void moveBallsToCollisionInstant(float collisionTime, boolean cleanupAABB){
 
-        lockBalls();
-
         //Go through all active balls
-        for (Ball currentBall : mActiveBalls){
+        for (Ball currentBall : mAllBalls){
+
+            if(!currentBall.isBallActive()){
+                continue;
+            }
+
             //calculate displacement that will result in new position
             PointF newDisplacementVector = currentBall.calculatePositionChange(collisionTime);
 
@@ -578,7 +634,6 @@ public class GameEngine {
 
         }
 
-        unlockBalls();
     }
 
     private void cleanupAABB(Ball currentBall, PointF displacementVector){
@@ -593,17 +648,17 @@ public class GameEngine {
 
     private void updateVelocities(float timeStep){
 
-        lockBalls();
+        for (Ball currentBall : mAllBalls){
 
-        for (Ball currentBall : mActiveBalls){
+            if (!currentBall.isBallActive()){
+                continue;
+            }
 
             //will either use any new velocity that was calculated in the event of a collision,
             // or else just factor in the current gravity and return a new velocity.
             currentBall.updateVelocity(timeStep);
             currentBall.clearCollisionHistory();
         }
-
-        unlockBalls();
     }
 
     private void handleTargetCollisions(CollisionHandling CH, float firstCollisionTime){
@@ -613,6 +668,7 @@ public class GameEngine {
         for (Target target : hitTargets){
             mTargets.remove(target);
             allInteractableObjects.remove(target);
+            allDrawableObjects.remove(target);
         }
     }
 
@@ -631,34 +687,47 @@ public class GameEngine {
 
     private void drawInteractables(){
 
-        float[] mModelProjectionMatrix = new float[16];
-
-        lockBalls();
-
         //Draw all balls
-        for (Ball currentBall : mActiveBalls) {
+        for (Ball currentBall : mAllBalls) {
+
+            if (!currentBall.isBallActive()){
+                continue;
+            }
+
+            float[] modelMatrix = currentBall.getModelMatrix();
+            float[] modelProjectionMatrix = new float[16];
 
             //Move ball forward by displacement amount
-            Matrix.translateM(currentBall.mModelMatrix, 0, currentBall.mModelMatrix, 0, currentBall.getDisplacementVector().x, currentBall.getDisplacementVector().y, 0);
+            Matrix.translateM(modelMatrix, 0, modelMatrix, 0, currentBall.getDisplacementVector().x, currentBall.getDisplacementVector().y, 0);
             //move into projection coordinates
-            Matrix.multiplyMM(mModelProjectionMatrix, 0, mVPMatrix, 0, currentBall.mModelMatrix, 0);
-            // Draw ball
-            currentBall.draw(mModelProjectionMatrix);
+            Matrix.multiplyMM(modelProjectionMatrix, 0, mVPMatrix, 0, modelMatrix, 0);
+
+            currentBall.setModelMatrix(modelMatrix);
+            currentBall.setModelProjectionMatrix(modelProjectionMatrix);
 
             //clear displacement vector for next frame
             currentBall.clearDisplacementVector();
         }
 
-        unlockBalls();
+/*
 
+        for (Ball currentBall : mAllBalls){
+            if (!currentBall.isBallActive()){
+                continue;
+            }
+
+            currentBall.draw(currentBall.getModelProjectionMatrix());
+        }
+
+        /*
 
         //Draw Borders
-        for (Polygon currentBorder : mBorders){
+        for (Obstacle currentBorder : mBorders){
             currentBorder.draw(mVPMatrix);
         }
 
         //Draw obstacles
-        for (Polygon currentObstacle : mObstacles){
+        for (Obstacle currentObstacle : mObstacles){
             currentObstacle.draw(mVPMatrix);
         }
 
@@ -667,9 +736,56 @@ public class GameEngine {
             currentTarget.draw(mVPMatrix);
         }
 
+        */
+
+        for (Drawable object : allDrawableObjects){
+
+            //TODO use switch statement instead of multiple if statements
+            if (object.getType()==GameState.INTERACTABLE_BALL){
+
+                Ball currentBall = (Ball) object;
+
+                if (!currentBall.isBallActive()){
+                    continue;
+                }
+
+                //TODO is there some way not to draw this differently than all other drawables? that would be nice...
+                currentBall.draw(currentBall.getModelProjectionMatrix());
+                //TODO instead of using continues, just use a skip variable, and then one continue at the very end if skip is true
+                continue;
+
+            }
+
+            if (object.getType()==GameState.DRAWABLE_GHOST_CIRCLES){
+                if (mCurrentActiveBallID == mAllBalls.size()) {
+                    System.out.println("NOT drawing ghost circles.");
+                    continue;
+                }
+            }
+
+            if (object.getType()==GameState.DRAWABLE_VELOCITY_ARROW){
+                if ((mCurrentActiveBallID == mAllBalls.size()) || (!mIsVelocityArrowActive)){
+                    continue;
+                }
+            }
+
+            if (object.getType() == GameState.DRAWABLE_BALLS_REMAINING){
+                BallsRemainingIcon currentIcon = (BallsRemainingIcon) object;
+
+                if ( (mAllBalls.size() - mCurrentActiveBallID)  <= currentIcon.getIndex()) {
+                    continue;
+                }
+            }
+
+            object.draw(mVPMatrix);
+
+        }
+
     }
 
     private void drawNonInteractables(){
+
+        /*
 
         if (mCurrentActiveBallID != mAllBalls.size()){
             selectionCircle.draw(mVPMatrix);
@@ -683,6 +799,13 @@ public class GameEngine {
         for (ScoreDigits currentDigit : scoreDigits){
             currentDigit.draw(mVPMatrix);
         }
+
+        for (Circle currentIcon : ballsRemainingCounter){
+            currentIcon.draw(mVPMatrix);
+        }
+
+        */
+
     }
 
     public void updateVPMatrix(float[] VPMatrix){
@@ -717,23 +840,6 @@ public class GameEngine {
 
     public void setContext(Context context){
         mActivityContext = context;
-    }
-
-    private void lockBalls(){
-        mBallCollectionInUse = true;
-    }
-
-    private void unlockBallsAlreadyWaiting(){
-        mBallCollectionInUse = false;
-    }
-
-    private void unlockBalls(){
-        mBallCollectionInUse = false;
-
-        //if a ball is waiting (because it couldn't be added while the frame is in progress), then activate it now
-        if (mBallWaiting){
-            activateBall(null);
-        }
     }
 
     private void updateFPSinfo(){
@@ -855,6 +961,8 @@ public class GameEngine {
         } else {
             angle = (float) -(3.1415 / 2) + angle;
         }
+
+        System.out.println("ANGLE: " + angle);
 
         float[] newCoords = GameState.updateVelocityArrow(angle, height);
 

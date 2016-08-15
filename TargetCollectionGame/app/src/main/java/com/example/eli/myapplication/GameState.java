@@ -72,6 +72,7 @@ public class GameState {
 
     //Size of the ball. May eventually move it to a level-controlled variable to allow more flexibility
     static final float ballRadius = 10f;
+    static final float GHOST_ALPHA = 0.3f;
 
     //Get dimensions of screen
     private static final int mHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
@@ -94,9 +95,14 @@ public class GameState {
     //============
 
     //Reference ints for object types
-    static final int OBSTACLE_POLYGON = 1000;
-    static final int OBSTACLE_BALL = 1001;
-    static final int OBSTACLE_TARGET = 1002;
+    static final int INTERACTABLE_OBSTACLE = 1000;
+    static final int INTERACTABLE_BALL = 1001;
+    static final int INTERACTABLE_TARGET = 1002;
+    static final int DRAWABLE_SCOREDIGIT = 2000;
+    static final int DRAWABLE_GHOST_CIRCLES = 2001;
+    static final int DRAWABLE_VELOCITY_ARROW = 2002;
+    static final int DRAWABLE_CIRCLE = 2003;
+    static final int DRAWABLE_BALLS_REMAINING = 2004;
 
     //Used as initializers when searching for larger or smaller numbers
     static final float LARGE_NUMBER = 99999f;

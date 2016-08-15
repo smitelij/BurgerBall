@@ -15,9 +15,6 @@
  */
 package com.example.eli.myapplication;
 
-import java.util.ArrayList;
-
-import android.graphics.PointF;
 import android.opengl.Matrix;
 
 /**
@@ -36,7 +33,8 @@ public class Target extends Interactable{
     public Target(float[] borderCoords, float radius, int texturePointer) {
 
         //TODO AABB is initialized here, and using the same framework as for Polygons, which does a lot of unecessary computations for a ball object.
-        super(borderCoords, GameState.OBSTACLE_TARGET, texturePointer);
+        super(borderCoords, texturePointer);
+        setType(GameState.INTERACTABLE_TARGET);
 
         Matrix.setIdentityM(mModelMatrix, 0);
 

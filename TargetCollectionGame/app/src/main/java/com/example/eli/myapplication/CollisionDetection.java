@@ -43,7 +43,7 @@ public class CollisionDetection {
     }
 
     //closest axis = minimum penetration
-    public Penetration findClosestAxis(Ball ball, Polygon obstacle){
+    public Penetration findClosestAxis(Ball ball, Obstacle obstacle){
 
          //sanity check
         if (penetrationHistory.size() == 0) {
@@ -104,17 +104,17 @@ public class CollisionDetection {
      */
     public void detailedCollisionTesting(Ball ball, Interactable object, float timeStep){
 
-        if (object.getType()== GameState.OBSTACLE_BALL){
+        if (object.getType()== GameState.INTERACTABLE_BALL){
             doBallCollisionDetection(ball, (Ball) object, timeStep);
             return;
         }
 
-        if (object.getType()== GameState.OBSTACLE_POLYGON){
-            doPolygonCollisionDetection(ball, (Polygon) object, timeStep);
+        if (object.getType()== GameState.INTERACTABLE_OBSTACLE){
+            doPolygonCollisionDetection(ball, (Obstacle) object, timeStep);
             return;
         }
 
-        if (object.getType()== GameState.OBSTACLE_TARGET){
+        if (object.getType()== GameState.INTERACTABLE_TARGET){
             doTargetCollisionDetection(ball, (Target) object, timeStep);
             return;
         }
@@ -296,7 +296,7 @@ public class CollisionDetection {
         }
     }
 
-    private void doPolygonCollisionDetection(Ball ball, Polygon obstacle, float timeStep) {
+    private void doPolygonCollisionDetection(Ball ball, Obstacle obstacle, float timeStep) {
 
         //reset projection history
         clearPenetrationHistory();
@@ -360,7 +360,7 @@ public class CollisionDetection {
         return normalAxis;
     }
 
-    private void getBoundaryCollisionInfo(Ball ball, Polygon obstacle, float timeStep){
+    private void getBoundaryCollisionInfo(Ball ball, Obstacle obstacle, float timeStep){
 
         //Find the most likely axis of penetration, based on depth of penetration.
         Penetration pHistory = findClosestAxis(ball, obstacle);
@@ -456,9 +456,11 @@ public class CollisionDetection {
     public boolean coarseCollisionTesting(Ball ball, Interactable obstacle){
 
         //if the other object is a ball, we need to make sure it has already moved this frame.
-        if (obstacle.getType() == GameState.OBSTACLE_BALL){
+        if (obstacle.getType() == GameState.INTERACTABLE_BALL){
             Ball tempBall = (Ball) obstacle;
-            if (!tempBall.hasBallMoved()){
+
+            //If ball isn't active, or hasn't been moved yet this frame, we don't want to do testing on it.
+            if ((!tempBall.isBallActive())||(!tempBall.hasBallMoved())){
                 return false;
             }
         }

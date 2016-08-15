@@ -38,21 +38,16 @@ public class Interactable extends Drawable{
     protected float mMinYCoord;
     protected float mMaxYCoord;
 
-    //uses one of the static ints declared in GameState.OBSTACLE_
-    private int mType;
-
     //Coordinates represented as an intuitive PointF array
     private PointF[] m2dCoordArray;
-
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
-    public Interactable(float[] borderCoords, int type, int texturePointer) {
+    public Interactable(float[] borderCoords, int texturePointer) {
 
         super(borderCoords,texturePointer);
 
-        mType = type;
         set2dCoordArray();
         setupAABB();
 
@@ -139,11 +134,6 @@ public class Interactable extends Drawable{
 
         return center;
     }
-
-    public int getType(){
-        return mType;
-    }
-
 
 
 }

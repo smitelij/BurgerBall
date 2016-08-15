@@ -22,7 +22,6 @@ import android.os.Bundle;
 
 public class OpenGLES20Activity extends Activity {
 
-    public final static String END_LEVEL_SCORE = "com.example.eli.myapplication.END_LEVEL_SCORE";
     private GLSurfaceView mGLView;
     private GameEngine mGame;
 
@@ -58,18 +57,6 @@ public class OpenGLES20Activity extends Activity {
         // If you de-allocated graphic objects for onPause()
         // this is a good place to re-allocate them.
         mGLView.onResume();
-    }
-
-    @Override
-    protected void onDestroy(){
-        int score = mGame.getScore();
-
-        Intent data = new Intent();
-        data.putExtra(END_LEVEL_SCORE, score);
-        setResult(RESULT_OK, data);
-
-        super.onDestroy();
-
     }
 
 

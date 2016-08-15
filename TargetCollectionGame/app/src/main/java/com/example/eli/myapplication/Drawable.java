@@ -81,6 +81,9 @@ public class Drawable {
     private int mTextureCoordinateHandle;
     private int mTextureDataHandle;
 
+    //uses one of the static ints declared in GameState.OBSTACLE_
+    private int mType;
+
     private Context context;
 
 
@@ -256,7 +259,6 @@ public class Drawable {
 
     public void setCoords(float[] newCoords){
 
-        System.out.println("set new coords.");
         mBorderCoords = newCoords;
 
         ByteBuffer bb = ByteBuffer.allocateDirect(
@@ -337,6 +339,14 @@ public class Drawable {
 
     protected void updateTexture(int newTexture){
         mTextureDataHandle = newTexture;
+    }
+
+    protected void setType(int type){
+        mType = type;
+    }
+
+    protected int getType(){
+        return mType;
     }
 
 
