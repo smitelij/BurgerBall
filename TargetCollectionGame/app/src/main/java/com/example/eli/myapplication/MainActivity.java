@@ -40,18 +40,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        System.out.println("MAIN ACTIVITY");
+
+        Intent intent = getIntent();
+        String levelString = intent.getStringExtra(SetSelect.SET_SELECT_MESSAGE);
+        //loadSet(levelString);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         context = getApplicationContext();
         currentUserScores = HighScoreFileParse(context, currentUser);
@@ -64,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        setTitle(" ");
+        //setTitle(" ");
 
         return true;
 }
@@ -177,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                     String[] allLevelScores = currentUserScore.split("\\&");
 
                     for (String currentLevel : allLevelScores){
-                        System.out.println("currentLevel: " + currentLevel);
+                        System.out.println("setSelection: " + currentLevel);
 
                         if (currentLevel.startsWith("1.1")){
                             highScores.put("1.1",currentLevel.substring(4));

@@ -60,21 +60,21 @@ public class LevelData {
                 float obstacle151coords[] = {
                         80f, 200f, 0.0f,   // top left
                         40f, 130f, 0.0f,   // bottom left
-                        50f, 130f, 0.0f,   // bottom right
-                        90f, 200f, 0.0f }; // top right
+                        55f, 130f, 0.0f,   // bottom right
+                        95f, 200f, 0.0f }; // top right
 
 
                 float obstacle152coords[] = {
-                        185f, 145f, 0.0f,   // top left
-                        145f, 65f, 0.0f,   // bottom left
+                        180f, 145f, 0.0f,   // top left
+                        140f, 65f, 0.0f,   // bottom left
                         155f, 65f, 0.0f,   // bottom right
                         195f, 145f, 0.0f }; // top right
 
                 float obstacle153coords[] = {
                         155f, 240f, 0.0f,   // top left
                         155f, 215f, 0.0f,   // bottom left
-                        165f, 215f, 0.0f,   // bottom right
-                        165f, 240f, 0.0f }; // top right
+                        195f, 215f, 0.0f,   // bottom right
+                        195f, 240f, 0.0f }; // top right
 
                 float obstacle154coords[] = {
                         185f, 12f, 0.0f,   // left
@@ -189,7 +189,7 @@ public class LevelData {
                 mTargetCoords.add(target122coords);
 
                 //num of balls
-                mNumOfBalls = 2;
+                mNumOfBalls = 3;
 
                 break;
 
@@ -246,7 +246,7 @@ public class LevelData {
                 mTargetCoords.add(target142coords);
 
                 //num of balls
-                mNumOfBalls = 3;
+                mNumOfBalls = 4;
 
                 break;
 

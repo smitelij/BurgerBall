@@ -333,10 +333,6 @@ public class GameEngine {
             return;
         }
 
-        System.out.println("mNumActiveBalls: " + mNumActiveBalls);
-        System.out.println("mCurrentActiveBallID: " + mCurrentActiveBallID);
-        System.out.println("mTotalBalls: " + mTotalBalls);
-
         //If all available balls have been fired, and none are still active, then we are done.
         if ((mCurrentActiveBallID == (mTotalBalls)) && (mNumActiveBalls == 0)){
             endLevelFail();
