@@ -83,37 +83,29 @@ public class CollisionHandling {
         }
     }
 
+    //**Reference:
+    //http://gamedev.stackexchange.com/questions/23672/determine-resulting-angle-of-wall-collision
+    //
     private void calculateVelocityBorderCollision(Collision collision){
-        /*
-        System.out.println("Obstacle center: " + collision.getObstacle().getCenter());
-        System.out.println("Boundary axis: " + collision.getBoundaryAxis());
-        System.out.println("Collision time: " + collision.getTime());
-        System.out.println("Ball center: " + collision.getBall().getCenter());
-        System.out.println("Ball old velocity: " + collision.getBall().getVelocity().x + ";" + collision.getBall().getVelocity().y);
-        */
-
-
         Ball ball = collision.getBall();
-        float velocityChange;
-        PointF velocityChangeVector;
-        PointF newVelocity;
         PointF boundaryAxis = collision.getBoundaryAxis();
         PointF oldVelocity = ball.getVelocity(collision.getTime());
 
-        velocityChange = 2 * GameState.dotProduct(oldVelocity, boundaryAxis);
-        velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
-        newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
+        //Formula to use:
+        // New Velocity =  v - (2(n · v) n )
+        // n= normal vector (boundary axis), v= incoming vector
+
+        float velocityChange = 2 * GameState.dotProduct(oldVelocity, boundaryAxis);
+        PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
+        PointF newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
         newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
         ball.setVelocity(newVelocity);
 
-        //System.out.println("Ball new velocity: " + newVelocity.x + ";" + newVelocity.y);
-
     }
 
+    //**Reference material:
+    //http://vobarian.com/collisions/2dcollisions2.pdf
     private void calculateVelocityBallCollision(Collision collision){
-
-        //System.out.println("Ball collision " + collision.hashCode());
-        //System.out.println("time: " + collision.getTime());
 
         //get balls
         Ball ball1 = collision.getBall();
@@ -127,8 +119,6 @@ public class CollisionHandling {
         //get velocities for balls
         PointF ball1velocity = ball1.getAvailableVelocity(collision.getTime());  //if a ball collides with more than one other ball,
         PointF ball2velocity = ball2.getAvailableVelocity(collision.getTime());  //available velocity will differ from normal velocity
-        //System.out.println("ball " + ball1.getID() + " available velocity: " + ball1velocity.x + ";" + ball1velocity.y);
-        //System.out.println("ball " + ball2.getID() + " available velocity: " + ball2velocity.x + ";" + ball2velocity.y);
 
         //determine component velocities for ball1 / ball2 in the tangent / normal directions
         float velocity1tangent = GameState.dotProduct(ball1velocity, UTangentVector);
@@ -161,8 +151,6 @@ public class CollisionHandling {
         //set velocity
         ball1.addNewVelocity(newVelocity1);
         ball2.addNewVelocity(newVelocity2);
-        //System.out.println("ball " + ball1.getID() + " new velocity: " + newVelocity1.x + ";" + newVelocity1.y);
-        //System.out.println("ball " + ball2.getID() + " new velocity: " + newVelocity2.x + ";" + newVelocity2.y);
     }
 
     public void updateCollisionCollections(ArrayList<Collision> collisions){

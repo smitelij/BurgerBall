@@ -344,7 +344,7 @@ public class CollisionDetection {
     }
 
     private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index){
-        //We make need to make a line between two vertexes
+        //We need to make a line between two vertexes
         int vertexA = index;
         int vertexB = (index + 1) % obstacleCoords.length; //We need to wrap back to the first vertex at the end, so use modulus
 

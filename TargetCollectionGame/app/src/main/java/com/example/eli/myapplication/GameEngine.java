@@ -3,11 +3,8 @@ package com.example.eli.myapplication;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
 import java.util.ArrayList;
@@ -27,21 +24,17 @@ public class GameEngine {
     //All active objects that only need to be drawn (not collision checked) are added to this collection
     private ArrayList<Drawable> allDrawableObjects;
 
-    private ScoreDigits[] scoreDigits = new ScoreDigits[5];
+    private ScoreDigits[] mScoreDigits = new ScoreDigits[5];
 
     private ArrayList<Ball> mAllBalls;     //Collection of all balls
-    private ArrayList<Ball> mActiveBalls;  //Collection of only active balls
     private int mNumActiveBalls = 0;
-
-    private ArrayList<Obstacle> mBorders;    //Collection of outer borders
-    private ArrayList<Obstacle> mObstacles;  //Collection of other (inner) boundaries
-
-    private ArrayList<Target> mTargets;  //Collection of targets
+    private int mTargetsHit = 0;
 
     private float[] mVPMatrix = new float[16];  //View-Projection matrix to place objects into actual device coordinates
     private static Context mActivityContext;
 
-    private int mTotalBalls;  //Number of total balls available this level
+    private int mTotalBalls;    //Number of total balls available this level
+    private int mTotalTargets;  //Number of total targets this level
 
     private int mCurrentActiveBallID = 0;  //The current active ball index
 
@@ -74,15 +67,10 @@ public class GameEngine {
     private float discrepancySum = 0;
     private float discrepancyCounter = 0;
 
-    private Circle selectionCircle;
-    private Circle ghostBall;
-    private Circle velocityArrow;
+    private Circle mVelocityArrow;
     private boolean mIsVelocityArrowActive;
-    private Circle[] ballsRemainingCounter;
 
-    private int[] digitTextures = new int[10];
     private int currentScore = 100000;
-    private int currentBallTexture;
 
     private int mChapter;
     private int mLevel;
@@ -107,120 +95,22 @@ public class GameEngine {
     //--------------------
     //Load a level
     //
-    // (eventually this will probably take a parameter to specify which level)
     public void loadLevel(){
 
-        //Initialize the level
-        Level currentLevel = new Level(mLevel);
-        mTotalBalls=currentLevel.getNumOfBalls(); //grab the number of total balls
+        //Grab the level data (number of balls, coordinates of objects, etc)
+        LevelData currentLevelData = new LevelData(mLevel);
+        mTotalBalls = currentLevelData.getNumOfBalls();
+        mTotalTargets = currentLevelData.getNumOfTargets();
 
-        allInteractableObjects = new ArrayList<>();
-        allDrawableObjects = new ArrayList<>();
+        //Next we need to initialize all the objects that will be drawn in this level
+        LevelInitialization levelInitialization = new LevelInitialization(currentLevelData, mActivityContext);
 
-        initializeBalls();  //Initialize the balls
-        loadBoundaries();  //Load outer boundaries (don't need a reference to current level, because currently outer boundaries are always the same)
-        loadObstacles(currentLevel);  //Load level specific boundaries
-        loadTargets(currentLevel);  //Load level specific targets
-        initializeInteractableObjects();  //Add all active objects to the active-objects collection
-        initializeDrawables();
-    }
-
-    private void initializeDrawables(){
-
-        //Selection circle
-        selectionCircle = new SelectionCircle();
-        allDrawableObjects.add(selectionCircle);
-
-        //Ghost ball
-        ghostBall = new GhostBall(currentBallTexture);
-        allDrawableObjects.add(ghostBall);
-
-        //Balls remaining counter
-        initializeBallsRemainingCounter();
-
-        //Velocity arrow
-        velocityArrow = new VelocityArrow();
-        allDrawableObjects.add(velocityArrow);
-
-        initializeScoreDigits();
-    }
-
-    private void initializeBallsRemainingCounter(){
-
-        float boxWidth = GameState.BORDER_WIDTH;
-        ballsRemainingCounter = new Circle[mTotalBalls];
-
-        for (int index = 0; index < mTotalBalls; index++){
-
-            float separationAmount = (float) (index * 1.5);
-
-            float[] coords = new float[]{
-                    GameState.FULL_WIDTH - (boxWidth * (separationAmount)) - boxWidth, boxWidth, 0f,                      //top left
-                    GameState.FULL_WIDTH - (boxWidth * (separationAmount)) - boxWidth, 0, 0f,         //bottom left
-                    GameState.FULL_WIDTH - (boxWidth * separationAmount), 0, 0f,             //bottom right
-                    GameState.FULL_WIDTH - (boxWidth * separationAmount), boxWidth, 0f                           //top right
-            };
-
-            ballsRemainingCounter[index] = new BallsRemainingIcon(coords, currentBallTexture, index);
-            allDrawableObjects.add(ballsRemainingCounter[index]);
-        }
-
-    }
-
-    private void initializeScoreDigits(){
-
-        loadDigitTextures();
-
-        float boxWidth = GameState.BORDER_WIDTH * 2;
-
-        for (int index = 0; index < 5; index++){
-            float[] coords = new float[]{
-                    GameState.FULL_WIDTH - (boxWidth * (index+1)), GameState.FULL_HEIGHT, 0f,                      //top left
-                    GameState.FULL_WIDTH - (boxWidth * (index+1)), GameState.FULL_HEIGHT - (boxWidth), 0f,         //bottom left
-                    GameState.FULL_WIDTH - (boxWidth * index), GameState.FULL_HEIGHT - (boxWidth), 0f,             //bottom right
-                    GameState.FULL_WIDTH - (boxWidth * index), GameState.FULL_HEIGHT, 0f                           //top right
-            };
-            scoreDigits[index] = new ScoreDigits(coords, digitTextures[9]);
-            allDrawableObjects.add(scoreDigits[index]);
-        }
-
-    }
-
-    private void loadDigitTextures(){
-        digitTextures[0] = loadGLTexture(GameState.TEXTURE_DIGIT_0);
-        digitTextures[1] = loadGLTexture(GameState.TEXTURE_DIGIT_1);
-        digitTextures[2] = loadGLTexture(GameState.TEXTURE_DIGIT_2);
-        digitTextures[3] = loadGLTexture(GameState.TEXTURE_DIGIT_3);
-        digitTextures[4] = loadGLTexture(GameState.TEXTURE_DIGIT_4);
-        digitTextures[5] = loadGLTexture(GameState.TEXTURE_DIGIT_5);
-        digitTextures[6] = loadGLTexture(GameState.TEXTURE_DIGIT_6);
-        digitTextures[7] = loadGLTexture(GameState.TEXTURE_DIGIT_7);
-        digitTextures[8] = loadGLTexture(GameState.TEXTURE_DIGIT_8);
-        digitTextures[9] = loadGLTexture(GameState.TEXTURE_DIGIT_9);
-    }
-
-    //----------------
-    //This function initializes all the balls that will be used for this level.
-    // Although they are not drawn immediately (or activated), they need to be created
-    // from the beginning so that OpenGL has a reference to them.
-    //
-    private void initializeBalls(){
-        mAllBalls = new ArrayList<>();
-
-        currentBallTexture = loadGLTexture(GameState.TEXTURE_BALL);
-
-        //Get initial ball coordinates
-        float[] newBallCoords = GameState.getInitialBallCoords();
-
-        //create balls and add them to collection
-        for(int index=0; index < mTotalBalls; index++) {
-
-            Ball ball = new Ball(newBallCoords, new PointF(0f, 0f), GameState.ballRadius, currentBallTexture);
-            mAllBalls.add(ball);
-            allDrawableObjects.add(ball);
-            allInteractableObjects.add(ball);
-        }
-
+        //Now grab the objects (or collections of objects) that we will need to access
+        allInteractableObjects = levelInitialization.getAllInteractableObjects();
+        allDrawableObjects = levelInitialization.getAllDrawableObjects();
+        mAllBalls = levelInitialization.getAllBalls();
+        mScoreDigits = levelInitialization.getScoreDigits();
+        mVelocityArrow = levelInitialization.getVelocityArrow();
 
     }
 
@@ -314,41 +204,6 @@ public class GameEngine {
         return true;
     }
 
-    private void loadBoundaries(){
-
-        //TODO eventually move specific code from Borders to here
-        Borders borders = new Borders(loadGLTexture(GameState.TEXTURE_WALL));
-        mBorders = borders.getAllBorders();
-
-    }
-
-    private void loadObstacles(Level level){
-        mObstacles = level.getObstacles();
-    }
-
-    private void loadTargets(Level level){
-        mTargets = level.getTargets();
-    }
-
-    private void initializeInteractableObjects(){
-
-        //No active balls yet, so we only need to add borders
-        for (Obstacle currentBorder : mBorders){
-            allInteractableObjects.add(currentBorder);
-            allDrawableObjects.add(currentBorder);
-        }
-
-        for (Obstacle obstacle : mObstacles){
-            allInteractableObjects.add(obstacle);
-            allDrawableObjects.add(obstacle);
-        }
-
-        for (Target target : mTargets){
-            allInteractableObjects.add(target);
-            allDrawableObjects.add(target);
-        }
-    }
-
     //Main method called by MyGLRenderer each frame
     public void advanceFrame(){
 
@@ -368,10 +223,15 @@ public class GameEngine {
     }
 
     private void preAdvanceFrame(){
+        //This is only necessary if VARIABLE_FRAME_SIZE is activated in GameState.
+        //Usually it's not very useful but it's an interesting setting regardless.
         mCurrentFrameSize = getFrameSize();
 
+        //Determine how fast the game is running. Unless FRAME_RATE_CAP is specified in GameState,
+        //this is just a piece of diagnostic information.
         updateFPSinfo();
 
+        //Activate any balls that are ready to be fired.
         if (mBallWaiting){
             activateBall(null);
         }
@@ -389,14 +249,12 @@ public class GameEngine {
             //At first, we try to advance the whole frame (or whatever is remaining), and see if any collisions happen.
             float timeStep = mCurrentFrameSize - timeElapsed;
 
-            //initialize collision detection engine
+            //Initialize and run collision detection
             CollisionDetection CD = new CollisionDetection();
-
-            //Do collision detection
             collisionDetection(CD, timeStep);
 
             //Handle collisions (update velocities / displacements as necessary)
-            //Also handles NO collisions
+            //Also handles NO collisions (assign normal velocity to the balls displacement tally)
             //If there is a collision, timeElapsed is updated to the collision time.
             timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
 
@@ -404,9 +262,17 @@ public class GameEngine {
     }
 
     private void postAdvanceFrame(){
+
+        //based on each balls displacement tally, translate the balls model matrix by that amount
         moveBallsForward();
+
+        //decrement a constant value from the score, update digits with correct texture
         updateScore();
+
+        //check if a ball should be deactivated
         testForDeactivatingBalls();
+
+        //check if all balls have been fired or all targets collected
         endLevelChecks();
     }
 
@@ -428,11 +294,11 @@ public class GameEngine {
         int scoreDigit1000 = (currentScore % 10000) / 1000;
         int scoreDigit10000 = (currentScore % 100000) / 10000;
 
-        scoreDigits[0].updateTexture(digitTextures[scoreDigit1]);
-        scoreDigits[1].updateTexture(digitTextures[scoreDigit10]);
-        scoreDigits[2].updateTexture(digitTextures[scoreDigit100]);
-        scoreDigits[3].updateTexture(digitTextures[scoreDigit1000]);
-        scoreDigits[4].updateTexture(digitTextures[scoreDigit10000]);
+        mScoreDigits[0].updateTexture(scoreDigit1);
+        mScoreDigits[1].updateTexture(scoreDigit10);
+        mScoreDigits[2].updateTexture(scoreDigit100);
+        mScoreDigits[3].updateTexture(scoreDigit1000);
+        mScoreDigits[4].updateTexture(scoreDigit10000);
 
     }
 
@@ -467,9 +333,35 @@ public class GameEngine {
             return;
         }
 
-        if ((mNumActiveBalls == 0) || (mTargets.size() == 0)){
-            endLevel();
+        System.out.println("mNumActiveBalls: " + mNumActiveBalls);
+        System.out.println("mCurrentActiveBallID: " + mCurrentActiveBallID);
+        System.out.println("mTotalBalls: " + mTotalBalls);
+
+        //If all available balls have been fired, and none are still active, then we are done.
+        if ((mCurrentActiveBallID == (mTotalBalls)) && (mNumActiveBalls == 0)){
+            endLevelFail();
         }
+
+        //Or if all the targets have been hit
+        if ((mTargetsHit == mTotalTargets)){
+            endLevelSuccess();
+        }
+    }
+
+    private void endLevelSuccess(){
+        //eventually put some sort of graphic or message here
+
+        //give them at least 1 point for 1 star
+        if (currentScore == 0){
+            currentScore = 1;
+        }
+        endLevel();
+    }
+
+    private void endLevelFail(){
+        //eventually put some sort of graphic or message here
+        currentScore = 0;
+        endLevel();
     }
 
     private void endLevel(){
@@ -687,7 +579,7 @@ public class GameEngine {
         ArrayList<Target> hitTargets = CH.getTargetCollisions(firstCollisionTime);
 
         for (Target target : hitTargets){
-            mTargets.remove(target);
+            mTargetsHit++;
             allInteractableObjects.remove(target);
             allDrawableObjects.remove(target);
         }
@@ -762,7 +654,7 @@ public class GameEngine {
 
 
             //----VELOCITY ARROW
-            // This is another firing aid. More specifically then the above ones though,
+            // This is another firing aid. More specifically than the above ones though,
             // it should only be drawn when the flag mIsVelocityArrowActive is true.
             case GameState.DRAWABLE_VELOCITY_ARROW:
                 if ((!mIsVelocityArrowActive) || (mCurrentActiveBallID == mAllBalls.size())){
@@ -791,33 +683,6 @@ public class GameEngine {
 
     public void updateVPMatrix(float[] VPMatrix){
         mVPMatrix = VPMatrix;
-    }
-
-
-    public static int loadGLTexture(int imagePointer) {
-
-        int[] temp = new int[1];
-        // loading texture
-        Bitmap bitmap = BitmapFactory.decodeResource(mActivityContext.getResources(), imagePointer);
-
-        // generate one texture pointer
-        GLES20.glGenTextures(1, temp, 0);
-        // ...and bind it to our array
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, temp[0]);
-
-        // create nearest filtered texture
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-
-        // Use Android GLUtils to specify a two-dimensional texture image from our bitmap
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-
-        // Clean up
-        bitmap.recycle();
-
-        return temp[0];
     }
 
     public void setContext(Context context){
@@ -933,6 +798,10 @@ public class GameEngine {
 
     public void redrawArrow(float xChange, float yChange){
 
+        if (mVelocityArrow==null){
+            return;
+        }
+
         mIsVelocityArrowActive = true;
 
         float angle = GameState.calculateFiringAngle(xChange, yChange);
@@ -946,7 +815,7 @@ public class GameEngine {
 
         float[] newCoords = GameState.updateVelocityArrow(angle, height);
 
-        velocityArrow.setCoords(newCoords);
+        mVelocityArrow.setCoords(newCoords);
     }
 
     public int getScore(){

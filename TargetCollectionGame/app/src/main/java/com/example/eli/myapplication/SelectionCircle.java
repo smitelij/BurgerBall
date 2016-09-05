@@ -5,8 +5,8 @@ package com.example.eli.myapplication;
  */
 public class SelectionCircle extends Circle {
 
-    public SelectionCircle(){
-        super(GameState.getSelectionCircleCoords(), GameEngine.loadGLTexture(GameState.TEXTURE_SELECTION_CIRCLE));
+    public SelectionCircle(int texture){
+        super(GameState.getSelectionCircleCoords(), texture);
         setType(GameState.DRAWABLE_GHOST_CIRCLES);
         setAlpha(GameState.GHOST_ALPHA);
     }
