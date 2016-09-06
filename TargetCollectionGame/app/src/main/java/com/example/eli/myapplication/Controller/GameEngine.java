@@ -1,4 +1,4 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Controller;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,6 +6,18 @@ import android.content.Intent;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+
+import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Model.Interactable;
+import com.example.eli.myapplication.Model.LevelData;
+import com.example.eli.myapplication.Model.LevelInitialization;
+import com.example.eli.myapplication.Model.Ball;
+import com.example.eli.myapplication.Model.BallsRemainingIcon;
+import com.example.eli.myapplication.Model.Circle;
+import com.example.eli.myapplication.Model.Collision;
+import com.example.eli.myapplication.Model.Drawable;
+import com.example.eli.myapplication.Model.ScoreDigits;
+import com.example.eli.myapplication.Model.Target;
 
 import java.util.ArrayList;
 

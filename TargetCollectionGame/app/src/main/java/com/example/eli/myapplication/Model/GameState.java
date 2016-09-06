@@ -1,7 +1,9 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 import android.content.res.Resources;
 import android.graphics.PointF;
+
+import com.example.eli.myapplication.R;
 
 /**
  * Created by Eli on 6/1/2016.
@@ -20,26 +22,26 @@ public class GameState {
     //========================
 
     //How far objects will advance per frame. Should be set lower when FPS is higher, and higher when FPS is lower.
-    static final float FRAME_SIZE = 0.5f;
+    public static final float FRAME_SIZE = 0.5f;
     //this is a strange flag that will change the frame size automatically, based on how fast the game is running.
     // Seems to make it pretty choppy, but we'll keep it as an option for now.
-    static final boolean VARIABLE_FRAME_SIZE = false;
+    public static final boolean VARIABLE_FRAME_SIZE = false;
 
     //This setting will force the frame rate to be capped at a certain rate. If this cap is set low enough,
     //it will make the frame rate more consistent.
-    static final boolean FRAME_RATE_CAP = false;
+    public static final boolean FRAME_RATE_CAP = false;
     //Maximum 'frames' (calls to onDrawFrame in MyGLRenderer) that are allowed per second.
     //Does nothing if FRAME_RATE_CAP is set to false
-    static final long FRAME_RATE_CAP_SIZE = 36;
+    public static final long FRAME_RATE_CAP_SIZE = 36;
     //This setting will determine an automatic frame rate cap based on past performance.
     //It will do nothing if FRAME_RATE_CAP is set to false.
-    static final boolean AUTO_CAP_FRAME_RATE_SIZE = false;
+    public static final boolean AUTO_CAP_FRAME_RATE_SIZE = false;
 
     //num of collisions per frame size of 1 that will deactivate a ball.
     //For example, if frame size is 1, and a ball has 8 collisions in the span of 1 frame,
     //the ball will be deactivated. If frame size is 1/2, then the ball will need to have
     //4 collisions in the span of 1 frame.
-    static final int DEACTIVATION_CONSTANT = 10;
+    public static final int DEACTIVATION_CONSTANT = 10;
 
     //Max possible firing velocity for balls in the X and Y components.
     static final float MAX_INITIAL_X_VELOCITY = 8f;
@@ -50,19 +52,19 @@ public class GameState {
     //May eventually move to a level-controlled variable to allow changes.
     static final PointF GRAVITY_CONSTANT = new PointF(0f,-0.18f);
     //How velocity is affected after a collision (setting at 0.9 means 10% of energy is lost in a collision).
-    static final float ELASTIC_CONSTANT = 0.9f;
+    public static final float ELASTIC_CONSTANT = 0.9f;
 
     //Currently controls whether FPS stats are printed to console.
     //Eventually should be used to display an FPS rate within the game.
-    static final boolean showFPS = true;
+    public static final boolean showFPS = true;
 
     //=====================
     //Dimensions and sizes
     //=====================
 
     //size of arena
-    static final float FULL_WIDTH = 200.0f;
-    static final float FULL_HEIGHT = 300.0f;
+    public static final float FULL_WIDTH = 200.0f;
+    public static final float FULL_HEIGHT = 300.0f;
     //width of border
     static final float BORDER_WIDTH = 6.0f;
 
@@ -95,18 +97,18 @@ public class GameState {
     //============
 
     //Reference ints for object types
-    static final int INTERACTABLE_OBSTACLE = 1000;
-    static final int INTERACTABLE_BALL = 1001;
-    static final int INTERACTABLE_TARGET = 1002;
-    static final int DRAWABLE_SCOREDIGIT = 2000;
-    static final int DRAWABLE_GHOST_CIRCLES = 2001;
-    static final int DRAWABLE_VELOCITY_ARROW = 2002;
-    static final int DRAWABLE_CIRCLE = 2003;
-    static final int DRAWABLE_BALLS_REMAINING = 2004;
+    public static final int INTERACTABLE_OBSTACLE = 1000;
+    public static final int INTERACTABLE_BALL = 1001;
+    public static final int INTERACTABLE_TARGET = 1002;
+    public static final int DRAWABLE_SCOREDIGIT = 2000;
+    public static final int DRAWABLE_GHOST_CIRCLES = 2001;
+    public static final int DRAWABLE_VELOCITY_ARROW = 2002;
+    public static final int DRAWABLE_CIRCLE = 2003;
+    public static final int DRAWABLE_BALLS_REMAINING = 2004;
 
     //Used as initializers when searching for larger or smaller numbers
-    static final float LARGE_NUMBER = 99999f;
-    static final float SMALL_NUMBER = -99999f;
+    public static final float LARGE_NUMBER = 99999f;
+    public static final float SMALL_NUMBER = -99999f;
 
     //Location of texture files
     static final int TEXTURE_WALL = R.drawable.largebrick;

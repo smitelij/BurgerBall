@@ -1,10 +1,10 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 /**
  * Created by Eli on 7/25/2016.
  */
 
-public class ScoreDigits extends Square{
+public class ScoreDigits extends Square {
 
     private final int[] mDigitTextures;
 
@@ -14,7 +14,7 @@ public class ScoreDigits extends Square{
         setType(GameState.DRAWABLE_SCOREDIGIT);
     }
 
-    protected void updateTexture(int newDigit){
+    public void updateTexture(int newDigit){
         int textureToUse;
 
         if ((newDigit < 0) || (newDigit > 9)){

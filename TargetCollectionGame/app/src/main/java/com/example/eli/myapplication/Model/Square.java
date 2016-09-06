@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 
-import android.graphics.PointF;
+import com.example.eli.myapplication.Model.Drawable;
 
 /**
  * Created by Eli on 7/24/2016.
  */
-public class Square extends Drawable{
+public class Square extends Drawable {
 
     public Square(float[] borderCoords, int texturePointer) {
         super(borderCoords,texturePointer);

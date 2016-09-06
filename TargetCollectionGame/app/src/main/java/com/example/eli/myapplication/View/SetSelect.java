@@ -1,15 +1,17 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.View;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.example.eli.myapplication.R;
+import com.example.eli.myapplication.Model.StarRanges;
 
 import java.util.HashMap;
 
@@ -38,20 +40,9 @@ public class SetSelect extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.set_select);
 
-        /*
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        */
-
 
         context = getApplicationContext();
 
@@ -60,7 +51,7 @@ public class SetSelect extends AppCompatActivity{
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         //setTitle(" ");
 
         return true;

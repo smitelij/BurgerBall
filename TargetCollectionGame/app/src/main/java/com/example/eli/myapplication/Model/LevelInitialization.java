@@ -1,4 +1,4 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 import android.content.Context;
 import android.graphics.Bitmap;

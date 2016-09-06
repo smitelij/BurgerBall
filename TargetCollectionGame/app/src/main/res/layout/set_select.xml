@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#2a1223">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/MyActionBar">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
 
     <TableRow
         android:layout_width="match_parent"
@@ -66,7 +81,8 @@
             android:id="@+id/set1button"
             android:layout_column="1"
             android:enabled="true"
-            android:onClick="sendMessage" />
+            android:onClick="sendMessage"
+            android:background="#3a1d32" />
     </TableRow>
 
     <TableRow
@@ -85,7 +101,8 @@
             android:layout_column="1"
             android:enabled="false"
             android:capitalize="none"
-            android:onClick="sendMessage" />
+            android:onClick="sendMessage"
+            android:background="#3a1d32" />
     </TableRow>
 
     <TableRow
@@ -103,7 +120,8 @@
             android:id="@+id/set3button"
             android:layout_column="1"
             android:enabled="false"
-            android:onClick="sendMessage" />
+            android:onClick="sendMessage"
+            android:background="#3a1d32" />
     </TableRow>
 
     <TableRow
@@ -121,12 +139,19 @@
             android:id="@+id/set4button"
             android:layout_column="1"
             android:enabled="false"
-            android:onClick="sendMessage" />
+            android:onClick="sendMessage"
+            android:background="#3a1d32" />
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"></TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
@@ -139,6 +164,9 @@
             android:id="@+id/set5button"
             android:layout_column="1"
             android:enabled="false"
-            android:onClick="sendMessage" />
+            android:onClick="sendMessage"
+            android:background="#3a1d32" />
     </TableRow>
+
+
 </TableLayout>

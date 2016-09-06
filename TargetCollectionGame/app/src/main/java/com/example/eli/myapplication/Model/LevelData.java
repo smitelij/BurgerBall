@@ -1,4 +1,6 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
+
+import com.example.eli.myapplication.Model.GameState;
 
 import java.util.ArrayList;
 
@@ -43,7 +45,7 @@ public class LevelData {
 
                 //Targets
 
-                float[] target111coords = GameState.createCircleCoords(90,160,8f);
+                float[] target111coords = GameState.createCircleCoords(90, 160, 8f);
                 float[] target112coords = GameState.createCircleCoords(150,180,8f);
 
                 mTargetCoords.add(target111coords);
@@ -240,7 +242,7 @@ public class LevelData {
                 //Targets
 
                 float[] target141coords = GameState.createCircleCoords(60,260,8f);
-                float[] target142coords = GameState.createCircleCoords(190,100,8f);
+                float[] target142coords = GameState.createCircleCoords(185,100,8f);
 
                 mTargetCoords.add(target141coords);
                 mTargetCoords.add(target142coords);

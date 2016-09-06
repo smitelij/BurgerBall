@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 import android.opengl.Matrix;
+
+import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Model.Interactable;
 
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */
-public class Target extends Interactable{
+public class Target extends Interactable {
 
 
     public float[] mModelMatrix = new float[16];

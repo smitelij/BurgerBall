@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
+
+import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Model.Interactable;
 
 /**
  * A two-dimensional border

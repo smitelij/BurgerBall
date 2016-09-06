@@ -1,4 +1,4 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 /**
  * Created by Eli on 3/4/2016.
@@ -20,7 +20,6 @@ package com.example.eli.myapplication;
  */
 
 import android.content.Context;
-import android.graphics.PointF;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -28,17 +27,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.PointF;
-import android.opengl.GLES20;
-import android.opengl.GLUtils;
+import com.example.eli.myapplication.Controller.MyGLRenderer;
 
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
@@ -345,7 +334,7 @@ public class Drawable {
         mType = type;
     }
 
-    protected int getType(){
+    public int getType(){
         return mType;
     }
 

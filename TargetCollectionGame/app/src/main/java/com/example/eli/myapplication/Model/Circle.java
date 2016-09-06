@@ -1,11 +1,9 @@
-package com.example.eli.myapplication;
-
-import android.graphics.PointF;
+package com.example.eli.myapplication.Model;
 
 /**
  * Created by Eli on 7/24/2016.
 */
-public class Circle extends Drawable{
+public class Circle extends Drawable {
 
     public float[] mModelMatrix = new float[16];
     private float mRadius;

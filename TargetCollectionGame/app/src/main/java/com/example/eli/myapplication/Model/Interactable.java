@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PointF;
-import android.opengl.GLES20;
-import android.opengl.GLUtils;
+
+import com.example.eli.myapplication.Model.Drawable;
+import com.example.eli.myapplication.Model.GameState;
 
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */
-public class Interactable extends Drawable{
+public class Interactable extends Drawable {
 
     //All for AABB
     protected float mMinXCoord;

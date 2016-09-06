@@ -1,6 +1,11 @@
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Controller;
 
 import android.graphics.PointF;
+
+import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Model.Ball;
+import com.example.eli.myapplication.Model.Collision;
+import com.example.eli.myapplication.Model.Target;
 
 import java.util.ArrayList;
 

@@ -7,12 +7,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
 
         <activity
-            android:name=".StartScreen"
-            android:label="burgerball"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".View.StartScreen"
+            android:label="burgerball">
             <!--android:theme="@style/AppTheme"> -->
             <!--android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" > -->
 
@@ -24,16 +23,14 @@
         </activity>
 
         <activity
-            android:name=".SetSelect"
+            android:name=".View.SetSelect"
             android:label="burgerball"
-            android:theme="@style/AppTheme.NoActionBar"
-
-            android:parentActivityName="com.example.eli.myapplication.StartScreen" >
+            android:parentActivityName=".View.StartScreen" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.eli.myapplication.StartScreen" />
+                android:value=".View.StartScreen" />
             >
 
 
@@ -41,30 +38,28 @@
         </activity>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".View.MainActivity"
             android:label="burgerball"
-            android:theme="@style/AppTheme.NoActionBar"
-
-            android:parentActivityName="com.example.eli.myapplication.SetSelect" >
+            android:parentActivityName=".View.SetSelect" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.eli.myapplication.SetSelect" />>
+                android:value=".View.SetSelect" />>
 
 
         </activity>
 
         <activity
-            android:name=".OpenGLES20Activity"
+            android:name=".View.OpenGLES20Activity"
             android:label="burgerball"
             android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
-            android:parentActivityName="com.example.eli.myapplication.MainActivity" >
+            android:parentActivityName=".View.MainActivity" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.eli.myapplication.MainActivity" />
+                android:value=".View.MainActivity" />
 
         </activity>
 

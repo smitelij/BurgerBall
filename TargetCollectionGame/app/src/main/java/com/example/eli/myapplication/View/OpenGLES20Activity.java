@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.View;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+
+import com.example.eli.myapplication.Controller.GameEngine;
+import com.example.eli.myapplication.Controller.MyGLSurfaceView;
+import com.example.eli.myapplication.View.MainActivity;
 
 public class OpenGLES20Activity extends Activity {
 

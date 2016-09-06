@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Controller;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+
+import com.example.eli.myapplication.Controller.GameEngine;
+import com.example.eli.myapplication.Controller.MyGLRenderer;
+import com.example.eli.myapplication.Model.GameState;
 
 /**
  * A view container where OpenGL ES graphics can be drawn on screen.

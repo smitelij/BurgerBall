@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.eli.myapplication;
+package com.example.eli.myapplication.Model;
 
 import java.util.ArrayList;
 
@@ -23,7 +23,7 @@ import android.opengl.Matrix;
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */
-public class Ball extends Interactable{
+public class Ball extends Interactable {
 
 
     private float[] mModelMatrix = new float[16];
@@ -250,19 +250,19 @@ public class Ball extends Interactable{
         return new PointF((newVelocity.x + mVelocity.x) / 2, (newVelocity.y + mVelocity.y)/2);
     }
 
-    protected boolean isBallActive(){
+    public boolean isBallActive(){
         return mIsActive;
     }
 
-    protected void activateBall(){
+    public void activateBall(){
         mIsActive = true;
     }
 
-    protected void deactivateBall(){
+    public void deactivateBall(){
         mIsActive = false;
     }
 
-    protected float[] getModelMatrix(){
+    public float[] getModelMatrix(){
         return mModelMatrix;
     }
 
@@ -270,11 +270,11 @@ public class Ball extends Interactable{
         return mModelProjectionMatrix;
     }
 
-    protected void setModelProjectionMatrix(float[] modelProjectionMatrix){
+    public void setModelProjectionMatrix(float[] modelProjectionMatrix){
         mModelProjectionMatrix = modelProjectionMatrix;
     }
 
-    protected void setModelMatrix(float[] modelMatrix){
+    public void setModelMatrix(float[] modelMatrix){
         mModelMatrix = modelMatrix;
     }
 
