@@ -112,6 +112,7 @@ public class GameState {
 
     //Location of texture files
     static final int TEXTURE_WALL = R.drawable.largebrick;
+    static final int TEXTURE_WALL2 = R.drawable.electric;
     static final int TEXTURE_BALL = R.drawable.circle;
     static final int TEXTURE_TARGET = R.drawable.burger2;
     static final int TEXTURE_SELECTION_CIRCLE = R.drawable.selectioncircle;

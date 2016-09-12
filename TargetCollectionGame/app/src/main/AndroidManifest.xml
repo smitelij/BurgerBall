@@ -4,14 +4,14 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:icon="@drawable/burgersmall"
+        android:label="burgerball"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
 
         <activity
             android:name=".View.StartScreen"
-            android:label="burgerball">
+            android:label="">
             <!--android:theme="@style/AppTheme"> -->
             <!--android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen" > -->
 
@@ -24,7 +24,7 @@
 
         <activity
             android:name=".View.SetSelect"
-            android:label="burgerball"
+            android:label=""
             android:parentActivityName=".View.StartScreen" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->
@@ -39,7 +39,7 @@
 
         <activity
             android:name=".View.MainActivity"
-            android:label="burgerball"
+            android:label=""
             android:parentActivityName=".View.SetSelect" >
 
             <!-- Parent activity meta-data to support 4.0 and lower -->

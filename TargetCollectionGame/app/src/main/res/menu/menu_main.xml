@@ -6,6 +6,8 @@
         android:id="@+id/clear_scores"
         android:orderInCategory="100"
         android:title="Clear Scores"
-        app:showAsAction="never" />
+        app:showAsAction="never"
+        android:textColor="@android:color/white"/>
+
 </menu>
 

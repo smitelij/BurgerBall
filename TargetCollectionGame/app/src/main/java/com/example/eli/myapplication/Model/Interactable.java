@@ -17,9 +17,6 @@ package com.example.eli.myapplication.Model;
 
 import android.graphics.PointF;
 
-import com.example.eli.myapplication.Model.Drawable;
-import com.example.eli.myapplication.Model.GameState;
-
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */
@@ -32,7 +29,7 @@ public class Interactable extends Drawable {
     protected float mMaxYCoord;
 
     //Coordinates represented as an intuitive PointF array
-    private PointF[] m2dCoordArray;
+    protected PointF[] m2dCoordArray;
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -41,7 +38,7 @@ public class Interactable extends Drawable {
 
         super(borderCoords,texturePointer);
 
-        set2dCoordArray();
+        set2dCoordArrayFromFullCoords();
         setupAABB();
 
     }
@@ -87,7 +84,7 @@ public class Interactable extends Drawable {
         return m2dCoordArray;
     }
 
-    public void set2dCoordArray(){
+    private void set2dCoordArrayFromFullCoords(){
         int numberOfCoords = mBorderCoords.length / 3;
         PointF[] coords = new PointF[numberOfCoords];
 
@@ -98,7 +95,6 @@ public class Interactable extends Drawable {
 
         m2dCoordArray = coords;
     }
-
 
     public float getMinX(){
         return mMinXCoord;

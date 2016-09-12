@@ -6,12 +6,16 @@ package com.example.eli.myapplication.View;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.example.eli.myapplication.Model.StarRanges;
 import com.example.eli.myapplication.R;
@@ -35,13 +39,22 @@ public class StartScreen extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Attach to layout
         setContentView(R.layout.start_screen);
 
+        //Load image
+        ImageView mainLogo = (ImageView) findViewById(R.id.mainLogo);
+        mainLogo.setImageResource(R.drawable.burgerball6);
+
+        //Load image
+        ImageView burgerLogo = (ImageView) findViewById(R.id.burgerLogo);
+        burgerLogo.setImageResource(R.drawable.burgersmall);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
+        toolbar.setTitleTextColor(Color.LTGRAY);
+        toolbar.setTitle("");
 
         context = getApplicationContext();
 
@@ -51,7 +64,6 @@ public class StartScreen extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        //setTitle(" ");
 
         return true;
     }

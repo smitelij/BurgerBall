@@ -2,24 +2,22 @@ package com.example.eli.myapplication.View;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.example.eli.myapplication.Controller.GameEngine;
+import com.example.eli.myapplication.Model.HighScoreController;
 import com.example.eli.myapplication.R;
 import com.example.eli.myapplication.Model.StarRanges;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,26 +27,43 @@ public class MainActivity extends AppCompatActivity {
     public final static int START_LEVEL = 1;
     public final static String STORAGE_LOCATION = "target.txt";
     public final String currentUser = "Eli";
+    public String currentSet;
     public String currentLevel;
     private HashMap currentUserScores;
     private StarRanges starRangeData = new StarRanges();
+    private HighScoreController highScoreController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        System.out.println("MAIN ACTIVITY");
-
         Intent intent = getIntent();
-        String levelString = intent.getStringExtra(SetSelect.SET_SELECT_MESSAGE);
+        currentSet = intent.getStringExtra(SetSelect.SET_SELECT_MESSAGE);
         //loadSet(levelString);
 
         setContentView(R.layout.activity_main);
+
+        //Load image
+        ImageView mainLogo = (ImageView) findViewById(R.id.mainLogo);
+        mainLogo.setImageResource(R.drawable.burgerball6);
+
+        //Load image
+        ImageView chapterImage = (ImageView) findViewById(R.id.chapterImage);
+
+        if (currentSet.compareTo("1")==0){
+            chapterImage.setImageResource(R.drawable.chapter1small);
+        } else if (currentSet.compareTo("2")==0){
+            chapterImage.setImageResource(R.drawable.chapter2);
+        }
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setTitleTextColor(Color.LTGRAY);
+        toolbar.setLogo(R.drawable.burgericon);
 
         context = getApplicationContext();
-        currentUserScores = HighScoreFileParse(context, currentUser);
+        highScoreController = new HighScoreController(context,STORAGE_LOCATION);
+        currentUserScores = highScoreController.getUserScores(currentUser);
         updateScoreDisplays();
         updateStarsEarned();
 
@@ -72,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.clear_scores) {
-            clearScores();
+            highScoreController.clearScores();
         }
 
         return super.onOptionsItemSelected(item);
@@ -84,27 +99,27 @@ public class MainActivity extends AppCompatActivity {
         switch (view.getId()){
 
             case (R.id.level1):
-                currentLevel = "1.1";
+                currentLevel = currentSet + ".1";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
             case (R.id.level2):
-                currentLevel = "1.2";
+                currentLevel = currentSet + ".2";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
             case (R.id.level3):
-                currentLevel = "1.3";
+                currentLevel = currentSet + ".3";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
             case (R.id.level4):
-                currentLevel = "1.4";
+                currentLevel = currentSet + ".4";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
             case (R.id.level5):
-                currentLevel = "1.5";
+                currentLevel = currentSet + ".5";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
@@ -132,76 +147,20 @@ public class MainActivity extends AppCompatActivity {
                     currentUserScores.put(currentLevel, newHighScore);
                     updateScoreDisplays();
                     updateStarsEarned();
-                    updateHighScoreFile();
+                    highScoreController.updateHighScoreFile(currentUserScores);
                 }
             }
         }
 
     }
 
-    //TODO put this in a separate file for better for better cohesion
-    public HashMap<String, String> HighScoreFileParse(Context context, String currentUser){
-
-        System.out.println("high score file parse.");
-
-        HashMap highScores = new HashMap();
-
-        try {
-
-            FileInputStream fis = context.openFileInput(STORAGE_LOCATION);
-            InputStreamReader isr = new InputStreamReader(fis);
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-
-            String result = sb.toString();
-
-            System.out.println("RESULT: " + result);
-
-            String[] allUserScores = result.split("\\*");
-
-            for (String currentUserScore : allUserScores){
-
-                System.out.println("currentUserScore: " + currentUserScore);
-
-                if (currentUserScore.startsWith(currentUser)){
-                    String[] allLevelScores = currentUserScore.split("\\&");
-
-                    for (String currentLevel : allLevelScores){
-                        System.out.println("setSelection: " + currentLevel);
-
-                        if (currentLevel.startsWith("1.1")){
-                            highScores.put("1.1",currentLevel.substring(4));
-                        } else if (currentLevel.startsWith("1.2")) {
-                            highScores.put("1.2", currentLevel.substring(4));
-                        } else if (currentLevel.startsWith("1.3")) {
-                            highScores.put("1.3",currentLevel.substring(4));
-                        } else if (currentLevel.startsWith("1.4")) {
-                            highScores.put("1.4",currentLevel.substring(4));
-                        } else if (currentLevel.startsWith("1.5")) {
-                            highScores.put("1.5",currentLevel.substring(4));
-                        }
-                    }
-                }
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return highScores;
-
-    }
 
     private void updateScoreDisplays(){
-        String score1 = (String) currentUserScores.get("1.1");
-        String score2 = (String) currentUserScores.get("1.2");
-        String score3 = (String) currentUserScores.get("1.3");
-        String score4 = (String) currentUserScores.get("1.4");
-        String score5 = (String) currentUserScores.get("1.5");
+        String score1 = (String) currentUserScores.get(currentSet + ".1");
+        String score2 = (String) currentUserScores.get(currentSet + ".2");
+        String score3 = (String) currentUserScores.get(currentSet + ".3");
+        String score4 = (String) currentUserScores.get(currentSet + ".4");
+        String score5 = (String) currentUserScores.get(currentSet + ".5");
 
         if (!(score1.equals("0"))){
             TextView scoreLabel1 = (TextView) findViewById(R.id.Level1ScoreText);
@@ -230,71 +189,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //TODO put this in a separate file for better cohesion
-    private void updateHighScoreFile(){
-
-        String string = "*Eli";
-        String string1 = "&1.1:" + currentUserScores.get("1.1");
-        String string2 = "&1.2:" + currentUserScores.get("1.2");
-        String string3 = "&1.3:" + currentUserScores.get("1.3");
-        String string4 = "&1.4:" + currentUserScores.get("1.4");
-        String string5 = "&1.5:" + currentUserScores.get("1.5");
-
-        //String string1 = "&1.1:" + "0";
-        //String string2 = "&1.2:" + "0";
-        //String string3 = "&1.3:" + "0";
-        //String string4 = "&1.4:" + "0";
-        //String string5 = "&1.5:" + "0";
-
-        FileOutputStream outputStream;
-
-        try {
-            outputStream = openFileOutput(STORAGE_LOCATION, Context.MODE_PRIVATE);
-            outputStream.write(string.getBytes());
-            outputStream.write(string1.getBytes());
-            outputStream.write(string2.getBytes());
-            outputStream.write(string3.getBytes());
-            outputStream.write(string4.getBytes());
-            outputStream.write(string5.getBytes());
-
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private void updateStarsEarned(){
         RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar1);
         int[] levelRange = starRangeData.getRange(1);
-        String scoreString = (String) currentUserScores.get("1.1");
+        String scoreString = (String) currentUserScores.get(currentSet + ".1");
         int score = Integer.parseInt(scoreString);
         int rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar2);
         levelRange = starRangeData.getRange(2);
-        scoreString = (String) currentUserScores.get("1.2");
+        scoreString = (String) currentUserScores.get(currentSet + ".2");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar3);
         levelRange = starRangeData.getRange(3);
-        scoreString = (String) currentUserScores.get("1.3");
+        scoreString = (String) currentUserScores.get(currentSet + ".3");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar4);
         levelRange = starRangeData.getRange(4);
-        scoreString = (String) currentUserScores.get("1.4");
+        scoreString = (String) currentUserScores.get(currentSet + ".4");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar5);
         levelRange = starRangeData.getRange(5);
-        scoreString = (String) currentUserScores.get("1.5");
+        scoreString = (String) currentUserScores.get(currentSet + ".5");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
@@ -315,34 +242,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return rating;
-    }
-
-    private void clearScores(){
-
-
-        String string = "*Eli";
-
-        String string1 = "&1.1:" + "0";
-        String string2 = "&1.2:" + "0";
-        String string3 = "&1.3:" + "0";
-        String string4 = "&1.4:" + "0";
-        String string5 = "&1.5:" + "0";
-
-        FileOutputStream outputStream;
-
-        try {
-            outputStream = openFileOutput(STORAGE_LOCATION, Context.MODE_PRIVATE);
-            outputStream.write(string.getBytes());
-            outputStream.write(string1.getBytes());
-            outputStream.write(string2.getBytes());
-            outputStream.write(string3.getBytes());
-            outputStream.write(string4.getBytes());
-            outputStream.write(string5.getBytes());
-
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 

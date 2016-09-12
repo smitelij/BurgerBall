@@ -27,11 +27,19 @@ public class LevelInitialization {
 
     private int mTotalBalls;
 
+    private int mCurrentWallTexture;
 
-    public LevelInitialization(LevelData currentLevelData, Context activityContext){
+
+    public LevelInitialization(LevelData currentLevelData, Context activityContext, int chapterNumber){
 
         mActivityContext = activityContext;
         mTotalBalls = currentLevelData.getNumOfBalls();
+
+        if(chapterNumber==1){
+            mCurrentWallTexture = GameState.TEXTURE_WALL;
+        } else if (chapterNumber==2){
+            mCurrentWallTexture = GameState.TEXTURE_WALL2;
+        }
 
         loadBoundaries();  //Load outer boundaries (don't need a reference to current level, because currently outer boundaries are always the same)
         loadObstacles(currentLevelData);  //Load level specific boundaries
@@ -69,7 +77,7 @@ public class LevelInitialization {
     private void loadBoundaries(){
 
         //TODO eventually move specific code from Borders to here
-        Borders borders = new Borders(loadGLTexture(GameState.TEXTURE_WALL));
+        Borders borders = new Borders(loadGLTexture(mCurrentWallTexture));
         ArrayList<Obstacle> boundaries = borders.getAllBorders();
 
         //Add borders as both interactable and drawable
@@ -82,7 +90,7 @@ public class LevelInitialization {
 
     private void loadObstacles(LevelData levelData){
         ArrayList<float[]> obstacleCoords = levelData.getObstacleCoords();
-        int obstacleTexture = LevelInitialization.loadGLTexture(GameState.TEXTURE_WALL);
+        int obstacleTexture = LevelInitialization.loadGLTexture(mCurrentWallTexture);
 
         for (float[] currentObstacleCoords : obstacleCoords){
             Obstacle obstacle = new Obstacle(currentObstacleCoords, obstacleTexture);

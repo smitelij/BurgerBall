@@ -110,12 +110,12 @@ public class GameEngine {
     public void loadLevel(){
 
         //Grab the level data (number of balls, coordinates of objects, etc)
-        LevelData currentLevelData = new LevelData(mLevel);
+        LevelData currentLevelData = new LevelData(mChapter,mLevel);
         mTotalBalls = currentLevelData.getNumOfBalls();
         mTotalTargets = currentLevelData.getNumOfTargets();
 
         //Next we need to initialize all the objects that will be drawn in this level
-        LevelInitialization levelInitialization = new LevelInitialization(currentLevelData, mActivityContext);
+        LevelInitialization levelInitialization = new LevelInitialization(currentLevelData, mActivityContext,mChapter);
 
         //Now grab the objects (or collections of objects) that we will need to access
         allInteractableObjects = levelInitialization.getAllInteractableObjects();

@@ -16,12 +16,19 @@ public class LevelData {
     int mNumOfBalls;
     int levelIndex;
 
-    public LevelData(int index){
-        levelIndex = index;
-        loadLevel();
+    public LevelData(int chapter, int level){
+        switch (chapter){
+            case 1:
+                loadSet1Level(level);
+                break;
+
+            case 2:
+                loadSet2Level(level);
+                break;
+        }
     }
 
-    private void loadLevel(){
+    private void loadSet1Level(int levelIndex){
         switch (levelIndex){
 
             //Level 1 Data
@@ -259,6 +266,18 @@ public class LevelData {
 
 
 
+    }
+
+    private void loadSet2Level(int levelIndex) {
+        switch (levelIndex) {
+            case 1:
+                //
+                break;
+
+            case 2:
+                //
+                break;
+        }
     }
 
     public ArrayList<float[]> getObstacleCoords(){
