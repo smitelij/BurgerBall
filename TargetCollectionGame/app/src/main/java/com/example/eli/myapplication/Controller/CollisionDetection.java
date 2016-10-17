@@ -195,14 +195,18 @@ public class CollisionDetection {
 
         //get general info about the ball and frame
         PointF ballVelocity = ball.getAvgVelocity(timeStep);
-        PointF prevVelocityStep = new PointF(ballVelocity.x * timeStep, ballVelocity.y * timeStep);
+        PointF prevVelocityStep;
         PointF totalVelocity;
 
         if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
+            System.out.println("moving obstacle.");
             MovingObstacle tempObstacle = (MovingObstacle) obstacle;
             PointF obstacleVelocity = tempObstacle.getVelocity();
+            prevVelocityStep = new PointF((ballVelocity.x - obstacleVelocity.x) * timeStep, (ballVelocity.y - obstacleVelocity.y) * timeStep);
             totalVelocity = new PointF(ballVelocity.x - obstacleVelocity.x, ballVelocity.y - obstacleVelocity.y);
         } else {
+            System.out.println("standard obstacle.");
+            prevVelocityStep = new PointF(ballVelocity.x * timeStep, ballVelocity.y * timeStep);
             totalVelocity = ballVelocity;
         }
 

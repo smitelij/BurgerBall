@@ -82,7 +82,7 @@ public class CollisionHandling {
             if (currentCollision.getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
                 calculateVelocityMovingBorderCollision(currentCollision);
             } else {
-                calculateVelocityStationaryBorderCollision(currentCollision);
+                calculateVelocityStationaryBorderCollision(currentCollision, false);
             }
         }
     }
@@ -96,7 +96,7 @@ public class CollisionHandling {
     //**Reference:
     //http://gamedev.stackexchange.com/questions/23672/determine-resulting-angle-of-wall-collision
     //
-    private void calculateVelocityStationaryBorderCollision(Collision collision){
+    private void calculateVelocityStationaryBorderCollision(Collision collision, boolean debug){
         Ball ball = collision.getBall();
         PointF boundaryAxis = collision.getBoundaryAxis();
         PointF oldVelocity = ball.getVelocity(collision.getTime());
@@ -109,7 +109,12 @@ public class CollisionHandling {
         PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
         PointF newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
         newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
-        ball.setVelocity(newVelocity);
+
+        if (debug == false) {
+            ball.setVelocity(newVelocity);
+        } else {
+            System.out.println("NEW VELOCITY (old method): " + newVelocity);
+        }
 
     }
 
@@ -178,11 +183,15 @@ public class CollisionHandling {
         //get tangent vector and normal vector of the collision
         PointF UTangentVector = collision.getBoundaryAxis();
         PointF UNormalVector = new PointF(UTangentVector.y, -UTangentVector.x);
-        //System.out.println("boundary axis length: " + collision.getBoundaryAxis().length());
 
         //get velocities for balls
         PointF ball1velocity = ball1.getAvailableVelocity(collision.getTime());  //if a ball collides with more than one other ball,
         PointF obstacleVelocity = obstacle.getVelocity();  //available velocity will differ from normal velocity
+
+        System.out.println("ball velocity: " + ball1velocity);
+        System.out.println("obstacle velocity: " + obstacleVelocity);
+        System.out.println("UNormal vector: " + UNormalVector);
+        System.out.println("UTangent vector: " + UTangentVector);
 
         //determine component velocities for ball1 / obstacle in the tangent / normal directions
         float velocity1tangent = GameState.dotProduct(ball1velocity, UTangentVector);
@@ -193,17 +202,26 @@ public class CollisionHandling {
         float newVelocity1tangent = velocity1tangent;
 
         //calculate new normal velocity (derived by using infinite mass for ball 2 in formula)
-        float newVelocity1normal = (2 * velocity2normal) - velocity1normal;
+        //float newVelocity1normal = (2 * velocity2normal) - velocity1normal;
+        float newVelocity1normal = velocity2normal;
+        System.out.println("Velocity 1 normal: " + velocity1normal);
+        System.out.println("Velocity 2 normal: " + velocity2normal);
 
         //convert scalar tangential & normal values into vectors
         PointF newVelocity1normalVector = new PointF(newVelocity1normal * UNormalVector.x, newVelocity1normal * UNormalVector.y);
         PointF newVelocity1tangentVector = new PointF(newVelocity1tangent * UTangentVector.x, newVelocity1tangent * UTangentVector.y);
 
         //add tangential and normal components together to get sum velocity
-        PointF newVelocity1 = new PointF(newVelocity1normalVector.x + newVelocity1tangentVector.x, newVelocity1normalVector.y + newVelocity1tangentVector.y);
+                PointF newVelocity1 = new PointF(newVelocity1normalVector.x + newVelocity1tangentVector.x, newVelocity1normalVector.y + newVelocity1tangentVector.y);
 
         //subtract for elasticity
         newVelocity1.set(newVelocity1.x * GameState.ELASTIC_CONSTANT, newVelocity1.y * GameState.ELASTIC_CONSTANT);
+
+        System.out.println("NEW VELOCITY (new method): " + newVelocity1);
+
+        calculateVelocityStationaryBorderCollision(collision, true);
+
+        calculateVelocityBallCollision2(collision);
 
         //set velocity
         ball1.setVelocity(newVelocity1);
@@ -241,6 +259,61 @@ public class CollisionHandling {
             }
         }
         return hitTargets;
+    }
+
+
+    //**Reference material:
+    //http://vobarian.com/collisions/2dcollisions2.pdf
+    private void calculateVelocityBallCollision2(Collision collision){
+
+        //get balls
+        Ball ball1 = collision.getBall();
+        MovingObstacle obstacle = (MovingObstacle) collision.getObstacle();
+
+        //get tangent vector and normal vector of the collision
+        PointF UNormalVector = collision.getBoundaryAxis();
+        PointF UTangentVector = new PointF(UNormalVector.y, -UNormalVector.x);
+        //System.out.println("boundary axis length: " + collision.getBoundaryAxis().length());
+
+        //get velocities for balls
+        PointF ball1velocity = ball1.getAvailableVelocity(collision.getTime());  //if a ball collides with more than one other ball,
+        PointF ball2velocity = obstacle.getVelocity();  //available velocity will differ from normal velocity
+
+        System.out.println("obstacle velocity: " + ball2velocity);
+        System.out.println("UNormal vector: " + UNormalVector);
+
+        //determine component velocities for ball1 / ball2 in the tangent / normal directions
+        float velocity1tangent = GameState.dotProduct(ball1velocity, UTangentVector);
+        float velocity1normal = GameState.dotProduct(ball1velocity, UNormalVector);
+        float velocity2tangent = GameState.dotProduct(ball2velocity, UTangentVector);
+        float velocity2normal = GameState.dotProduct(ball2velocity, UNormalVector);
+
+        System.out.println("Velocity 1 normal: " + velocity1normal);
+        System.out.println("Velocity 2 normal: " + velocity2normal);
+
+        //calculate new tangential velocities (they are the same, no force between objects in tangential direction)
+        float newVelocity1tangent = velocity1tangent;
+        float newVelocity2tangent = velocity2tangent;
+
+        //calculate new normal velocities ( same as the normal component of the other ball)
+        float newVelocity1normal = velocity2normal;
+        float newVelocity2normal = velocity1normal;
+
+        //convert scalar tangential & normal values into vectors
+        PointF newVelocity1normalVector = new PointF(newVelocity1normal * UNormalVector.x, newVelocity1normal * UNormalVector.y);
+        PointF newVelocity1tangentVector = new PointF(newVelocity1tangent * UTangentVector.x, newVelocity1tangent * UTangentVector.y);
+        PointF newVelocity2normalVector = new PointF(newVelocity2normal * UNormalVector.x, newVelocity2normal * UNormalVector.y);
+        PointF newVelocity2tangentVector = new PointF(newVelocity2tangent * UTangentVector.x, newVelocity2tangent * UTangentVector.y);
+
+        //add tangential and normal components together to get sum velocity
+        PointF newVelocity1 = new PointF(newVelocity1normalVector.x + newVelocity1tangentVector.x, newVelocity1normalVector.y + newVelocity1tangentVector.y);
+        PointF newVelocity2 = new PointF(newVelocity2normalVector.x + newVelocity2tangentVector.x, newVelocity2normalVector.y + newVelocity2tangentVector.y);
+
+        //subtract for elasticity
+        newVelocity1.set(newVelocity1.x * GameState.ELASTIC_CONSTANT, newVelocity1.y * GameState.ELASTIC_CONSTANT);
+        newVelocity2.set(newVelocity2.x * GameState.ELASTIC_CONSTANT, newVelocity2.y * GameState.ELASTIC_CONSTANT);
+
+        System.out.println("NEW VELOCITY (ball ball method): " + newVelocity1);
     }
 
 }
