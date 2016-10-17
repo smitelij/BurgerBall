@@ -100,6 +100,7 @@ public class GameState {
     public static final int INTERACTABLE_OBSTACLE = 1000;
     public static final int INTERACTABLE_BALL = 1001;
     public static final int INTERACTABLE_TARGET = 1002;
+    public static final int INTERACTABLE_MOVING_OBSTACLE = 1003;
     public static final int DRAWABLE_SCOREDIGIT = 2000;
     public static final int DRAWABLE_GHOST_CIRCLES = 2001;
     public static final int DRAWABLE_VELOCITY_ARROW = 2002;

@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class MovePath {
 
-    ArrayList<SingleMovement> path;
+    ArrayList<SingleMovement> path = new ArrayList();
     int currentIndex;
     int currentDuration;
 

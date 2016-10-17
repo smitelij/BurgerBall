@@ -23,7 +23,7 @@ import android.opengl.Matrix;
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */
-public class Ball extends Interactable {
+public class Ball extends Interactable implements Movable {
 
 
     private float[] mModelMatrix = new float[16];
@@ -72,7 +72,7 @@ public class Ball extends Interactable {
 
     }
 
-    public void moveBallByFrame(float percentOfFrame){
+    public void moveByFrame(float percentOfFrame){
         PointF positionChange = calculatePositionChange(percentOfFrame);
         updateAABB(positionChange.x, positionChange.y);
     }

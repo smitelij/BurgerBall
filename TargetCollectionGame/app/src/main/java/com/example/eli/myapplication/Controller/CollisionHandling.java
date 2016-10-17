@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import com.example.eli.myapplication.Model.GameState;
 import com.example.eli.myapplication.Model.Ball;
 import com.example.eli.myapplication.Model.Collision;
+import com.example.eli.myapplication.Model.MovingObstacle;
 import com.example.eli.myapplication.Model.Target;
 
 import java.util.ArrayList;
@@ -78,7 +79,11 @@ public class CollisionHandling {
     // a boundary and another ball, it makes more sense to handle boundary collisions first
     public void handleBoundaryCollisions(){
         for (Collision currentCollision : mBoundaryCollisions){
-            calculateVelocityBorderCollision(currentCollision);
+            if (currentCollision.getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
+                calculateVelocityMovingBorderCollision(currentCollision);
+            } else {
+                calculateVelocityStationaryBorderCollision(currentCollision);
+            }
         }
     }
 
@@ -91,7 +96,7 @@ public class CollisionHandling {
     //**Reference:
     //http://gamedev.stackexchange.com/questions/23672/determine-resulting-angle-of-wall-collision
     //
-    private void calculateVelocityBorderCollision(Collision collision){
+    private void calculateVelocityStationaryBorderCollision(Collision collision){
         Ball ball = collision.getBall();
         PointF boundaryAxis = collision.getBoundaryAxis();
         PointF oldVelocity = ball.getVelocity(collision.getTime());
@@ -156,6 +161,52 @@ public class CollisionHandling {
         //set velocity
         ball1.addNewVelocity(newVelocity1);
         ball2.addNewVelocity(newVelocity2);
+    }
+
+    //**Reference material:
+    //http://vobarian.com/collisions/2dcollisions2.pdf
+    // There is probably a better way to do this one, but reusing the same formulas
+    // as the two-ball collision seemed the easiest. To do this we just pretend that
+    // the obstacle is ball two (but with infinite mass), and don't worry about calculating
+    // any new velocities for the obstacle.
+    private void calculateVelocityMovingBorderCollision(Collision collision){
+
+        //get balls
+        Ball ball1 = collision.getBall();
+        MovingObstacle obstacle = (MovingObstacle) collision.getObstacle();
+
+        //get tangent vector and normal vector of the collision
+        PointF UTangentVector = collision.getBoundaryAxis();
+        PointF UNormalVector = new PointF(UTangentVector.y, -UTangentVector.x);
+        //System.out.println("boundary axis length: " + collision.getBoundaryAxis().length());
+
+        //get velocities for balls
+        PointF ball1velocity = ball1.getAvailableVelocity(collision.getTime());  //if a ball collides with more than one other ball,
+        PointF obstacleVelocity = obstacle.getVelocity();  //available velocity will differ from normal velocity
+
+        //determine component velocities for ball1 / obstacle in the tangent / normal directions
+        float velocity1tangent = GameState.dotProduct(ball1velocity, UTangentVector);
+        float velocity1normal = GameState.dotProduct(ball1velocity, UNormalVector);
+        float velocity2normal = GameState.dotProduct(obstacleVelocity, UNormalVector);
+
+        //calculate new tangential velocity (it is the same, no force between objects in tangential direction)
+        float newVelocity1tangent = velocity1tangent;
+
+        //calculate new normal velocity (derived by using infinite mass for ball 2 in formula)
+        float newVelocity1normal = (2 * velocity2normal) - velocity1normal;
+
+        //convert scalar tangential & normal values into vectors
+        PointF newVelocity1normalVector = new PointF(newVelocity1normal * UNormalVector.x, newVelocity1normal * UNormalVector.y);
+        PointF newVelocity1tangentVector = new PointF(newVelocity1tangent * UTangentVector.x, newVelocity1tangent * UTangentVector.y);
+
+        //add tangential and normal components together to get sum velocity
+        PointF newVelocity1 = new PointF(newVelocity1normalVector.x + newVelocity1tangentVector.x, newVelocity1normalVector.y + newVelocity1tangentVector.y);
+
+        //subtract for elasticity
+        newVelocity1.set(newVelocity1.x * GameState.ELASTIC_CONSTANT, newVelocity1.y * GameState.ELASTIC_CONSTANT);
+
+        //set velocity
+        ball1.setVelocity(newVelocity1);
     }
 
     public void updateCollisionCollections(ArrayList<Collision> collisions){

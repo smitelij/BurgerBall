@@ -5,36 +5,40 @@ import android.graphics.PointF;
 /**
  * Created by Eli on 9/10/2016.
  */
-public class MovingObstacle extends Obstacle {
+public class MovingObstacle extends Obstacle implements Movable {
 
-    MovePath path;
+    private MovePath path;
+    private PointF mVelocity;
+    private float[] mPrevAABB = new float[4];
 
     public MovingObstacle(float[] borderCoords, int texturePointer, MovePath path) {
         // initialize vertex byte buffer for shape coordinates
         super(borderCoords, texturePointer);
-        setType(GameState.INTERACTABLE_OBSTACLE);
+        setType(GameState.INTERACTABLE_MOVING_OBSTACLE);
         this.path = path;
+        updatePrevAABB();
+        mVelocity = path.getCurrentVelocity();
 
     }
 
     public void moveObstacle(){
 
-        PointF velocity = path.getCurrentVelocity();
+        //update velocity
+        mVelocity = path.getCurrentVelocity();
+        update2dCoordArray();
 
-        update2dCoordArray(velocity);
-
+        //transpose back to openGL coords
         float[] fullCoords = getFullCoordsFrom2dCoordArray();
-
         setCoords(fullCoords);
 
     }
 
-    private void update2dCoordArray(PointF velocity){
+    private void update2dCoordArray(){
         PointF[] coords = get2dCoordArray();
 
         for (int i = 0; i < coords.length; i++){
             PointF curCoordinate = coords[i];
-            PointF newCoordinate = new PointF(curCoordinate.x + velocity.x, curCoordinate.y + velocity.y);
+            PointF newCoordinate = new PointF(curCoordinate.x + mVelocity.x, curCoordinate.y + mVelocity.y);
             coords[i]=newCoordinate;
         }
 
@@ -49,8 +53,10 @@ public class MovingObstacle extends Obstacle {
         PointF[] coords = get2dCoordArray();
         float[] fullCoords= new float[coords.length * 3];
 
-        for (int i = 0; i < coords.length; i=i+3){
-            int arrayIndex = i /3;
+        //'Full coords' is a single array of floats, with slots for x,y,and z.
+        //For an object with 4 points, this would be float[12].
+        for (int i = 0; i < fullCoords.length; i=i+3){
+            int arrayIndex = i / 3;
             fullCoords[i] = coords[arrayIndex].x;
             fullCoords[i+1] = coords[arrayIndex].y;
             fullCoords[i+2] = 0f;
@@ -64,5 +70,33 @@ public class MovingObstacle extends Obstacle {
         path.incrementDuration();
         moveObstacle();
         super.draw(mvpMatrix);
+        updatePrevAABB();
     }
+
+    /////*********************
+
+    public void moveByFrame(float percentOfFrame){
+        updateAABB(percentOfFrame * mVelocity.x, percentOfFrame* mVelocity.y);
+    }
+
+    public void resetAABB(){
+        mMinXCoord = mPrevAABB[0];
+        mMaxXCoord = mPrevAABB[1];
+
+        mMinYCoord = mPrevAABB[2];
+        mMaxYCoord = mPrevAABB[3];
+    }
+
+    public void updatePrevAABB(){
+        mPrevAABB[0] = mMinXCoord;
+        mPrevAABB[1] = mMaxXCoord;
+        mPrevAABB[2] = mMinYCoord;
+        mPrevAABB[3] = mMaxYCoord;
+    }
+
+    //Get a balls velocity after timeStep (calculates gravity)
+    public PointF getVelocity(){
+        return mVelocity;
+    }
+
 }

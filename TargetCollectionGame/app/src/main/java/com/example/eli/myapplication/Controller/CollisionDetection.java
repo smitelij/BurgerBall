@@ -6,6 +6,7 @@ import com.example.eli.myapplication.Model.GameState;
 import com.example.eli.myapplication.Model.Interactable;
 import com.example.eli.myapplication.Model.Ball;
 import com.example.eli.myapplication.Model.Collision;
+import com.example.eli.myapplication.Model.MovingObstacle;
 import com.example.eli.myapplication.Model.Obstacle;
 import com.example.eli.myapplication.Model.Target;
 
@@ -116,7 +117,7 @@ public class CollisionDetection {
             return;
         }
 
-        if (object.getType()== GameState.INTERACTABLE_OBSTACLE){
+        if ((object.getType()== GameState.INTERACTABLE_OBSTACLE) || (object.getType()== GameState.INTERACTABLE_MOVING_OBSTACLE)){
             doPolygonCollisionDetection(ball, (Obstacle) object, timeStep);
             return;
         }
@@ -193,19 +194,33 @@ public class CollisionDetection {
         float penetrationDistance = penetration.mPenetrationDistance;
 
         //get general info about the ball and frame
-        PointF velocity = ball.getAvgVelocity(timeStep);
-        PointF prevVelocityStep = new PointF(velocity.x * timeStep, velocity.y * timeStep);
+        PointF ballVelocity = ball.getAvgVelocity(timeStep);
+        PointF prevVelocityStep = new PointF(ballVelocity.x * timeStep, ballVelocity.y * timeStep);
+        PointF totalVelocity;
+
+        if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
+            MovingObstacle tempObstacle = (MovingObstacle) obstacle;
+            PointF obstacleVelocity = tempObstacle.getVelocity();
+            totalVelocity = new PointF(ballVelocity.x - obstacleVelocity.x, ballVelocity.y - obstacleVelocity.y);
+        } else {
+            totalVelocity = ballVelocity;
+        }
 
         //Calculate the angle of the ball's velocity against the boundary axis
-        double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, velocity) / (boundaryAxis.length() * velocity.length()));
+        double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, totalVelocity) / (boundaryAxis.length() * totalVelocity.length()));
 
         //Use prev angle and basic trig to calculate how far the ball traveled through the obstacle (hypotenuse)
         double hypotenuse = Math.abs(penetrationDistance) / Math.cos(prevAngle);
+
+        System.out.println("&&&prevVelocityStep length : " + prevVelocityStep.length());
+        System.out.println("&&&hypotenuse: " + hypotenuse);
 
         //Calculate the collision time, based on the percent of velocity used before the collision, and the time step.
         //For example, if a ball uses 50% of velocity before colliding, and the time step was 0.5, then the collision occurred at 0.25.
         float percentOfVelocityBeforeCollision = (prevVelocityStep.length() - (float) Math.abs(hypotenuse)) / prevVelocityStep.length();
         float collisionTime = (percentOfVelocityBeforeCollision) * timeStep;
+
+        System.out.println("***collision time: " + collisionTime);
 
         //once a ball gets really close, this can happen... not sure why
         if (collisionTime < 0){

@@ -17,6 +17,7 @@ public class LevelInitialization {
     private ArrayList<Ball> mAllBalls = new ArrayList<>();
     private ArrayList<Drawable> mAllDrawableObjects = new ArrayList<>();
     private ArrayList<Interactable> mAllInteractableObjects = new ArrayList<>();
+    private ArrayList<MovingObstacle> mAllMovingObstacles = new ArrayList<>();
     private ScoreDigits[] mScoreDigits = new ScoreDigits[5];
     private VelocityArrow mVelocityArrow;
 
@@ -92,11 +93,26 @@ public class LevelInitialization {
         ArrayList<float[]> obstacleCoords = levelData.getObstacleCoords();
         int obstacleTexture = LevelInitialization.loadGLTexture(mCurrentWallTexture);
 
+        /* normal
         for (float[] currentObstacleCoords : obstacleCoords){
             Obstacle obstacle = new Obstacle(currentObstacleCoords, obstacleTexture);
             mAllInteractableObjects.add(obstacle);
             mAllDrawableObjects.add(obstacle);
+        } */
+
+        //test
+
+        MovePath path = new MovePath();
+        path.addMovement(new SingleMovement(new PointF(1f,1f),30));
+        path.addMovement(new SingleMovement(new PointF(-1f,-1f),30));
+
+        for (float[] currentObstacleCoords : obstacleCoords){
+            Obstacle obstacle = new MovingObstacle(currentObstacleCoords, obstacleTexture,path);
+            mAllInteractableObjects.add(obstacle);
+            mAllDrawableObjects.add(obstacle);
+            mAllMovingObstacles.add( (MovingObstacle) obstacle);
         }
+
     }
 
     private void loadTargets(LevelData levelData){
@@ -221,6 +237,8 @@ public class LevelInitialization {
     public ArrayList<Interactable> getAllInteractableObjects(){
         return mAllInteractableObjects;
     }
+
+    public ArrayList<MovingObstacle> getAllMovingObstacles(){ return mAllMovingObstacles;}
 
     public ArrayList<Ball> getAllBalls(){
         return mAllBalls;

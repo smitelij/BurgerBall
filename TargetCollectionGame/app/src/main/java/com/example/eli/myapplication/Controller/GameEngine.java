@@ -18,6 +18,7 @@ import com.example.eli.myapplication.Model.Collision;
 import com.example.eli.myapplication.Model.Drawable;
 import com.example.eli.myapplication.Model.ScoreDigits;
 import com.example.eli.myapplication.Model.Target;
+import com.example.eli.myapplication.Model.MovingObstacle;
 
 import java.util.ArrayList;
 
@@ -35,6 +36,8 @@ public class GameEngine {
 
     //All active objects that only need to be drawn (not collision checked) are added to this collection
     private ArrayList<Drawable> allDrawableObjects;
+
+    private ArrayList<MovingObstacle> allMovingObstacles;
 
     private ScoreDigits[] mScoreDigits = new ScoreDigits[5];
 
@@ -120,6 +123,7 @@ public class GameEngine {
         //Now grab the objects (or collections of objects) that we will need to access
         allInteractableObjects = levelInitialization.getAllInteractableObjects();
         allDrawableObjects = levelInitialization.getAllDrawableObjects();
+        allMovingObstacles = levelInitialization.getAllMovingObstacles();
         mAllBalls = levelInitialization.getAllBalls();
         mScoreDigits = levelInitialization.getScoreDigits();
         mVelocityArrow = levelInitialization.getVelocityArrow();
@@ -392,20 +396,28 @@ public class GameEngine {
      */
     private void collisionDetection(CollisionDetection CD, float timeStep) {
 
-        /*try {
-                Thread.sleep(500);
+        try {
+                Thread.sleep(200);
             } catch (Exception e) {
-            }*/
+            }
+
+        System.out.println("Begin collision detection frame. Size: " + mCurrentFrameSize);
+
+        for(MovingObstacle currentObstacle : allMovingObstacles){
+            currentObstacle.moveByFrame(timeStep);
+        }
 
         //go through all active balls
         for (Ball currentBall : mAllBalls) {
+
+            System.out.println("..Collision detection for ball.");
 
             if (!currentBall.isBallActive()){
                 continue;
             }
 
             //temporarily advance the balls location by the time step
-            currentBall.moveBallByFrame(timeStep);
+            currentBall.moveByFrame(timeStep);
 
             //do collision testing between the current ball and each active object
             collisionTestAllActiveObjects(CD, currentBall, timeStep);
@@ -437,6 +449,8 @@ public class GameEngine {
 
         //Go through all objects that could be hit
         for (Interactable curObject : allInteractableObjects) {
+
+            System.out.println("---Collision testing an object");
 
             //Do a first test on their bounding boxes
             //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
@@ -491,15 +505,23 @@ public class GameEngine {
 
         //one or multiple collisions
         } else {
+
             //we can just grab the first member here since they all have the same time
             float collisionTime = firstCollisions.get(0).getTime();
+
+            System.out.println("COLLISION DETECTED. Collision time: " + collisionTime);
+
             //move all balls forward by collision time, and update velocity for colliding balls
             handleCollisionsForBalls(CH, firstCollisions, collisionTime);
 
             //Only target collisions before collision time will be valid
             handleTargetCollisions(CH, collisionTime);
 
+            //Will need to update AABB for moving obstacles
+            handleMovingObstacles(collisionTime);
+
             timeElapsed = timeElapsed + collisionTime;
+
         }
 
         return timeElapsed;
@@ -550,20 +572,30 @@ public class GameEngine {
 
             //Only cleanup AABB if necessary (only when there are collisions in the frame)
             if (cleanupAABB) {
-                cleanupAABB(currentBall, newDisplacementVector);
+                cleanupBallAABB(currentBall, newDisplacementVector);
             }
 
         }
 
     }
 
-    private void cleanupAABB(Ball currentBall, PointF displacementVector){
+    private void cleanupBallAABB(Ball currentBall, PointF displacementVector){
         //clean up any lingering weird AABB stuff from collision detection
         currentBall.resetAABB();
         //move ball by however far it has so far been displaced (this will be 0 unless there are multiple collisions in 1 frame)
         currentBall.updateAABB(displacementVector.x, displacementVector.y);
         //Update saved value for AABB
         currentBall.updatePrevAABB();
+    }
+
+
+    private void handleMovingObstacles(float collisionTime){
+        for (MovingObstacle currentObstacle : allMovingObstacles){
+            //Cleanup moving obstacle AABB
+            currentObstacle.resetAABB(); //reset because they should have been moved 1 full frame
+            currentObstacle.moveByFrame(collisionTime); //move forward to the collision time
+            currentObstacle.updatePrevAABB();  //update saved value
+        }
     }
 
 
