@@ -223,8 +223,10 @@ public class CollisionHandling {
 
         calculateVelocityBallCollision2(collision);
 
+        calculateVelocityStationaryBorderCollision2(collision,false);
+
         //set velocity
-        ball1.setVelocity(newVelocity1);
+        //ball1.setVelocity(newVelocity1);
     }
 
     public void updateCollisionCollections(ArrayList<Collision> collisions){
@@ -314,6 +316,35 @@ public class CollisionHandling {
         newVelocity2.set(newVelocity2.x * GameState.ELASTIC_CONSTANT, newVelocity2.y * GameState.ELASTIC_CONSTANT);
 
         System.out.println("NEW VELOCITY (ball ball method): " + newVelocity1);
+    }
+
+    //**Reference:
+    //http://gamedev.stackexchange.com/questions/23672/determine-resulting-angle-of-wall-collision
+    //
+    private void calculateVelocityStationaryBorderCollision2(Collision collision, boolean debug){
+        Ball ball = collision.getBall();
+        PointF boundaryAxis = collision.getBoundaryAxis();
+        PointF oldVelocity = ball.getVelocity(collision.getTime());
+        MovingObstacle obstacle = (MovingObstacle)collision.getObstacle();
+        PointF obstacleVelocity = obstacle.getVelocity();
+
+        oldVelocity.set(oldVelocity.x + obstacleVelocity.x, oldVelocity.y + obstacleVelocity.y);
+
+        //Formula to use:
+        // New Velocity =  v - (2(n · v) n )
+        // n= normal vector (boundary axis), v= incoming vector
+
+        float velocityChange = 2 * GameState.dotProduct(oldVelocity, boundaryAxis);
+        PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
+        PointF newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
+        newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
+
+        if (debug == false) {
+            ball.setVelocity(newVelocity);
+        } else {
+            System.out.println("NEW VELOCITY (additive velocities method): " + newVelocity);
+        }
+
     }
 
 }
