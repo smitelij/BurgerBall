@@ -395,11 +395,11 @@ public class GameEngine {
      * and then test this new location against all currently active objects.
      */
     private void collisionDetection(CollisionDetection CD, float timeStep) {
-
+/*
         try {
                 Thread.sleep(200);
             } catch (Exception e) {
-            }
+            } */
 
         System.out.println("Begin collision detection frame. Size: " + mCurrentFrameSize);
 

@@ -80,7 +80,7 @@ public class CollisionHandling {
     public void handleBoundaryCollisions(){
         for (Collision currentCollision : mBoundaryCollisions){
             if (currentCollision.getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
-                calculateVelocityMovingBorderCollision(currentCollision);
+                calculateVelocityMovingBorderCollision(currentCollision, false);
             } else {
                 calculateVelocityStationaryBorderCollision(currentCollision, false);
             }
@@ -167,7 +167,7 @@ public class CollisionHandling {
         ball1.addNewVelocity(newVelocity1);
         ball2.addNewVelocity(newVelocity2);
     }
-
+/*
     //**Reference material:
     //http://vobarian.com/collisions/2dcollisions2.pdf
     // There is probably a better way to do this one, but reusing the same formulas
@@ -219,15 +219,9 @@ public class CollisionHandling {
 
         System.out.println("NEW VELOCITY (new method): " + newVelocity1);
 
-        calculateVelocityStationaryBorderCollision(collision, true);
-
-        calculateVelocityBallCollision2(collision);
-
-        calculateVelocityStationaryBorderCollision2(collision,false);
-
         //set velocity
         //ball1.setVelocity(newVelocity1);
-    }
+    } */
 
     public void updateCollisionCollections(ArrayList<Collision> collisions){
 
@@ -263,7 +257,7 @@ public class CollisionHandling {
         return hitTargets;
     }
 
-
+/*
     //**Reference material:
     //http://vobarian.com/collisions/2dcollisions2.pdf
     private void calculateVelocityBallCollision2(Collision collision){
@@ -317,18 +311,19 @@ public class CollisionHandling {
 
         System.out.println("NEW VELOCITY (ball ball method): " + newVelocity1);
     }
+    */
 
     //**Reference:
     //http://gamedev.stackexchange.com/questions/23672/determine-resulting-angle-of-wall-collision
     //
-    private void calculateVelocityStationaryBorderCollision2(Collision collision, boolean debug){
+    private void calculateVelocityMovingBorderCollision(Collision collision, boolean debug){
         Ball ball = collision.getBall();
         PointF boundaryAxis = collision.getBoundaryAxis();
         PointF oldVelocity = ball.getVelocity(collision.getTime());
         MovingObstacle obstacle = (MovingObstacle)collision.getObstacle();
         PointF obstacleVelocity = obstacle.getVelocity();
 
-        oldVelocity.set(oldVelocity.x + obstacleVelocity.x, oldVelocity.y + obstacleVelocity.y);
+        oldVelocity.set(oldVelocity.x - obstacleVelocity.x, oldVelocity.y - obstacleVelocity.y);
 
         //Formula to use:
         // New Velocity =  v - (2(n · v) n )
@@ -341,6 +336,7 @@ public class CollisionHandling {
 
         if (debug == false) {
             ball.setVelocity(newVelocity);
+            System.out.println("NEW VELOCITY (additive velocities method): " + newVelocity);
         } else {
             System.out.println("NEW VELOCITY (additive velocities method): " + newVelocity);
         }

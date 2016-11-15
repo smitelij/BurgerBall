@@ -15,6 +15,8 @@
  */
 package com.example.eli.myapplication.Model;
 
+import android.graphics.PointF;
+
 import com.example.eli.myapplication.Model.GameState;
 import com.example.eli.myapplication.Model.Interactable;
 
@@ -42,7 +44,10 @@ public class Obstacle extends Interactable {
      */
     public void draw(float[] mvpMatrix) {
         super.draw(mvpMatrix);
+    }
 
+    public PointF[] getTemporaryCoords(float timeStep){
+        return get2dCoordArray().clone();
     }
 
 }

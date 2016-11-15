@@ -216,8 +216,30 @@ public class CollisionDetection {
         //Use prev angle and basic trig to calculate how far the ball traveled through the obstacle (hypotenuse)
         double hypotenuse = Math.abs(penetrationDistance) / Math.cos(prevAngle);
 
+        if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+            MovingObstacle tempObstacle = (MovingObstacle) obstacle;
+            PointF obstacleVelocity = tempObstacle.getVelocity();
+            System.out.println("&&&object velocity: " + obstacleVelocity.x + "." + obstacleVelocity.y);
+        }
+        System.out.println("&&&ball velocity: " +  ballVelocity.x + "." + ballVelocity.y);
+        System.out.println("&&&totalVelocity: " + totalVelocity);
+        System.out.println("&&&penetrationDistance: " + penetrationDistance);
+        System.out.println("&&&prevAngle: " + prevAngle);
         System.out.println("&&&prevVelocityStep length : " + prevVelocityStep.length());
         System.out.println("&&&hypotenuse: " + hypotenuse);
+        System.out.println("***ball location: " + ball.getCenter());
+        System.out.println("***obstacle coords [0]: " + obstacle.get2dCoordArray()[0].x + "." + obstacle.get2dCoordArray()[0].y);
+        System.out.println("***obstacle coords [1]: " + obstacle.get2dCoordArray()[1].x + "." + obstacle.get2dCoordArray()[1].y);
+        System.out.println("***obstacle coords [2]: " + obstacle.get2dCoordArray()[2].x + "." + obstacle.get2dCoordArray()[2].y);
+        System.out.println("***obstacle coords [3]: " + obstacle.get2dCoordArray()[3].x + "." + obstacle.get2dCoordArray()[3].y);
+
+        if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+            MovingObstacle movingObstacle = (MovingObstacle) obstacle;
+            System.out.println("***obstacle coords [0]: " + movingObstacle.getTemporaryCoords(timeStep)[0].x + "." + movingObstacle.getTemporaryCoords(timeStep)[0].y);
+            System.out.println("***obstacle coords [1]: " +movingObstacle.getTemporaryCoords(timeStep)[1].x + "." + movingObstacle.getTemporaryCoords(timeStep)[1].y);
+            System.out.println("***obstacle coords [2]: " + movingObstacle.getTemporaryCoords(timeStep)[2].x + "." + movingObstacle.getTemporaryCoords(timeStep)[2].y);
+            System.out.println("***obstacle coords [3]: " + movingObstacle.getTemporaryCoords(timeStep)[3].x + "." + movingObstacle.getTemporaryCoords(timeStep)[3].y);
+        }
 
         //Calculate the collision time, based on the percent of velocity used before the collision, and the time step.
         //For example, if a ball uses 50% of velocity before colliding, and the time step was 0.5, then the collision occurred at 0.25.
@@ -329,7 +351,10 @@ public class CollisionDetection {
 
         //gather info
         PointF ballCenter = ball.getCenter();
-        PointF[] obstacleCoords = obstacle.get2dCoordArray();
+        //Grab the current coords of the obstacle (add velocity if it's moving)
+        PointF[] obstacleCoords = obstacle.getTemporaryCoords(timeStep);
+        PointF[] obstacleCoords2 = obstacle.get2dCoordArray();
+
         float radius = ball.getRadius();
 
         //First, we will check the nearest vertex axis.

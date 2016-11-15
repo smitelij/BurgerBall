@@ -34,15 +34,20 @@ public class MovingObstacle extends Obstacle implements Movable {
     }
 
     private void update2dCoordArray(){
-        PointF[] coords = get2dCoordArray();
+        PointF[] coords = increment2dCoordArray(GameState.FRAME_SIZE);
+        set2dCoordArray(coords);
+    }
+
+    private PointF[] increment2dCoordArray(float timeStep){
+        PointF[] coords = get2dCoordArray().clone();
 
         for (int i = 0; i < coords.length; i++){
             PointF curCoordinate = coords[i];
-            PointF newCoordinate = new PointF(curCoordinate.x + mVelocity.x, curCoordinate.y + mVelocity.y);
+            PointF newCoordinate = new PointF(curCoordinate.x + (mVelocity.x * timeStep), curCoordinate.y + (mVelocity.y * timeStep));
             coords[i]=newCoordinate;
         }
 
-        set2dCoordArray(coords);
+        return coords;
     }
 
     private void set2dCoordArray(PointF[] newCoords){
@@ -97,6 +102,11 @@ public class MovingObstacle extends Obstacle implements Movable {
     //Get a balls velocity after timeStep (calculates gravity)
     public PointF getVelocity(){
         return mVelocity;
+    }
+
+    @Override
+    public PointF[] getTemporaryCoords(float timeStep){
+        return increment2dCoordArray(timeStep).clone();
     }
 
 }
