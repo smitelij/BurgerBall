@@ -404,7 +404,7 @@ public class GameEngine {
         System.out.println("Begin collision detection frame. Size: " + mCurrentFrameSize);
 
         for(MovingObstacle currentObstacle : allMovingObstacles){
-            currentObstacle.moveByFrame(timeStep);
+            currentObstacle.moveTempCoordsByFrame(timeStep);
         }
 
         //go through all active balls
@@ -501,6 +501,9 @@ public class GameEngine {
             //Any target collisions will be valid, since there were no trajectory affecting collisions
             handleTargetCollisions(CH, timeStep);
 
+            //Need to update coords & AABB for moving obstacles
+            handleMovingObstacles(timeStep);
+
             timeElapsed = mCurrentFrameSize;
 
         //one or multiple collisions
@@ -517,7 +520,7 @@ public class GameEngine {
             //Only target collisions before collision time will be valid
             handleTargetCollisions(CH, collisionTime);
 
-            //Will need to update AABB for moving obstacles
+            //Need to update coords & AABB for moving obstacles
             handleMovingObstacles(collisionTime);
 
             timeElapsed = timeElapsed + collisionTime;

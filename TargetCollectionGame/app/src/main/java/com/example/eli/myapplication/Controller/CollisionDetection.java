@@ -199,7 +199,7 @@ public class CollisionDetection {
         PointF totalVelocity;
 
         if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
-            System.out.println("moving obstacle.");
+            System.out.println("Moving obstacle.");
             MovingObstacle tempObstacle = (MovingObstacle) obstacle;
             PointF obstacleVelocity = tempObstacle.getVelocity();
             prevVelocityStep = new PointF((ballVelocity.x - obstacleVelocity.x) * timeStep, (ballVelocity.y - obstacleVelocity.y) * timeStep);
@@ -219,7 +219,14 @@ public class CollisionDetection {
         if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
             MovingObstacle tempObstacle = (MovingObstacle) obstacle;
             PointF obstacleVelocity = tempObstacle.getVelocity();
-            System.out.println("&&&object velocity: " + obstacleVelocity.x + "." + obstacleVelocity.y);
+            System.out.println("&&&object velocitY: " + obstacleVelocity.x + "." + obstacleVelocity.y);
+            System.out.println("testing moving obstacle.");
+
+            PointF[] tempCoords = tempObstacle.getTempCoords();
+            System.out.println("***obstacle temp coords [0]: " + tempCoords[0].x + "." + tempCoords[0].y);
+            System.out.println("***obstacle temp coords [1]: " + tempCoords[1].x + "." + tempCoords[1].y);
+            System.out.println("***obstacle temp coords [2]: " + tempCoords[2].x + "." + tempCoords[2].y);
+            System.out.println("***obstacle temp coords [3]: " + tempCoords[3].x + "." + tempCoords[3].y);
         }
         System.out.println("&&&ball velocity: " +  ballVelocity.x + "." + ballVelocity.y);
         System.out.println("&&&totalVelocity: " + totalVelocity);
@@ -233,13 +240,7 @@ public class CollisionDetection {
         System.out.println("***obstacle coords [2]: " + obstacle.get2dCoordArray()[2].x + "." + obstacle.get2dCoordArray()[2].y);
         System.out.println("***obstacle coords [3]: " + obstacle.get2dCoordArray()[3].x + "." + obstacle.get2dCoordArray()[3].y);
 
-        if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
-            MovingObstacle movingObstacle = (MovingObstacle) obstacle;
-            System.out.println("***obstacle coords [0]: " + movingObstacle.getTemporaryCoords(timeStep)[0].x + "." + movingObstacle.getTemporaryCoords(timeStep)[0].y);
-            System.out.println("***obstacle coords [1]: " +movingObstacle.getTemporaryCoords(timeStep)[1].x + "." + movingObstacle.getTemporaryCoords(timeStep)[1].y);
-            System.out.println("***obstacle coords [2]: " + movingObstacle.getTemporaryCoords(timeStep)[2].x + "." + movingObstacle.getTemporaryCoords(timeStep)[2].y);
-            System.out.println("***obstacle coords [3]: " + movingObstacle.getTemporaryCoords(timeStep)[3].x + "." + movingObstacle.getTemporaryCoords(timeStep)[3].y);
-        }
+
 
         //Calculate the collision time, based on the percent of velocity used before the collision, and the time step.
         //For example, if a ball uses 50% of velocity before colliding, and the time step was 0.5, then the collision occurred at 0.25.
@@ -351,9 +352,15 @@ public class CollisionDetection {
 
         //gather info
         PointF ballCenter = ball.getCenter();
-        //Grab the current coords of the obstacle (add velocity if it's moving)
-        PointF[] obstacleCoords = obstacle.getTemporaryCoords(timeStep);
-        PointF[] obstacleCoords2 = obstacle.get2dCoordArray();
+
+        //Grab the current coords of the obstacle (get temp coords if it's moving)
+        PointF[] obstacleCoords;
+        if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+            MovingObstacle temp = (MovingObstacle) obstacle;
+            obstacleCoords = temp.getTempCoords();
+        } else {
+            obstacleCoords = obstacle.get2dCoordArray();
+        }
 
         float radius = ball.getRadius();
 

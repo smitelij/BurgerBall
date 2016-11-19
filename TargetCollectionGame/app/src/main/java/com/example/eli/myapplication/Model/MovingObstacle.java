@@ -10,6 +10,7 @@ public class MovingObstacle extends Obstacle implements Movable {
     private MovePath path;
     private PointF mVelocity;
     private float[] mPrevAABB = new float[4];
+    private PointF[] tempCoords;
 
     public MovingObstacle(float[] borderCoords, int texturePointer, MovePath path) {
         // initialize vertex byte buffer for shape coordinates
@@ -17,15 +18,12 @@ public class MovingObstacle extends Obstacle implements Movable {
         setType(GameState.INTERACTABLE_MOVING_OBSTACLE);
         this.path = path;
         updatePrevAABB();
+        resetTempCoords();
         mVelocity = path.getCurrentVelocity();
 
     }
 
     public void moveObstacle(){
-
-        //update velocity
-        mVelocity = path.getCurrentVelocity();
-        update2dCoordArray();
 
         //transpose back to openGL coords
         float[] fullCoords = getFullCoordsFrom2dCoordArray();
@@ -34,12 +32,17 @@ public class MovingObstacle extends Obstacle implements Movable {
     }
 
     private void update2dCoordArray(){
-        PointF[] coords = increment2dCoordArray(GameState.FRAME_SIZE);
+
+        //Update actual coords
+        PointF[] coords = get2dCoordArray();
+        coords = increment2dCoordArray(coords, GameState.FRAME_SIZE);
         set2dCoordArray(coords);
+
+        //Update temp coords
+        setTempCoordArray(coords.clone());
     }
 
-    private PointF[] increment2dCoordArray(float timeStep){
-        PointF[] coords = get2dCoordArray().clone();
+    private PointF[] increment2dCoordArray(PointF[] coords, float timeStep){
 
         for (int i = 0; i < coords.length; i++){
             PointF curCoordinate = coords[i];
@@ -53,6 +56,8 @@ public class MovingObstacle extends Obstacle implements Movable {
     private void set2dCoordArray(PointF[] newCoords){
         m2dCoordArray = newCoords;
     }
+
+    private void setTempCoordArray(PointF[] newCoords) { tempCoords = newCoords; }
 
     private float[] getFullCoordsFrom2dCoordArray(){
         PointF[] coords = get2dCoordArray();
@@ -73,6 +78,7 @@ public class MovingObstacle extends Obstacle implements Movable {
     @Override
     public void draw(float[] mvpMatrix){
         path.incrementDuration();
+        mVelocity = path.getCurrentVelocity();
         moveObstacle();
         super.draw(mvpMatrix);
         updatePrevAABB();
@@ -82,6 +88,12 @@ public class MovingObstacle extends Obstacle implements Movable {
 
     public void moveByFrame(float percentOfFrame){
         updateAABB(percentOfFrame * mVelocity.x, percentOfFrame* mVelocity.y);
+        update2dCoordArray();
+    }
+
+    public void moveTempCoordsByFrame(float percentOfFrame) {
+        updateAABB(percentOfFrame * mVelocity.x, percentOfFrame* mVelocity.y);
+        incrementTempCoords(percentOfFrame);
     }
 
     public void resetAABB(){
@@ -104,9 +116,18 @@ public class MovingObstacle extends Obstacle implements Movable {
         return mVelocity;
     }
 
-    @Override
-    public PointF[] getTemporaryCoords(float timeStep){
-        return increment2dCoordArray(timeStep).clone();
+
+    public void incrementTempCoords(float timeStep){
+        tempCoords = getTempCoords();
+        tempCoords = increment2dCoordArray(tempCoords, timeStep);
+    }
+
+    public PointF[] getTempCoords() {
+        return tempCoords;
+    }
+
+    public void resetTempCoords() {
+        tempCoords = get2dCoordArray().clone();
     }
 
 }

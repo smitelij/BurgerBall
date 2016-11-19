@@ -46,8 +46,4 @@ public class Obstacle extends Interactable {
         super.draw(mvpMatrix);
     }
 
-    public PointF[] getTemporaryCoords(float timeStep){
-        return get2dCoordArray().clone();
-    }
-
 }
