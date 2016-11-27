@@ -262,8 +262,12 @@ public class GameEngine {
         //and then repeat until we reach the end of the frame.
         while (timeElapsed < mCurrentFrameSize) {
 
+            System.out.println("time elapsed (beginning) : " + timeElapsed);
+
             //At first, we try to advance the whole frame (or whatever is remaining), and see if any collisions happen.
             float timeStep = mCurrentFrameSize - timeElapsed;
+
+            System.out.println("time step: " + timeStep);
 
             //Initialize and run collision detection
             CollisionDetection CD = new CollisionDetection();
@@ -273,6 +277,8 @@ public class GameEngine {
             //Also handles NO collisions (assign normal velocity to the balls displacement tally)
             //If there is a collision, timeElapsed is updated to the collision time.
             timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
+
+            System.out.println("time elapsed (end): " + timeElapsed);
 
         }
     }
@@ -596,7 +602,10 @@ public class GameEngine {
         for (MovingObstacle currentObstacle : allMovingObstacles){
             //Cleanup moving obstacle AABB
             currentObstacle.resetAABB(); //reset because they should have been moved 1 full frame
+            System.out.println("Move MovingObstacle by frame step: " + collisionTime);
+            System.out.println("previous vertex location: " + currentObstacle.get2dCoordArray()[0]);
             currentObstacle.moveByFrame(collisionTime); //move forward to the collision time
+            System.out.println("new vertex location: " + currentObstacle.get2dCoordArray()[0]);
             currentObstacle.updatePrevAABB();  //update saved value
         }
     }

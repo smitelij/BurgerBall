@@ -31,11 +31,11 @@ public class MovingObstacle extends Obstacle implements Movable {
 
     }
 
-    private void update2dCoordArray(){
+    private void update2dCoordArray(float timeStep){
 
         //Update actual coords
         PointF[] coords = get2dCoordArray();
-        coords = increment2dCoordArray(coords, GameState.FRAME_SIZE);
+        coords = increment2dCoordArray(coords, timeStep);
         set2dCoordArray(coords);
 
         //Update temp coords
@@ -88,7 +88,7 @@ public class MovingObstacle extends Obstacle implements Movable {
 
     public void moveByFrame(float percentOfFrame){
         updateAABB(percentOfFrame * mVelocity.x, percentOfFrame* mVelocity.y);
-        update2dCoordArray();
+        update2dCoordArray(percentOfFrame);
     }
 
     public void moveTempCoordsByFrame(float percentOfFrame) {

@@ -323,15 +323,31 @@ public class CollisionHandling {
         MovingObstacle obstacle = (MovingObstacle)collision.getObstacle();
         PointF obstacleVelocity = obstacle.getVelocity();
 
-        oldVelocity.set(oldVelocity.x - obstacleVelocity.x, oldVelocity.y - obstacleVelocity.y);
+        //In order to calculate the new velocity, we will need to add together the velocities of
+        // the moving obstacle and the ball. In order to do that, we will need to first calculate
+        // how much of the obstacle velocity is in the direction of the collision.
+        PointF outerBoundaryAxis = new PointF(-boundaryAxis.x, -boundaryAxis.y); //normal boundary axis points inside, we want to point outside.
+        float velocityInCollisionDirection = (obstacleVelocity.x * outerBoundaryAxis.x) + (obstacleVelocity.y * outerBoundaryAxis.y);
+        PointF obstacleDirectionalVel = new PointF(outerBoundaryAxis.x * velocityInCollisionDirection, outerBoundaryAxis.y * velocityInCollisionDirection);
+        PointF totalCollisionVelocity = new PointF(oldVelocity.x - obstacleDirectionalVel.x, oldVelocity.y - obstacleDirectionalVel.y);
+
+        //Now, combine the old ball velocity with the directional obstacle velocity and use that as total velocity
+        //totalCollisionVelocity.set(totalCollisionVelocity.x - obstacleVelocity.x, totalCollisionVelocity.y - obstacleVelocity.y);
+
+        System.out.println("ball velocity: " + oldVelocity);
+        System.out.println("obstacle velocity: " + obstacleVelocity);
+        System.out.println("boundary axis: " + boundaryAxis);
+        System.out.println("velocity in collision direction: " + velocityInCollisionDirection);
+        System.out.println("obstacle directional vel: " + obstacleDirectionalVel);
+        System.out.println("total collision velocity: " + totalCollisionVelocity);
 
         //Formula to use:
         // New Velocity =  v - (2(n · v) n )
         // n= normal vector (boundary axis), v= incoming vector
 
-        float velocityChange = 2 * GameState.dotProduct(oldVelocity, boundaryAxis);
+        float velocityChange = 2 * GameState.dotProduct(totalCollisionVelocity, boundaryAxis);
         PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
-        PointF newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
+        PointF newVelocity = new PointF(totalCollisionVelocity.x - velocityChangeVector.x, totalCollisionVelocity.y - velocityChangeVector.y);
         newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
 
         if (debug == false) {
