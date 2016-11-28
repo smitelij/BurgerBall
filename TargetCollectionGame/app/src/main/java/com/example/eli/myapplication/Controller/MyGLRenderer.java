@@ -110,6 +110,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         if (! mGame.isLevelActive()){
 
+            mGame.advanceMovingObstacles();
             mGame.drawObjects(); /*
             if (! mGame.hasLevelBeenRendered()){
                 //mGame.drawObjects();

@@ -382,6 +382,9 @@ public class CollisionDetection {
         double result1 = (-quadB + squareRoot) / (2*quadA);
         double result2 = (-quadB - squareRoot) / (2*quadA);
 
+        System.out.println("quadratic result 1: " + result1);
+        System.out.println("quadratic result 2: " + result2);
+
         if (result1 < 0){
             return result2;
         } else if (result2 < 0){
@@ -477,6 +480,7 @@ public class CollisionDetection {
 
             if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
                 MovingObstacle movingObstacle = (MovingObstacle) obstacle;
+                System.out.println("penetration: " + pHistory.mPenetrationDistance);
                 calculateBallMovingPointCollisionInfo(ball, pHistory.mVertex, movingObstacle, timeStep, 0);
             } else {
                 calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0);

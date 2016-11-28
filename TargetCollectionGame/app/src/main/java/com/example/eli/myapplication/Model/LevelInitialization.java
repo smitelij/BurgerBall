@@ -102,11 +102,14 @@ public class LevelInitialization {
 
         //test
 
-        MovePath path = new MovePath();
-        path.addMovement(new SingleMovement(new PointF(1f,1f),30));
-        path.addMovement(new SingleMovement(new PointF(-1f,-1f),30));
+
 
         for (float[] currentObstacleCoords : obstacleCoords){
+
+            MovePath path = new MovePath();
+            path.addMovement(new SingleMovement(new PointF(1f,1f),30));
+            path.addMovement(new SingleMovement(new PointF(-1f,-1f),30));
+
             Obstacle obstacle = new MovingObstacle(currentObstacleCoords, obstacleTexture,path);
             mAllInteractableObjects.add(obstacle);
             mAllDrawableObjects.add(obstacle);

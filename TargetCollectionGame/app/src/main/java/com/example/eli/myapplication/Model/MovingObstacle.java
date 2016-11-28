@@ -11,6 +11,7 @@ public class MovingObstacle extends Obstacle implements Movable {
     private PointF mVelocity;
     private float[] mPrevAABB = new float[4];
     private PointF[] tempCoords;
+    private PointF[] baseCoords;
 
     public MovingObstacle(float[] borderCoords, int texturePointer, MovePath path) {
         // initialize vertex byte buffer for shape coordinates
@@ -19,11 +20,20 @@ public class MovingObstacle extends Obstacle implements Movable {
         this.path = path;
         updatePrevAABB();
         resetTempCoords();
+        baseCoords = get2dCoordArray().clone();
         mVelocity = path.getCurrentVelocity();
 
     }
 
     public void moveObstacle(){
+        // increment path counter
+        path.incrementDuration();
+        mVelocity = path.getCurrentVelocity();
+
+        //Every full cycle reset to original coords to prevent 'slippage'
+        if (path.isAtBeginning()) {
+            set2dCoordArray(baseCoords);
+        }
 
         //transpose back to openGL coords
         float[] fullCoords = getFullCoordsFrom2dCoordArray();
@@ -77,8 +87,6 @@ public class MovingObstacle extends Obstacle implements Movable {
 
     @Override
     public void draw(float[] mvpMatrix){
-        path.incrementDuration();
-        mVelocity = path.getCurrentVelocity();
         moveObstacle();
         super.draw(mvpMatrix);
         updatePrevAABB();

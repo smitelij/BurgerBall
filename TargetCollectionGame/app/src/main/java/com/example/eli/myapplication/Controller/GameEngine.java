@@ -874,6 +874,16 @@ public class GameEngine {
         return currentScore;
     }
 
+    // This function is used before the level is activated (when the ball is fired)
+    // so the player can see the obstacles moving.
+    public void advanceMovingObstacles() {
+        for (MovingObstacle currentObstacle : allMovingObstacles){
+            currentObstacle.resetAABB(); //reset AABB
+            currentObstacle.moveByFrame(GameState.FRAME_SIZE); //move forward to the collision time
+            currentObstacle.updatePrevAABB();  //update saved value
+        }
+    }
+
 
 
 }

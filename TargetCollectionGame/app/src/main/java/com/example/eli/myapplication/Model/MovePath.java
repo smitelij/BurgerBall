@@ -9,9 +9,12 @@ import java.util.ArrayList;
  */
 public class MovePath {
 
+    //This collection of single movements determines how the path proceeds
     ArrayList<SingleMovement> path = new ArrayList();
-    int currentIndex;
-    int currentDuration;
+
+    //These counters keep track of where we currently are on the path
+    int currentIndex; //Index determines which single movement we are executing
+    int currentDuration;  //Duration determines how far on the single movement we are
 
     public MovePath(){
         currentIndex=0;
@@ -39,5 +42,15 @@ public class MovePath {
 
     public PointF getCurrentVelocity(){
         return path.get(currentIndex).getVelocity();
+    }
+
+    public boolean isAtBeginning() {
+        return ((currentDuration == 0) && (currentIndex == 0));
+    }
+
+    public String getStatus() {
+        String status = "Duration: " + currentDuration + " / " + path.get(currentIndex).getDuration();
+        status = status + "| Index: " + currentIndex + " / " + path.size();
+        return status;
     }
 }
