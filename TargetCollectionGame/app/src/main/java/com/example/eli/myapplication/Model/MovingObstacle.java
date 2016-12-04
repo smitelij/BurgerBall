@@ -33,6 +33,7 @@ public class MovingObstacle extends Obstacle implements Movable {
         //Every full cycle reset to original coords to prevent 'slippage'
         if (path.isAtBeginning()) {
             set2dCoordArray(baseCoords);
+            setupAABB();
         }
 
         //transpose back to openGL coords
@@ -87,6 +88,7 @@ public class MovingObstacle extends Obstacle implements Movable {
 
     @Override
     public void draw(float[] mvpMatrix){
+
         moveObstacle();
         super.draw(mvpMatrix);
         updatePrevAABB();

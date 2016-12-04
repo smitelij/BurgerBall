@@ -92,6 +92,8 @@ public class GameEngine {
 
     private Activity mParentActivity;
 
+    private boolean freezeGame = false;
+
 
     //--------------------
     //Initialize the GameEngine class
@@ -222,6 +224,10 @@ public class GameEngine {
 
     //Main method called by MyGLRenderer each frame
     public void advanceFrame(){
+
+        if (freezeGame){
+            return;
+        }
 
         //Handle things that should happen before the frame is advanced.
         //(Add waiting balls, keep track of FPS, etc)
@@ -456,7 +462,7 @@ public class GameEngine {
         //Go through all objects that could be hit
         for (Interactable curObject : allInteractableObjects) {
 
-            System.out.println("---Collision testing an object");
+            System.out.println("###### collision testing - ball: " + currentBall.hashCode() + " _ obstacle: " + curObject.hashCode());
 
             //Do a first test on their bounding boxes
             //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
@@ -464,10 +470,19 @@ public class GameEngine {
 
                 //There may have been a collision, further testing is necessary.
                 //Any collisions detected will be added to a collection in CD (mCollisions).
-                CD.detailedCollisionTesting(currentBall, curObject, timeStep);
+                try {
+                    System.out.println("do detailed collision testing.");
+                    CD.detailedCollisionTesting(currentBall, curObject, timeStep);
+                } catch (Exception e) {
+                    freezeGame();
+                }
 
             }
         }
+    }
+
+    private void freezeGame() {
+        freezeGame = true;
     }
 
     private void cleanupBalls(){

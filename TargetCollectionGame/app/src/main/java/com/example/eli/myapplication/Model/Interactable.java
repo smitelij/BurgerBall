@@ -43,7 +43,7 @@ public class Interactable extends Drawable {
 
     }
 
-    private void setupAABB(){
+    protected void setupAABB(){
         float currentXMax = 0.0f;
         float currentYMax = 0.0f;
         float currentXMin = GameState.FULL_HEIGHT;
@@ -72,6 +72,7 @@ public class Interactable extends Drawable {
         mMaxYCoord = currentYMax;
 
     }
+
 
     public void updateAABB(float xChange, float yChange){
         mMinXCoord = mMinXCoord + xChange;
