@@ -147,9 +147,11 @@ public class LevelData {
 
                 float[] target131coords = GameState.createCircleCoords(20,135,8f);
                 float[] target132coords = GameState.createCircleCoords(180,135,8f);
+                float[] target133coords = GameState.createCircleCoords(240,135,8f);
 
                 mTargetCoords.add(target131coords);
                 mTargetCoords.add(target132coords);
+                mTargetCoords.add(target133coords);
 
                 //num of balls
                 mNumOfBalls = 4;

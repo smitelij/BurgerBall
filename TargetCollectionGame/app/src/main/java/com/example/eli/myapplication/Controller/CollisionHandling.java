@@ -348,13 +348,17 @@ public class CollisionHandling {
         float velocityChange = 2 * GameState.dotProduct(totalCollisionVelocity, boundaryAxis);
         PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
         PointF newVelocity = new PointF(totalCollisionVelocity.x - velocityChangeVector.x, totalCollisionVelocity.y - velocityChangeVector.y);
-        newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
+        PointF newVelocityElastic = new PointF(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
+        System.out.println("new velocity elastic: " + newVelocityElastic);
+
+        PointF finalVelocity = new PointF(newVelocityElastic.x + obstacleDirectionalVel.x, newVelocityElastic.y + obstacleDirectionalVel.y);
+        System.out.println("final velocity: " + finalVelocity);
 
         if (debug == false) {
-            ball.setVelocity(newVelocity);
-            System.out.println("NEW VELOCITY (additive velocities method): " + newVelocity);
+            ball.setVelocity(finalVelocity);
+            System.out.println("NEW VELOCITY (additive velocities method): " + finalVelocity);
         } else {
-            System.out.println("NEW VELOCITY (additive velocities method): " + newVelocity);
+            System.out.println("NEW VELOCITY (additive velocities method): " + finalVelocity);
         }
 
     }

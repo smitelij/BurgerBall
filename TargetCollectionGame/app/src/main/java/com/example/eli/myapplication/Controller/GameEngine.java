@@ -462,7 +462,7 @@ public class GameEngine {
         //Go through all objects that could be hit
         for (Interactable curObject : allInteractableObjects) {
 
-            System.out.println("###### collision testing - ball: " + currentBall.hashCode() + " _ obstacle: " + curObject.hashCode());
+            //System.out.println("###### collision testing - ball: " + currentBall.hashCode() + " _ obstacle: " + curObject.hashCode());
 
             //Do a first test on their bounding boxes
             //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
@@ -471,7 +471,7 @@ public class GameEngine {
                 //There may have been a collision, further testing is necessary.
                 //Any collisions detected will be added to a collection in CD (mCollisions).
                 try {
-                    System.out.println("do detailed collision testing.");
+                    //System.out.println("do detailed collision testing.");
                     CD.detailedCollisionTesting(currentBall, curObject, timeStep);
                 } catch (Exception e) {
                     freezeGame();

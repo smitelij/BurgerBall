@@ -220,7 +220,9 @@ public class CollisionDetection {
         }
 
         //Calculate the angle of the ball's velocity against the boundary axis
-        double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, totalVelocity) / (boundaryAxis.length() * totalVelocity.length()));
+        PointF totalVelocityNormal = new PointF(totalVelocity.x / totalVelocity.length(), totalVelocity.y / totalVelocity.length());
+        double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, totalVelocityNormal));
+        // double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, totalVelocity) / (boundaryAxis.length() * totalVelocity.length()));
 
         //Use prev angle and basic trig to calculate how far the ball traveled through the obstacle (hypotenuse)
         double hypotenuse = Math.abs(penetrationDistance) / Math.cos(prevAngle);
@@ -336,13 +338,14 @@ public class CollisionDetection {
         mCollisions.add(new Collision(collisionTime, boundaryAxis, obstacle, ball));
     }
 
-    private void calculateBallMovingPointCollisionInfo(Ball ball, PointF vertex, MovingObstacle obstacle, float timeStep, float radius) throws Exception{
+    private void calculateBallMovingPointCollisionInfo(Ball ball, Penetration penetration, MovingObstacle obstacle, float timeStep) throws Exception{
 
+        //Get vertex from penetration
+        PointF vertex = penetration.mVertex;
         Log.d("my app","***ball location: " + ball.getPrevCenter());
         Log.d("my app","***point location: " + vertex);
 
         //get necessary information to calculate quadratic
-        PointF boundaryAxis = new PointF(0f,0f);
         PointF ball1PrevCenter = ball.getPrevCenter();
         PointF distanceFromVertex = new PointF(ball1PrevCenter.x - vertex.x, ball1PrevCenter.y - vertex.y);
         PointF ballVelocity = ball.getAvgVelocity(timeStep);
@@ -361,7 +364,7 @@ public class CollisionDetection {
         Log.d("my app","_______________");
 
         PointF velocityDifference = new PointF(ballVelocity.x - obstacleVelocity.x, ballVelocity.y - obstacleVelocity.y);
-        float distanceThreshold = ball.getRadius() + radius;
+        float distanceThreshold = ball.getRadius();
 
         Log.d("my app","ball velocitY: " + ballVelocity);
         Log.d("my app","obstacleVelocity: " + obstacleVelocity);
@@ -370,35 +373,42 @@ public class CollisionDetection {
         Log.d("my app","distance value: " + distanceFromVertex.length());
 
         //calculate the collision time using the quadratic formula
-        float collisionTime = 0.01f;
-        try {
-            collisionTime = (float) quadraticCollisionTime(velocityDifference, distanceFromVertex, distanceThreshold, timeStep);
-        } catch(Exception e) {
-            System.out.println("error.");
-        }
-
-        Log.d("my app","Collision time: " + collisionTime);
+        float collisionTime = (float) quadraticCollisionTime(velocityDifference, distanceFromVertex, distanceThreshold, timeStep);
 
         if (collisionTime > timeStep) {
+            System.out.println("error.");
             throw new Exception();
         }
 
-        //Log.d("my app","Collision time: " + collisionTime);
+        boolean displaceBallFromObstacle = false;
 
-        //sanity check
-        if (collisionTime < 0){
-            collisionTime = 0.01f;
-        }
 
-        //If we are handling a nearest-vertex collision (and not a target collision), then...
-        if (radius == 0) {
+        //For now, we are only handling moving nearest vertex collisions.
+        // if we want to handle moving target collisions, this if-statement will need to change.
+        PointF boundaryAxis = new PointF(0f,0f);
+        if (true) {
             //update the boundary axis based on the collision-point location of the ball (this will make velocity calculation more accurate)
-            boundaryAxis = updateBoundaryAxis(ball, collisionTime, vertex);
+            boundaryAxis = updateBoundaryAxisMovingVertex(ball, collisionTime, obstacleVelocity, vertex);
+            System.out.println("old boundary axis: " + penetration.mNormalAxis);
+            System.out.println("new boundary axis: " + boundaryAxis);
         }
+
+        if (displaceBallFromObstacle) {
+            float penetrationDistance = calculateCurrentPenetration(ball, collisionTime, obstacleVelocity, vertex);
+            displaceBallFromObstacle(ball, penetrationDistance, boundaryAxis);
+        }
+
+        if (collisionTime < 0) {
+            displaceBallFromObstacle = true;
+            collisionTime = 0.01f;
+            throw new Exception();
+        }
+
 
         //add this collision to the collection
         mCollisions.add(new Collision(collisionTime, boundaryAxis, obstacle, ball));
     }
+
 
     //To calculate the collision time of two objects, we need three pieces of information:
     //  velocityDifference: vector representing how the distance between the objects is changing
@@ -428,32 +438,10 @@ public class CollisionDetection {
             return result2;
         }
 
-        throw new Exception();
         //At this point, since neither quadratics were within the range, something
-        // likely went wrong. Do damage control by returning 0.01 or timeStep, whichever
-        // either result is closer to.
-        /*
-        //If both are negative, return 0.01
-        if (result1 < 0 && result2 < 0) {
-            return 0.01;
-        }
-        //If both are positive, return timeStep
-        if (result1 > timeStep && result2 > timeStep) {
-            return timeStep;
-        }
-
-        //otherwise, determine whether the results are closer to 0 or timestep, and return accordingly.
-        ArrayList<Double> resultList = new ArrayList<>();
-        resultList.add(result1);
-        resultList.add(result2);
-        Collections.sort(resultList);
-        double distanceFromZero = Math.abs(resultList.get(0));
-        double distanceFromTimestep = resultList.get(1) - timeStep;
-
-        if (distanceFromZero < distanceFromTimestep) {
-            return 0.01;
-        }
-        return timeStep; */
+        // likely went wrong. Since we know a collision did occur, it's most likely it actually occurred
+        // before the frame started, so return the lower of the results.
+        return Math.min(result1, result2);
     }
 
     private boolean isResultWithinBounds(double result, float timeStep) {
@@ -556,7 +544,7 @@ public class CollisionDetection {
             if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
                 MovingObstacle movingObstacle = (MovingObstacle) obstacle;
                 Log.d("my app","penetration: " + pHistory.mPenetrationDistance);
-                calculateBallMovingPointCollisionInfo(ball, pHistory.mVertex, movingObstacle, timeStep, 0);
+                calculateBallMovingPointCollisionInfo(ball, pHistory, movingObstacle, timeStep);
             } else {
                 calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0);
             }
@@ -568,13 +556,61 @@ public class CollisionDetection {
     }
 
     private PointF updateBoundaryAxis(Ball ball, float collisionTime, PointF nearestVertex){
-        PointF prevBallPos = ball.getPrevCenter();
-        PointF ballDisplacement = ball.calculatePositionChange(collisionTime);
-        PointF newBallPos = new PointF(prevBallPos.x + ballDisplacement.x, prevBallPos.y + ballDisplacement.y);
+        //move ball to new pos
+        PointF newBallPos = calculateNewBallPos(ball, collisionTime);
+
+        //calculate new collision axis
         PointF collisionAxis = new PointF(nearestVertex.x - newBallPos.x, nearestVertex.y - newBallPos.y);
         float collisionAxisLength = collisionAxis.length();
         collisionAxis.set(collisionAxis.x / collisionAxisLength, collisionAxis.y / collisionAxisLength);
         return collisionAxis;
+    }
+
+    private PointF updateBoundaryAxisMovingVertex(Ball ball, float collisionTime, PointF obstacleVelocity, PointF nearestVertex) {
+
+        //move ball to new pos
+        PointF newBallPos = calculateNewBallPos(ball, collisionTime);
+
+        //Move vertex to new pos
+        PointF newVertexPos = calculateNewVertexPos(nearestVertex, collisionTime, obstacleVelocity);
+
+        //calculate new collision axis
+        PointF collisionAxis = new PointF(newVertexPos.x - newBallPos.x, newVertexPos.y - newBallPos.y);
+        float collisionAxisLength = collisionAxis.length();
+        collisionAxis.set(collisionAxis.x / collisionAxisLength, collisionAxis.y / collisionAxisLength);
+        return collisionAxis;
+    }
+
+    private float calculateCurrentPenetration(Ball ball, float collisionTime, PointF obstacleVelocity, PointF nearestVertex) {
+        //move ball to new pos
+        PointF newBallPos = calculateNewBallPos(ball, collisionTime);
+
+        //Move vertex to new pos
+        PointF newVertexPos = calculateNewVertexPos(nearestVertex, collisionTime, obstacleVelocity);
+
+        //Calculate distance between ball and vertex
+        float distance = new PointF(newBallPos.x - newVertexPos.x, newBallPos.y - newVertexPos.y).length();
+        float penetration = ball.getRadius() - distance;
+
+        return penetration;
+    }
+
+    private PointF calculateNewBallPos(Ball ball, float collisionTime) {
+        PointF prevBallPos = ball.getPrevCenter();
+        PointF ballDisplacement = ball.calculatePositionChange(collisionTime);
+        //new ball position
+        return new PointF(prevBallPos.x + ballDisplacement.x, prevBallPos.y + ballDisplacement.y);
+    }
+
+    private PointF calculateNewVertexPos(PointF vertex, float collisionTime, PointF vertexVelocity) {
+        PointF vertexDisplacement = new PointF(vertexVelocity.x * collisionTime, vertexVelocity.y * collisionTime);
+        return new PointF(vertex.x + vertexDisplacement.x, vertex.y + vertexDisplacement.y);
+    }
+
+    private void displaceBallFromObstacle(Ball ball, float penetrationDistance, PointF boundaryAxis) {
+        PointF displacementVector = new PointF(-boundaryAxis.x * penetrationDistance, -boundaryAxis.y * penetrationDistance);
+        System.out.println("BALL DISPLACED: " + displacementVector);
+        ball.addToDisplacementVector(displacementVector);
     }
 
     private int getNearestVertexIndex(PointF[] obstacleCoords, PointF ballCenter){
@@ -653,7 +689,7 @@ public class CollisionDetection {
      */
     public boolean coarseCollisionTesting(Ball ball, Interactable obstacle){
 
-        Log.d("my app","coarse collision test.");
+        //Log.d("my app","coarse collision test.");
 
         //if the other object is a ball, we need to make sure it has already moved this frame.
         if (obstacle.getType() == GameState.INTERACTABLE_BALL){
@@ -664,22 +700,22 @@ public class CollisionDetection {
                 return false;
             }
         }
-
+/*
         Log.d("my app","  ball min x: " + ball.getMinX() + ", ball max x: " + ball.getMaxX());
         Log.d("my app","  ball min y: " + ball.getMinY() + ", ball max Y: " + ball.getMaxY());
         Log.d("my app","__");
         Log.d("my app","  obstacle min x: " + obstacle.getMinX() + ", obstacle max x: " + obstacle.getMaxX());
         Log.d("my app","  obstacle min y: " + obstacle.getMinY() + ", obstacle max Y: " + obstacle.getMaxY());
-
+*/
         //Test Bounding boxes
         //x axis
         if (((ball.getMaxX()) + 1 >= obstacle.getMinX()) && (obstacle.getMaxX() >= ball.getMinX() - 1)){
 
-            Log.d("my app"," x axis: True");
+            //Log.d("my app"," x axis: True");
             //y axis
             if (((ball.getMaxY()) + 1 >= obstacle.getMinY()) && (obstacle.getMaxY() >= ball.getMinY() - 1)) {
 
-                Log.d("my app"," y axis: true");
+                //Log.d("my app"," y axis: true");
                 return true;
             }
         }
