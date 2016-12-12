@@ -1,5 +1,7 @@
 package com.example.eli.myapplication.Model;
 
+import android.graphics.PointF;
+
 import com.example.eli.myapplication.Model.GameState;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ public class LevelData {
     //Collections of coordinates to be used later for initializing objects
     ArrayList<float[]> mObstacleCoords = new ArrayList<>();
     ArrayList<float[]> mTargetCoords = new ArrayList<>();
+    ArrayList<float[]> mMovingObstacleCoords = new ArrayList<>();
+    ArrayList<MovePath> mMovingObstaclePaths = new ArrayList<>();
 
     int mNumOfBalls;
     int levelIndex;
@@ -67,44 +71,39 @@ public class LevelData {
             case 2:
                 //Obstacles
                 float obstacle151coords[] = {
-                        80f, 200f, 0.0f,   // top left
-                        40f, 130f, 0.0f,   // bottom left
-                        55f, 130f, 0.0f,   // bottom right
-                        95f, 200f, 0.0f }; // top right
+                        0f, 120f, 0.0f,   // top left
+                        0f, 50f, 0.0f,   // bottom left
+                        75f, 50f, 0.0f,   // bottom right
+                        30f, 120f, 0.0f }; // top right
 
 
                 float obstacle152coords[] = {
-                        180f, 145f, 0.0f,   // top left
-                        140f, 65f, 0.0f,   // bottom left
-                        155f, 65f, 0.0f,   // bottom right
-                        195f, 145f, 0.0f }; // top right
+                        170f, 120f, 0.0f,   // top left
+                        125f, 50f, 0.0f,   // bottom left
+                        200f, 50f, 0.0f,   // bottom right
+                        200f, 120f, 0.0f }; // top right
 
                 float obstacle153coords[] = {
-                        155f, 240f, 0.0f,   // top left
-                        155f, 215f, 0.0f,   // bottom left
-                        195f, 215f, 0.0f,   // bottom right
-                        195f, 240f, 0.0f }; // top right
+                        87f, 220f, 0f,     // top
+                        47f, 200f, 0.0f,   // top left
+                        87f, 140f, 0.0f,   // bottom
+                        127f, 200f, 0.0f,}; // top right
 
-                float obstacle154coords[] = {
-                        185f, 12f, 0.0f,   // left
-                        195f, 2f, 0.0f,   // bottom
-                        205f, 12f, 0.0f, // right
-                        195f, 22f, 0.0f }; //top
-
-
+                MovePath path = new MovePath();
+                path.addMovement(new SingleMovement(new PointF(0.5f,0f), 100));
+                path.addMovement(new SingleMovement(new PointF(-0.5f, 0f), 100));
 
 
                 mObstacleCoords.add(obstacle151coords);
                 mObstacleCoords.add(obstacle152coords);
-                mObstacleCoords.add(obstacle153coords);
-                mObstacleCoords.add(obstacle154coords);
-                //mObstacleCoords.add(obstacle155coords);
+                mMovingObstacleCoords.add(obstacle153coords);
+                mMovingObstaclePaths.add(path);
 
                 //Targets
 
-                float[] target151coords = GameState.createCircleCoords(55,255,8f);
-                float[] target152coords = GameState.createCircleCoords(185,100,8f);
-                float[] target153coords = GameState.createCircleCoords(185,275,8f);
+                float[] target151coords = GameState.createCircleCoords(100,235,8f);
+                float[] target152coords = GameState.createCircleCoords(15,128,8f);
+                float[] target153coords = GameState.createCircleCoords(185,128,8f);
 
                 mTargetCoords.add(target151coords);
                 mTargetCoords.add(target152coords);
@@ -147,11 +146,9 @@ public class LevelData {
 
                 float[] target131coords = GameState.createCircleCoords(20,135,8f);
                 float[] target132coords = GameState.createCircleCoords(180,135,8f);
-                float[] target133coords = GameState.createCircleCoords(240,135,8f);
 
                 mTargetCoords.add(target131coords);
                 mTargetCoords.add(target132coords);
-                mTargetCoords.add(target133coords);
 
                 //num of balls
                 mNumOfBalls = 4;
@@ -284,6 +281,14 @@ public class LevelData {
 
     public ArrayList<float[]> getObstacleCoords(){
         return mObstacleCoords;
+    }
+
+    public ArrayList<float[]> getMovingObstacleCoords() {
+        return mMovingObstacleCoords;
+    }
+
+    public ArrayList<MovePath> getMovePaths() {
+        return mMovingObstaclePaths;
     }
 
     public ArrayList<float[]> getTargetCoords(){

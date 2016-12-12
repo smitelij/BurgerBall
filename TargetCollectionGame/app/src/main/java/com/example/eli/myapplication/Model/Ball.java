@@ -176,10 +176,14 @@ public class Ball extends Interactable implements Movable {
 
     public void addBoundaryCollision(Collision collision){
 
-        if (mLastCollisionAxis.equals(collision.getBoundaryAxis())) {
+        if (collision.getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+            return;
+        }
+
+        if ((collision.getBoundaryAxis().x == 0) && (collision.getBoundaryAxis().y == -1)) {
             mNumOfBoundaryCollisionsThisFrame++;
         }
-        mLastCollisionAxis = collision.getBoundaryAxis();
+        //mLastCollisionAxis = collision.getBoundaryAxis();
     }
 
 
@@ -285,6 +289,10 @@ public class Ball extends Interactable implements Movable {
 
     public boolean didBallCollide() {
         return (mNewVelocity.length() > 0);
+    }
+
+    public PointF getLastCollisionAxis() {
+        return mLastCollisionAxis;
     }
 
 

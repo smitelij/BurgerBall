@@ -93,28 +93,25 @@ public class LevelInitialization {
         ArrayList<float[]> obstacleCoords = levelData.getObstacleCoords();
         int obstacleTexture = LevelInitialization.loadGLTexture(mCurrentWallTexture);
 
-        /* normal
+
         for (float[] currentObstacleCoords : obstacleCoords){
             Obstacle obstacle = new Obstacle(currentObstacleCoords, obstacleTexture);
             mAllInteractableObjects.add(obstacle);
             mAllDrawableObjects.add(obstacle);
-        } */
+        }
 
-        //test
+        ArrayList<float[]> movingObstacleCoords = levelData.getMovingObstacleCoords();
+        ArrayList<MovePath> movingObstaclePaths = levelData.getMovePaths();
 
-
-
-        for (float[] currentObstacleCoords : obstacleCoords){
-
-            MovePath path = new MovePath();
-            path.addMovement(new SingleMovement(new PointF(1f,1f),30));
-            path.addMovement(new SingleMovement(new PointF(-1f,-1f),30));
-
-            Obstacle obstacle = new MovingObstacle(currentObstacleCoords, obstacleTexture,path);
+        int i = 0;
+        for (float[] currentObstacleCoords : movingObstacleCoords) {
+            Obstacle obstacle = new MovingObstacle(currentObstacleCoords, obstacleTexture, movingObstaclePaths.get(i));
             mAllInteractableObjects.add(obstacle);
             mAllDrawableObjects.add(obstacle);
             mAllMovingObstacles.add( (MovingObstacle) obstacle);
+            i++;
         }
+
 
     }
 
