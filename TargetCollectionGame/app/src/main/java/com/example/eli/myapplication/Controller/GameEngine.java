@@ -156,7 +156,7 @@ public class GameEngine {
 
             //To activate a ball, all we need to do is add it to the collections.
             //check if we can activate the ball right now
-            if (canActivateBall(ball)) {
+            if (canActivateBall()) {
                 //'activating' the ball is as easy as adding to the collections
                 //mActiveBalls.add(ball);
                 ball.activateBall();
@@ -181,10 +181,10 @@ public class GameEngine {
     //RETURNS:
     // True if we can activate the ball, false if we can't.
     //
-    private boolean canActivateBall(Ball newBall){
+    private boolean canActivateBall(){
         //Checks before we can activate a ball:
         //1: The firing zone must be clear
-        if (!isFiringZoneClear(newBall)){
+        if (!isFiringZoneClear()){
             return false;
 
         //Or else we can activate the ball.
@@ -197,9 +197,9 @@ public class GameEngine {
     //This function checks if any other balls are currently in the firing zone.
     //By firing zone, we just mean the starting location of the new ball.
     //Used for a check in canActivateBall.
-    private boolean isFiringZoneClear(Ball newBall){
+    private boolean isFiringZoneClear(){
 
-        PointF newBallCenter = newBall.getCenter();
+        PointF firingZoneCenter = GameState.getFiringZoneCenter();
 
         for (Ball currentBall : mAllBalls){
 
@@ -207,19 +207,33 @@ public class GameEngine {
                 continue;
             }
 
-            PointF currentBallCenter = currentBall.getCenter();
-
-            PointF distanceVector = new PointF(newBallCenter.x - currentBallCenter.x, newBallCenter.y - currentBallCenter.y);
-            float distance = distanceVector.length();
-
-            //If the distance between them is less than the radius's, then this ball is in the firing zone.
-            if (distance < (newBall.getRadius() + currentBall.getRadius())){
+            //If a ball is in the firing zone, it is NOT clear
+            if (isBallInFiringZone(firingZoneCenter, currentBall)) {
                 return false;
             }
+
         }
 
-        //if we made it through all balls, and none collided with the new ball, then the firing zone is clear.
+        //if we made it through all balls, then the firing zone is clear.
         return true;
+    }
+
+    private boolean isBallInFiringZone(PointF firingZoneCenter, Ball ball) {
+        if (firingZoneCenter == null) {
+            firingZoneCenter = GameState.getFiringZoneCenter();
+        }
+
+        PointF currentBallCenter = ball.getCenter();
+
+        PointF distanceVector = new PointF(firingZoneCenter.x - currentBallCenter.x, firingZoneCenter.y - currentBallCenter.y);
+        float distance = distanceVector.length();
+
+        //If the distance between them is less than the diameter, then this ball is in the firing zone.
+        if (distance < (ball.getRadius() * 2)){
+            return true;
+        }
+
+        return false;
     }
 
     //Main method called by MyGLRenderer each frame
@@ -268,6 +282,9 @@ public class GameEngine {
         //and then repeat until we reach the end of the frame.
         while (timeElapsed < mCurrentFrameSize) {
 
+            //check if any balls should be deactivated
+            testForDeactivatingBalls();
+
             System.out.println("time elapsed (beginning) : " + timeElapsed);
 
             //At first, we try to advance the whole frame (or whatever is remaining), and see if any collisions happen.
@@ -299,6 +316,9 @@ public class GameEngine {
 
         //check if a ball should be deactivated
         testForDeactivatingBalls();
+
+        //clear collision histories
+        clearCollisionHistories();
 
         //check if all balls have been fired or all targets collected
         endLevelChecks();
@@ -332,6 +352,7 @@ public class GameEngine {
 
     private void testForDeactivatingBalls(){
 
+        ArrayList<Ball> stuckBalls = new ArrayList<>();
         ArrayList<Ball> deactivationList = new ArrayList<>();
 
         for (Ball currentBall : mAllBalls){
@@ -340,20 +361,64 @@ public class GameEngine {
                 continue;
             }
 
-            if (currentBall.getPerFrameCollisionCount() > (mCurrentFrameSize * GameState.DEACTIVATION_CONSTANT)){
-                deactivationList.add(currentBall);
-                currentBall.deactivateBall();
+            //System.out.println("Ball: " + currentBall.hashCode() + ". current collision count: " + currentBall.getBoundaryCollisionCountThisFrame());
+            if (currentBall.getBoundaryCollisionCountThisFrame() > (mCurrentFrameSize * GameState.DEACTIVATION_CONSTANT)){
+                //deactivationList.add(currentBall);
+                if (isBallInFiringZone(null, currentBall) && !areAllBallsFired()) {
+                    currentBall.deactivateBall();
+                } else {
+                    currentBall.stopBall();
+                }
                 mNumActiveBalls--;
-            } else {
-                currentBall.clearFrameCollisionCount();
             }
+
+            System.out.println("ball collisions this frame: " + currentBall.getBallCollisionCountThisFrame());
+            if (currentBall.getBallCollisionCountThisFrame() > GameState.BALL_BOUNCE_CONSTANT * GameState.FRAME_SIZE) {
+                stuckBalls.add(currentBall);
+            }
+
         }
 
+        if (stuckBalls.size()==2) {
+            handleBallOnTopOfBall(stuckBalls);
+
+        }
+        /*
         for (Ball deadBall : deactivationList){
             //mActiveBalls.remove(deadBall);
             allInteractableObjects.remove(deadBall);
+        }*/
+
+    }
+
+    private void handleBallOnTopOfBall(ArrayList<Ball> stuckBalls) {
+        Ball topBall;
+        Ball bottomBall;
+
+        if (stuckBalls.get(0).getCenter().y > stuckBalls.get(1).getCenter().y){
+            topBall = stuckBalls.get(0);
+            bottomBall = stuckBalls.get(1);
+        } else {
+            topBall = stuckBalls.get(1);
+            bottomBall = stuckBalls.get(0);
         }
 
+        PointF topBallCenter = topBall.getCenter();
+        PointF bottomBallCenter = bottomBall.getCenter();
+        PointF distanceVector = new PointF(topBallCenter.x - bottomBallCenter.x, topBallCenter.y - bottomBallCenter.y);
+        PointF distanceVectorNormal = new PointF(distanceVector.x / distanceVector.length(), distanceVector.y / distanceVector.length());
+        topBall.setVelocity(distanceVectorNormal);
+    }
+
+    private void clearCollisionHistories() {
+        for (Ball currentBall : mAllBalls) {
+
+            if (!currentBall.isBallActive()){
+                continue;
+            }
+
+            currentBall.clearFrameCollisionCount();
+        }
     }
 
     private void endLevelChecks(){
@@ -565,7 +630,7 @@ public class GameEngine {
 
         //Update velocities (not done above, for cases that one ball collides with multiple things...
         //then we don't want to update the calculated velocity until after going through all collisions)
-        updateVelocities(collisionTime);
+        updateVelocitiesCollision(collisionTime);
 
     }
 
@@ -576,7 +641,7 @@ public class GameEngine {
         moveBallsToCollisionInstant(timeStep, false);
 
         //update the velocities of all the balls (because gravity is affecting it)
-        updateVelocities(timeStep);
+        updateVelocitiesNoCollision(timeStep);
     }
 
     private void moveBallsToCollisionInstant(float collisionTime, boolean cleanupAABB){
@@ -626,7 +691,38 @@ public class GameEngine {
     }
 
 
-    private void updateVelocities(float timeStep){
+    private void updateVelocitiesCollision(float timeStep){
+
+        for (Ball currentBall : mAllBalls){
+
+            //Skip inactive balls
+            if (currentBall.isBallInactive()){
+                continue;
+            }
+
+            //Handle stopped balls
+            if (currentBall.isBallStopped()) {
+                if (currentBall.didBallCollide()) {
+                    currentBall.updateVelocityCollision(timeStep);
+                    currentBall.activateBall(); //In case ball was previously stopped
+                    mNumActiveBalls++;
+                    currentBall.clearStepCollisionHistory();
+                }
+            }
+
+            //Handle active balls
+            if (currentBall.isBallActive()) {
+                if (currentBall.didBallCollide()) {
+                    currentBall.updateVelocityCollision(timeStep);
+                } else {
+                    currentBall.updateVelocityGravity(timeStep);
+                }
+                currentBall.clearStepCollisionHistory();
+            }
+        }
+    }
+
+    private void updateVelocitiesNoCollision(float timeStep){
 
         for (Ball currentBall : mAllBalls){
 
@@ -634,12 +730,13 @@ public class GameEngine {
                 continue;
             }
 
-            //will either use any new velocity that was calculated in the event of a collision,
-            // or else just factor in the current gravity and return a new velocity.
-            currentBall.updateVelocity(timeStep);
-            currentBall.clearCollisionHistory();
+            // just factor in the current gravity and return a new velocity.
+            currentBall.updateVelocityGravity(timeStep);
+            currentBall.clearStepCollisionHistory();
         }
     }
+
+
 
     private void handleTargetCollisions(CollisionHandling CH, float firstCollisionTime){
 
@@ -656,7 +753,7 @@ public class GameEngine {
         //Go through all balls
         for (Ball currentBall : mAllBalls) {
 
-            //skip inactive balls
+            //skip inactive and stopped balls
             if (!currentBall.isBallActive()){
                 continue;
             }
@@ -704,7 +801,7 @@ public class GameEngine {
             // Balls should not be drawn if they are not active.
             case GameState.INTERACTABLE_BALL:
                 Ball currentBall = (Ball) object;
-                if (!currentBall.isBallActive()){
+                if (currentBall.isBallInactive()){
                     return false;
                 }
                 break;
@@ -714,7 +811,7 @@ public class GameEngine {
             // while you still have balls remaining. They should not be drawn
             // if the current active ball is the last ball.
             case GameState.DRAWABLE_GHOST_CIRCLES:
-                if (mCurrentActiveBallID == mAllBalls.size()) {
+                if (areAllBallsFired()) {
                     return false;
                 }
                 break;
@@ -724,7 +821,7 @@ public class GameEngine {
             // This is another firing aid. More specifically than the above ones though,
             // it should only be drawn when the flag mIsVelocityArrowActive is true.
             case GameState.DRAWABLE_VELOCITY_ARROW:
-                if ((!mIsVelocityArrowActive) || (mCurrentActiveBallID == mAllBalls.size())){
+                if ((!mIsVelocityArrowActive) || (areAllBallsFired())){
                     return false;
                 }
                 break;
@@ -897,6 +994,10 @@ public class GameEngine {
             currentObstacle.moveByFrame(GameState.FRAME_SIZE); //move forward to the collision time
             currentObstacle.updatePrevAABB();  //update saved value
         }
+    }
+
+    private boolean areAllBallsFired() {
+        return (mCurrentActiveBallID == mAllBalls.size());
     }
 
 

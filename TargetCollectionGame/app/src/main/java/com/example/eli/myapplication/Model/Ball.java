@@ -15,8 +15,6 @@
  */
 package com.example.eli.myapplication.Model;
 
-import java.util.ArrayList;
-
 import android.graphics.PointF;
 import android.opengl.Matrix;
 
@@ -25,6 +23,7 @@ import android.opengl.Matrix;
  */
 public class Ball extends Interactable implements Movable {
 
+    private enum ballStatus {INACTIVE, ACTIVE, STOPPED};
 
     private float[] mModelMatrix = new float[16];
     private float[] mModelProjectionMatrix = new float[16];
@@ -34,23 +33,21 @@ public class Ball extends Interactable implements Movable {
     private PointF mNewVelocity = new PointF(0f,0f);
     private float[] mPrevAABB = new float[4];
     private PointF mPrevVelocity;
+    private PointF mLastCollisionAxis = new PointF(0f,0f);
 
     float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
-    private boolean mIsActive;
     private PointF mDisplacementVector = new PointF(0f, 0f);
+    private ballStatus ballState;
 
     //used for collision detection, tracks whether we have advanced this ball yet for the current frame
     boolean mHasMovedForward;
 
-    //Keeps track of the collisions that were detected in the current frame with this ball as the main ball.
-    ArrayList<Collision> mCollisions;
     //Keeps track of how many objects this ball collided with in this frame
     //(only > 1 if multiple collisions happened at the exact same time)
     //(includes collisions where this ball is not the main ball)
-    private int mNumOfCollisions;
-    private int mDeactivationCounter = 0;
-
-    private int mNumOfCollisionsPerFrame = 0;
+    private int mNumOfBallCollisionsThisStep;
+    private int mNumOfBallCollisionsThisFrame;
+    private int mNumOfBoundaryCollisionsThisFrame = 0;
 
 
     /**
@@ -68,7 +65,7 @@ public class Ball extends Interactable implements Movable {
 
         mVelocity = velocity;
         mRadius = radius;
-        mCollisions = new ArrayList<>();
+        ballState = ballStatus.INACTIVE;
 
     }
 
@@ -96,7 +93,6 @@ public class Ball extends Interactable implements Movable {
         super.draw(mModelProjectionMatrix);
         updatePrevAABB();
     }
-
 
 
     public void setColor(float[] vertexColors){
@@ -167,43 +163,37 @@ public class Ball extends Interactable implements Movable {
         mHasMovedForward = false;
     }
 
-    public void addCollision(Collision currentCollision){
-        mCollisions.add(currentCollision);
-        mNumOfCollisions++;
+    public void clearStepCollisionHistory(){
+        mNumOfBallCollisionsThisStep = 0;
     }
 
-    public ArrayList<Collision> getCollisions(){
-        return mCollisions;
+    public void increaseBallCollisionCounts(){
+        mNumOfBallCollisionsThisStep++;
+        mNumOfBallCollisionsThisFrame++;
+
+        //mNumOfBoundaryCollisionsThisFrame++;
     }
 
-    public void clearCollisionHistory(){
-        mCollisions.clear();
-        mNumOfCollisions = 0;
-    }
+    public void addBoundaryCollision(Collision collision){
 
-    public boolean hasBallCollided(){
-        if (mCollisions.size() > 0){
-            return true;
-        } else {
-            return false;
+        if (mLastCollisionAxis.equals(collision.getBoundaryAxis())) {
+            mNumOfBoundaryCollisionsThisFrame++;
         }
+        mLastCollisionAxis = collision.getBoundaryAxis();
     }
 
-    public void increaseCollisionCount(){
-        mNumOfCollisions++;
-        mNumOfCollisionsPerFrame++;
+
+    public int getBoundaryCollisionCountThisFrame(){
+        return mNumOfBoundaryCollisionsThisFrame;
     }
 
-    public int getCollisionCount(){
-        return mNumOfCollisions;
-    }
-
-    public int getPerFrameCollisionCount(){
-        return mNumOfCollisionsPerFrame;
+    public int getBallCollisionCountThisFrame(){
+        return mNumOfBallCollisionsThisFrame;
     }
 
     public void clearFrameCollisionCount(){
-        mNumOfCollisionsPerFrame = 0;
+        mNumOfBoundaryCollisionsThisFrame = 0;
+        mNumOfBallCollisionsThisFrame = 0;
     }
 
     //get a balls current velocity
@@ -220,7 +210,7 @@ public class Ball extends Interactable implements Movable {
     public PointF getAvailableVelocity(float timeStep){
         PointF newVelocity = getVelocity(timeStep);
 
-        return new PointF(newVelocity.x / mNumOfCollisions, newVelocity.y / mNumOfCollisions);
+        return new PointF(newVelocity.x / mNumOfBallCollisionsThisStep, newVelocity.y / mNumOfBallCollisionsThisStep);
     }
 
     //Set a new velocity for a ball (will be updated in update velocity)
@@ -230,7 +220,7 @@ public class Ball extends Interactable implements Movable {
     }
 
     //update a balls velocity after time timeStep
-    public void updateVelocity(float timeStep){
+    public void updateVelocityCollision(float timeStep){
 
         //if mNewVelocity exists, then we have updated the balls new velocity elsewhere
         if (mNewVelocity.length() > 0) {
@@ -244,30 +234,45 @@ public class Ball extends Interactable implements Movable {
         }
     }
 
+    public void updateVelocityGravity(float timeStep) {
+        PointF newVelocity = getVelocity(timeStep);
+        mVelocity.set(newVelocity.x, newVelocity.y);
+    }
+
     //Get average velocity from current time until timeStep
     public PointF getAvgVelocity(float timeStep){
         PointF newVelocity = getVelocity(timeStep);
         return new PointF((newVelocity.x + mVelocity.x) / 2, (newVelocity.y + mVelocity.y)/2);
     }
 
-    public boolean isBallActive(){
-        return mIsActive;
+    public boolean isBallActive() {
+        return (ballState == ballStatus.ACTIVE);
+    }
+
+    public boolean isBallStopped() {
+        return (ballState == ballStatus.STOPPED);
+    }
+
+    public boolean isBallInactive() {
+        return (ballState == ballStatus.INACTIVE);
     }
 
     public void activateBall(){
-        mIsActive = true;
+        ballState = ballStatus.ACTIVE;
+        clearFrameCollisionCount();
+
     }
 
-    public void deactivateBall(){
-        mIsActive = false;
+    public void stopBall(){
+        ballState = ballStatus.STOPPED;
+    }
+
+    public void deactivateBall() {
+        ballState = ballStatus.INACTIVE;
     }
 
     public float[] getModelMatrix(){
         return mModelMatrix;
-    }
-
-    protected float[] getModelProjectionMatrix(){
-        return mModelProjectionMatrix;
     }
 
     public void setModelProjectionMatrix(float[] modelProjectionMatrix){
@@ -276,6 +281,10 @@ public class Ball extends Interactable implements Movable {
 
     public void setModelMatrix(float[] modelMatrix){
         mModelMatrix = modelMatrix;
+    }
+
+    public boolean didBallCollide() {
+        return (mNewVelocity.length() > 0);
     }
 
 

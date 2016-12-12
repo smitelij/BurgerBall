@@ -232,14 +232,14 @@ public class CollisionHandling {
                 Ball currentBall = currentCollision.getBall();
                 Ball otherBall = (Ball) currentCollision.getObstacle();
 
-                currentBall.increaseCollisionCount();
-                otherBall.increaseCollisionCount();
+                currentBall.increaseBallCollisionCounts();
+                otherBall.increaseBallCollisionCounts();
 
                 mBallCollisions.add(currentCollision);
 
             } else {
                 mBoundaryCollisions.add(currentCollision);
-                currentCollision.getBall().increaseCollisionCount();
+                currentCollision.getBall().addBoundaryCollision(currentCollision);
             }
         }
     }
@@ -331,15 +331,15 @@ public class CollisionHandling {
         PointF obstacleDirectionalVel = new PointF(outerBoundaryAxis.x * velocityInCollisionDirection, outerBoundaryAxis.y * velocityInCollisionDirection);
         PointF totalCollisionVelocity = new PointF(oldVelocity.x - obstacleDirectionalVel.x, oldVelocity.y - obstacleDirectionalVel.y);
 
-        //Now, combine the old ball velocity with the directional obstacle velocity and use that as total velocity
-        //totalCollisionVelocity.set(totalCollisionVelocity.x - obstacleVelocity.x, totalCollisionVelocity.y - obstacleVelocity.y);
-
         System.out.println("ball velocity: " + oldVelocity);
         System.out.println("obstacle velocity: " + obstacleVelocity);
         System.out.println("boundary axis: " + boundaryAxis);
         System.out.println("velocity in collision direction: " + velocityInCollisionDirection);
         System.out.println("obstacle directional vel: " + obstacleDirectionalVel);
         System.out.println("total collision velocity: " + totalCollisionVelocity);
+
+        //Now that we know how fast the ball and obstacle collided, we can pretend the
+        // obstacle is stationary to calculate the change in velocity the collision will cause
 
         //Formula to use:
         // New Velocity =  v - (2(n · v) n )
@@ -351,6 +351,8 @@ public class CollisionHandling {
         PointF newVelocityElastic = new PointF(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
         System.out.println("new velocity elastic: " + newVelocityElastic);
 
+        //Finally, we must add the obstacle directional velocity with the post-collision change
+        // in velocity (newVelocityElastic), to get our ball's final velocity.
         PointF finalVelocity = new PointF(newVelocityElastic.x + obstacleDirectionalVel.x, newVelocityElastic.y + obstacleDirectionalVel.y);
         System.out.println("final velocity: " + finalVelocity);
 

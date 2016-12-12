@@ -41,7 +41,9 @@ public class GameState {
     //For example, if frame size is 1, and a ball has 8 collisions in the span of 1 frame,
     //the ball will be deactivated. If frame size is 1/2, then the ball will need to have
     //4 collisions in the span of 1 frame.
-    public static final int DEACTIVATION_CONSTANT = 10;
+    public static final int DEACTIVATION_CONSTANT = 20;
+    //num of collisions per frame size that will bounce a stuck ball.
+    public static final int BALL_BOUNCE_CONSTANT = 16;
 
     //Max possible firing velocity for balls in the X and Y components.
     static final float MAX_INITIAL_X_VELOCITY = 8f;
@@ -140,6 +142,11 @@ public class GameState {
     //  ballRadius- The radius of the ball
     public static float[] getInitialBallCoords(){
         return createCircleCoords(GameState.FULL_WIDTH / 2, GameState.BORDER_WIDTH * 4, GameState.ballRadius);
+    }
+
+    public static PointF getFiringZoneCenter() {
+        Ball newBall = new Ball(getInitialBallCoords(), new PointF(0f,0f), 10f, TEXTURE_BALL);
+        return newBall.getCenter();
     }
 
     public static float[] getSelectionCircleCoords(){
