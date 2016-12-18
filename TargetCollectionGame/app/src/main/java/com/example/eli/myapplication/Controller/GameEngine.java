@@ -4,7 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
+import android.opengl.GLES30;
 import android.opengl.Matrix;
 
 import com.example.eli.myapplication.Model.GameState;
@@ -16,6 +17,7 @@ import com.example.eli.myapplication.Model.BallsRemainingIcon;
 import com.example.eli.myapplication.Model.Circle;
 import com.example.eli.myapplication.Model.Collision;
 import com.example.eli.myapplication.Model.Drawable;
+import com.example.eli.myapplication.Model.ParticleEngine;
 import com.example.eli.myapplication.Model.ScoreDigits;
 import com.example.eli.myapplication.Model.Target;
 import com.example.eli.myapplication.Model.MovingObstacle;
@@ -94,6 +96,8 @@ public class GameEngine {
 
     private boolean freezeGame = false;
 
+    private ParticleEngine particleEngine;
+
 
     //--------------------
     //Initialize the GameEngine class
@@ -113,6 +117,9 @@ public class GameEngine {
     //Load a level
     //
     public void loadLevel(){
+
+        //Initialize particle engine
+        particleEngine = new ParticleEngine();
 
         //Grab the level data (number of balls, coordinates of objects, etc)
         LevelData currentLevelData = new LevelData(mChapter,mLevel);
@@ -780,7 +787,7 @@ public class GameEngine {
     public void drawObjects(){
 
         // Draw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
         //Draw all drawable objects
         for (Drawable object : allDrawableObjects) {
@@ -788,6 +795,8 @@ public class GameEngine {
                 object.draw(mVPMatrix);
             }
         }
+
+        particleEngine.drawAllParticles2(mVPMatrix);
 
     }
 
@@ -797,6 +806,7 @@ public class GameEngine {
         //here we go through these specific cases
         switch (object.getType()) {
 
+
             //----BALL----
             // Balls should not be drawn if they are not active.
             case GameState.INTERACTABLE_BALL:
@@ -804,6 +814,7 @@ public class GameEngine {
                 if (currentBall.isBallInactive()){
                     return false;
                 }
+                drawParticle(currentBall);
                 break;
 
             //----FIRING AIDS
@@ -842,6 +853,19 @@ public class GameEngine {
 
         //If we passed all the checks, it is ok to draw this object.
         return true;
+    }
+
+    private void drawParticle(Ball ball) {
+        PointF center = ball.getCenter();
+
+        float[] finalCoords = {
+                center.x, center.y, 0f,
+                center.x + 10, center.y + 10, 0f,
+                center.x, center.y + 10, 0f,
+                center.x + 10, center.y, 0f
+        };
+
+        particleEngine.updateParticle(finalCoords);
     }
 
 

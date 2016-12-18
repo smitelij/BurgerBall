@@ -283,6 +283,10 @@ public class Ball extends Interactable implements Movable {
         mModelProjectionMatrix = modelProjectionMatrix;
     }
 
+    public float[] getModelProjectionMatrix() {
+        return mModelProjectionMatrix;
+    }
+
     public void setModelMatrix(float[] modelMatrix){
         mModelMatrix = modelMatrix;
     }

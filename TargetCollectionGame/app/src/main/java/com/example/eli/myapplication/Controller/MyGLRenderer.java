@@ -19,7 +19,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
@@ -63,17 +64,17 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         System.out.println("on surface created.");
 
         // Set the background frame color
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         // Disable depth testing -- we're 2D only.
-        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
 
         //Disable backface culling
-        GLES20.glDisable(GLES20.GL_CULL_FACE);
+        GLES30.glDisable(GLES30.GL_CULL_FACE);
 
         // Enable transparency
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES30.glEnable(GLES30.GL_BLEND);
+        GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA);
 
         //REALLY IMPORTANT to keep here!
         //it seems that the drawable objects must be initialized no earlier than this point
@@ -151,7 +152,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         x = (width - viewWidth) / 2;
         y = (height - viewHeight) / 2;
 
-        GLES20.glViewport(x, y, viewWidth, viewHeight);
+        GLES30.glViewport(x, y, viewWidth, viewHeight);
 
 
         // this projection matrix is applied to object coordinates
@@ -174,13 +175,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
      */
     public static int loadShader(int type, String shaderCode) {
 
-        // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
-        // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
-        int shader = GLES20.glCreateShader(type);
+        // create a vertex shader type (GLES30.GL_VERTEX_SHADER)
+        // or a fragment shader type (GLES30.GL_FRAGMENT_SHADER)
+        int shader = GLES30.glCreateShader(type);
 
         // add the source code to the shader and compile it
-        GLES20.glShaderSource(shader, shaderCode);
-        GLES20.glCompileShader(shader);
+        GLES30.glShaderSource(shader, shaderCode);
+        GLES30.glCompileShader(shader);
 
         return shader;
     }
@@ -190,7 +191,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
      * just after making it:
      * <p/>
      * <pre>
-     * mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+     * mColorHandle = GLES30.glGetUniformLocation(mProgram, "vColor");
      * MyGLRenderer.checkGlError("glGetUniformLocation");</pre>
      *
      * If the operation is not successful, the check throws an error.
@@ -199,7 +200,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
      */
     public static void checkGlError(String glOperation) {
         int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+        while ((error = GLES30.glGetError()) != GLES30.GL_NO_ERROR) {
             Log.e(TAG, glOperation + ": glError " + error);
             throw new RuntimeException(glOperation + ": glError " + error);
         }

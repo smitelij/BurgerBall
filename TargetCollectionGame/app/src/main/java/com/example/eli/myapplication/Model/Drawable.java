@@ -20,7 +20,8 @@ package com.example.eli.myapplication.Model;
  */
 
 import android.content.Context;
-import android.opengl.GLES20;
+import android.opengl.GLES30;
+import android.opengl.GLES30;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -151,19 +152,19 @@ public class Drawable {
 
         // prepare shaders and OpenGL program
         int vertexShader = MyGLRenderer.loadShader(
-                GLES20.GL_VERTEX_SHADER,
+                GLES30.GL_VERTEX_SHADER,
                 vertexShaderCode);
         int fragmentShader = MyGLRenderer.loadShader(
-                GLES20.GL_FRAGMENT_SHADER,
+                GLES30.GL_FRAGMENT_SHADER,
                 fragmentShaderCode);
 
 
-        mProgram = GLES20.glCreateProgram();             // create empty OpenGL Program
-        GLES20.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
-        GLES20.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
-        GLES20.glBindAttribLocation(mProgram,0,"a_TexCoordinate");
-        GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
-        String error = GLES20.glGetProgramInfoLog(mProgram);
+        mProgram = GLES30.glCreateProgram();             // create empty OpenGL Program
+        GLES30.glAttachShader(mProgram, vertexShader);   // add the vertex shader to program
+        GLES30.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
+        GLES30.glBindAttribLocation(mProgram,0,"a_TexCoordinate");
+        GLES30.glLinkProgram(mProgram);                  // create OpenGL program executables
+        String error = GLES30.glGetProgramInfoLog(mProgram);
 
         mBorderCoords = borderCoords;
         mTextureDataHandle = texturePointer;
@@ -179,69 +180,70 @@ public class Drawable {
     public void draw(float[] mvpMatrix) {
 
         // Add program to OpenGL environment
-        GLES20.glUseProgram(mProgram);
+        GLES30.glUseProgram(mProgram);
 
         // bind the previously generated texture
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textures[0]);
 
         ////////////////////////////
 
 
-        mTextureUniformHandle = GLES20.glGetUniformLocation(mProgram, "u_Texture");
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgram, "a_TexCoordinate");
+        mTextureUniformHandle = GLES30.glGetUniformLocation(mProgram, "u_Texture");
+        mTextureCoordinateHandle = GLES30.glGetAttribLocation(mProgram, "a_TexCoordinate");
 
         // Set the active texture unit to texture unit 0.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
 
         // Bind the texture to this unit.
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mTextureDataHandle);
 
         // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
-        GLES20.glUniform1i(mTextureUniformHandle, 0);
+        GLES30.glUniform1i(mTextureUniformHandle, 0);
 
         ////////////////////////////
 
         // get handle to vertex shader's vPosition member
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
+        mPositionHandle = GLES30.glGetAttribLocation(mProgram, "vPosition");
 
         // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES30.glEnableVertexAttribArray(mPositionHandle);
 
 
 
         // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(
+        GLES30.glVertexAttribPointer(
                 mPositionHandle, COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
+                GLES30.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 
         // get handle to fragment shader's vColor member
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+        mColorHandle = GLES30.glGetUniformLocation(mProgram, "vColor");
 
         // Set color for drawing the triangle
-        GLES20.glUniform4fv(mColorHandle, 1, mColor, 0);
+        GLES30.glUniform4fv(mColorHandle, 1, mColor, 0);
 
         mTextureBuffer.position(0);
-        GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false,
+        GLES30.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES30.GL_FLOAT, false,
                 0, mTextureBuffer);
-        GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+        GLES30.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
 
         // get handle to shape's transformation matrix
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mMVPMatrixHandle = GLES30.glGetUniformLocation(mProgram, "uMVPMatrix");
         MyGLRenderer.checkGlError("glGetUniformLocation");
 
         // Apply the projection and view transformation
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+        GLES30.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
         MyGLRenderer.checkGlError("glUniformMatrix4fv");
 
         // Draw the square
-        GLES20.glDrawElements(
-                GLES20.GL_TRIANGLES, drawOrder.length,
-                GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+        GLES30.glDrawElements(
+                GLES30.GL_TRIANGLES, drawOrder.length,
+                GLES30.GL_UNSIGNED_SHORT, drawListBuffer);
+
 
         // Disable vertex array
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
+        GLES30.glDisableVertexAttribArray(mPositionHandle);
 
 
     }
@@ -257,6 +259,10 @@ public class Drawable {
         vertexBuffer = bb.asFloatBuffer();
         vertexBuffer.put(mBorderCoords);
         vertexBuffer.position(0);
+    }
+
+    public float[] getCoords() {
+        return mBorderCoords;
     }
 
 
