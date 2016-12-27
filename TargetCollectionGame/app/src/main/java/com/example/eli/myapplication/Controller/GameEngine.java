@@ -815,6 +815,7 @@ public class GameEngine {
                     return false;
                 }
                 drawParticle(currentBall);
+                drawParticle2(currentBall);
                 break;
 
             //----FIRING AIDS
@@ -855,17 +856,30 @@ public class GameEngine {
         return true;
     }
 
+    private void drawParticle2(Ball ball) {
+        PointF center = ball.getCenter();
+
+
+        float[] finalCoords = {
+                center.x + ball.getRadius(), center.y, 0f,
+                center.x + ball.getRadius() + 1, center.y + 1, 0f,
+                center.x + ball.getRadius() + 1, center.y, 0f
+        };
+
+        particleEngine.addParticle(finalCoords);
+    }
+
     private void drawParticle(Ball ball) {
         PointF center = ball.getCenter();
 
+
         float[] finalCoords = {
-                center.x, center.y, 0f,
-                center.x + 10, center.y + 10, 0f,
-                center.x, center.y + 10, 0f,
-                center.x + 10, center.y, 0f
+                center.x - ball.getRadius(), center.y, 0f,
+                center.x - ball.getRadius() - 1, center.y + 1, 0f,
+                center.x - ball.getRadius() - 1, center.y, 0f
         };
 
-        particleEngine.updateParticle(finalCoords);
+        particleEngine.addParticle(finalCoords);
     }
 
 
