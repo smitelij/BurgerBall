@@ -119,7 +119,7 @@ public class GameEngine {
     public void loadLevel(){
 
         //Initialize particle engine
-        particleEngine = new ParticleEngine();
+        particleEngine = new ParticleEngine(mChapter);
 
         //Grab the level data (number of balls, coordinates of objects, etc)
         LevelData currentLevelData = new LevelData(mChapter,mLevel);
@@ -878,7 +878,14 @@ public class GameEngine {
             mFrameCount++;
             mPrevTime = currentTime;
             if (mFrameCount % 10 == 0){
+                float avgFPS = calculateFPS();
                 System.out.println("Frames per second: " + calculateFPS());
+                if (avgFPS < 51) {
+                    particleEngine.decreaseParticleGeneration(0.2f);
+                }
+                if (avgFPS > 55 && particleEngine.getParticleGenerationConstant() < 1) {
+                    particleEngine.increaseParticleGeneration(0.2f);
+                }
             }
         } else {
             mPrevTime = System.nanoTime();

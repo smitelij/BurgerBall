@@ -22,9 +22,20 @@ import static com.example.eli.myapplication.Model.ParticleEngine.ParticleSpeed.*
 public class ParticleEngine {
 
     public enum ParticleSpeed {SPEED_SLOW, SPEED_MEDIUM, SPEED_FAST}
-    private static final float speedClassSlow = 4f;
+
+    private static final float speedClassSlow = 4.5f;
     private static final float speedClassMedium = 7f;
     private static final float speedClassFast = 10f;
+
+    //1 is full particle generation, 0 is none.
+    // greater than 1 multiplies the quantity
+    private float particleGenerationConstant = 1f;
+
+    private float[] particleBaseColor;
+    private float[] particleSlowColor;
+    private float[] particleMediumColor;
+    private float[] particleFastColor;
+    private float[] particleDispersionColor;
 
     private final String vertexShaderCode2 =
             // This matrix member variable provides a hook to manipulate
@@ -74,7 +85,9 @@ public class ParticleEngine {
     private final static int floatSize = 4;
     private final static int colorCoordArraySize = 4;
 
-    public ParticleEngine() {
+    public ParticleEngine(int chapter) {
+
+        setParticleColors(chapter);
 
         // First, generate 3 buffers- vertex (constant), positions, and colors
         // This will give us the OpenGL handles for these buffers.
@@ -267,10 +280,10 @@ public class ParticleEngine {
     }
 
     private int determineNumParticlesToGenerate(float ballVelocityLength) {
-        int numParticles = (int) ((ballVelocityLength) / 2);
+        int numParticles = (int) (((ballVelocityLength) / 2) * particleGenerationConstant);
         if (numParticles == 0) {
-            float randomPercent = ((System.nanoTime() % 40) / (float) 20) - 1;
-            if (randomPercent > 0) {
+            float randomPercent = ((System.nanoTime() % 40) / (float) 20) - particleGenerationConstant;
+            if (randomPercent < 0) {
                 numParticles = 1;
             }
         }
@@ -350,25 +363,36 @@ public class ParticleEngine {
     private float[] determineParticleColor(ParticleSpeed speed, float ballVelocity, float randomPercent) {
         float[] color = new float[4];
         float percentOfSpeedClass;
-        randomPercent = randomPercent * 0.2f;
-        float redColor = 1f + randomPercent;
+        float[] dispersionColor = new float[]{particleDispersionColor[0] * 0.2f, particleDispersionColor[1] * 0.2f,
+                particleDispersionColor[2] * 0.2f, particleDispersionColor[3] * 0.2f};
+
         switch (speed) {
             case SPEED_SLOW:
                 percentOfSpeedClass = ballVelocity / speedClassSlow;
-                color = new float[]{1f,percentOfSpeedClass * 0.4f,randomPercent,1f};
+                color = calculateColorGradient(particleBaseColor, particleSlowColor, percentOfSpeedClass,dispersionColor);
                 break;
 
             case SPEED_MEDIUM:
                 percentOfSpeedClass = ballVelocity / speedClassMedium;
-                color = new float[]{redColor,0.4f + (percentOfSpeedClass * 0.4f),0f,1f};
+                color = calculateColorGradient(particleSlowColor, particleMediumColor, percentOfSpeedClass,dispersionColor);
                 break;
 
             case SPEED_FAST:
                 percentOfSpeedClass = ballVelocity / speedClassFast;
-                color = new float[]{redColor,0.8f, percentOfSpeedClass, 1f};
+                color = calculateColorGradient(particleMediumColor, particleFastColor, percentOfSpeedClass,dispersionColor);
                 break;
         }
         return color;
+    }
+
+    private float[] calculateColorGradient(float[] firstColor, float[] secondColor, float percentBetween, float[] dispersionColor) {
+        float[] changeCoefficients = new float[]{secondColor[0] - firstColor[0],
+                secondColor[1] - firstColor[1], secondColor[2] - firstColor[2], secondColor[3] - firstColor[3]};
+        float[] colorChange = new float[]{changeCoefficients[0] * percentBetween, changeCoefficients[1] * percentBetween,
+                changeCoefficients[2] * percentBetween, changeCoefficients[3] * percentBetween};
+
+        return new float[]{firstColor[0] + colorChange[0] + dispersionColor[0], firstColor[1] + colorChange[1] + dispersionColor[1],
+                firstColor[2] + colorChange[2] + dispersionColor[2], firstColor[3] + colorChange[3] + dispersionColor[3]};
     }
 
     private int determineParticleLife(float randomCoord, float ballVelocity) {
@@ -379,6 +403,40 @@ public class ParticleEngine {
         int life = 30 + randomInt + (int) (ballVelocity * 2);
         return life;
     }
+
+
+    private void setParticleColors(int chapter) {
+        switch (chapter) {
+            case 1:
+                particleBaseColor = new float[]{1f,0.2f,0.2f,1f};
+                particleSlowColor = new float[]{1f,0.635f,0.157f,1f};
+                particleMediumColor = new float[]{0.96f,0.96f,0.235f,1f};
+                particleFastColor = new float[]{0.98f,1f,0.83f,1f};
+                particleDispersionColor = new float[]{0f,0f,1f,1f};
+        }
+    }
+
+    public float getParticleGenerationConstant() {
+        return particleGenerationConstant;
+    }
+
+    public void decreaseParticleGeneration(float amount) {
+        if (particleGenerationConstant > 0) {
+            particleGenerationConstant = particleGenerationConstant - amount;
+        }
+    }
+
+    public void increaseParticleGeneration(float amount) {
+        if (particleGenerationConstant < 1) {
+            particleGenerationConstant = particleGenerationConstant + amount;
+        }
+    }
+
+
+
+
+
+
 
     private PointF calculateParticleAxisOpposite(Ball ball) {
         PointF ballCenter = ball.getCenter();

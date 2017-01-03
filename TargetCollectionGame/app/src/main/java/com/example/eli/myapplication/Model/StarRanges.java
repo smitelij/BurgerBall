@@ -10,9 +10,9 @@ public class StarRanges {
     public StarRanges(){
 
         levelStarRange[0] = new int[] {50000,86000,88000};
-        levelStarRange[1] = new int[] {60000,74000,82000};
-        levelStarRange[2] = new int[] {60000,75000,78000};
-        levelStarRange[3] = new int[] {65000,74000,81000};
+        levelStarRange[1] = new int[] {50000,67000,72500};
+        levelStarRange[2] = new int[] {60000,74000,77000};
+        levelStarRange[3] = new int[] {65000,77000,82000};
         levelStarRange[4] = new int[] {30000,40000,50000};
 
     }
