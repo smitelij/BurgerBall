@@ -789,7 +789,8 @@ public class GameEngine {
         // Draw background color
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        createAllParticles();
+        particleEngine.createNewParticles(mAllBalls);
+        particleEngine.updateParticles();
         particleEngine.drawAllParticles2(mVPMatrix);
 
         //Draw all drawable objects
@@ -801,24 +802,11 @@ public class GameEngine {
 
     }
 
-    private void createAllParticles() {
-        for (Ball currentBall : mAllBalls) {
-
-            //skip inactive and stopped balls
-            if (!currentBall.isBallActive()) {
-                continue;
-            }
-
-            createParticlesForBall(currentBall);
-        }
-    }
-
     private boolean shouldObjectBeDrawn(Drawable object){
 
         //certain objects have cases where they should not be drawn.
         //here we go through these specific cases
         switch (object.getType()) {
-
 
             //----BALL----
             // Balls should not be drawn if they are not active.
@@ -866,70 +854,6 @@ public class GameEngine {
         //If we passed all the checks, it is ok to draw this object.
         return true;
     }
-
-    private void createParticlesForBall (Ball ball) {
-        PointF ballCenter = ball.getCenter();
-        PointF ballVelocity = ball.getVelocity();
-        float ballRadius = ball.getRadius();
-        float ballVelocityLength = ballVelocity.length();
-        PointF ballNormal1 = new PointF((-ballVelocity.y / ballVelocityLength) * ballRadius, (ballVelocity.x / ballVelocityLength) * ballRadius);
-        PointF ballNormal2 = new PointF((ballVelocity.y / ballVelocityLength) * ballRadius, (-ballVelocity.x / ballVelocityLength) * ballRadius);
-        PointF particleAxisA = new PointF(ballCenter.x + ballNormal1.x, ballCenter.y + ballNormal1.y);
-        PointF particleAxisB = new PointF(ballCenter.x + ballNormal2.x, ballCenter.y + ballNormal2.y);
-        PointF particleAxisChange = new PointF(particleAxisB.x - particleAxisA.x, particleAxisB.y - particleAxisA.y);
-
-        long time = System.nanoTime();
-        float randomPercent = ((time % 20) - 10) / (float) 40;
-        System.out.println("random percent num particles: " + randomPercent);
-        System.out.println("num particles before int round: " + ((ballVelocityLength / 4) / randomPercent));
-        int numParticles;
-        if (randomPercent != 0) {
-            numParticles = (int) ((ballVelocityLength / 4) / randomPercent);
-        } else {
-            numParticles = (int) (ballVelocityLength / 4);
-        }
-
-
-        for (int i = 0; i < numParticles; i++) {
-            time = System.nanoTime();
-            randomPercent = (time % 20) / (float) 20;
-            PointF axisDisplacement = new PointF(particleAxisChange.x * randomPercent, particleAxisChange.y * randomPercent);
-            PointF particleAxisCoord = new PointF(particleAxisA.x + axisDisplacement.x, particleAxisA.y + axisDisplacement.y);
-            float[] finalCoords = {
-                    particleAxisCoord.x, particleAxisCoord.y, 0f,
-                    particleAxisCoord.x + 1, particleAxisCoord.y + 1, 0f,
-                    particleAxisCoord.x + 1, particleAxisCoord.y, 0f
-            };
-            particleEngine.addParticle(finalCoords);
-        }
-    }
-
-    private void drawParticle2(Ball ball) {
-        PointF center = ball.getCenter();
-
-
-        float[] finalCoords = {
-                center.x + ball.getRadius(), center.y, 0f,
-                center.x + ball.getRadius() + 1, center.y + 1, 0f,
-                center.x + ball.getRadius() + 1, center.y, 0f
-        };
-
-        particleEngine.addParticle(finalCoords);
-    }
-
-    private void drawParticle(Ball ball) {
-        PointF center = ball.getCenter();
-
-
-        float[] finalCoords = {
-                center.x - ball.getRadius(), center.y, 0f,
-                center.x - ball.getRadius() - 1, center.y + 1, 0f,
-                center.x - ball.getRadius() - 1, center.y, 0f
-        };
-
-        particleEngine.addParticle(finalCoords);
-    }
-
 
     public void updateVPMatrix(float[] VPMatrix){
         mVPMatrix = VPMatrix;

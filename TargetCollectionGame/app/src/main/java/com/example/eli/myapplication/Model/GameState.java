@@ -53,6 +53,7 @@ public class GameState {
     //The gravitational pull on the ball, specified in both X and Y components.
     //May eventually move to a level-controlled variable to allow changes.
     static final PointF GRAVITY_CONSTANT = new PointF(0f,-0.18f);
+    static final PointF PARTICLE_GRAVITY_CONSTANT = new PointF(GRAVITY_CONSTANT.x * 0.25f, GRAVITY_CONSTANT.y * 0.25f);
     //How velocity is affected after a collision (setting at 0.9 means 10% of energy is lost in a collision).
     public static final float ELASTIC_CONSTANT = 0.9f;
 
@@ -132,6 +133,9 @@ public class GameState {
     static final int TEXTURE_DIGIT_7 = R.drawable.digit7;
     static final int TEXTURE_DIGIT_8 = R.drawable.digit8;
     static final int TEXTURE_DIGIT_9 = R.drawable.digit9;
+
+    //Small lookup table for rotation angles
+    static final PointF[] rotationAngles = new PointF[20];
 
 
     //--------------------------
@@ -293,6 +297,11 @@ public class GameState {
         return finalCoords;
 
     }
+
+    /*public void initializeRotationLookupTable() {
+        rotationAngles[0] = new PointF(-1f, 0f);
+        rotationAngles[1] = new PointF()
+    }*/
 
 
 }

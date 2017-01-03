@@ -1,5 +1,7 @@
 package com.example.eli.myapplication.Model;
 
+import android.graphics.PointF;
+
 /**
  * Created by Eli on 12/17/2016.
  */
@@ -16,11 +18,18 @@ public class Particle {
             1f, 1f, 1f, 1f
     };
 
-    private int remainingLife;
+    private PointF velocity = new PointF(0f,0f);
 
-    public Particle(float[] coords) {
+    private int remainingLife;
+    private int totalLife;
+
+    public Particle(float[] coords, PointF velocity, float[] color, int life) {
         setPosition(coords);
-        remainingLife = 40;
+        this.velocity = velocity;
+
+        totalLife = life;
+        remainingLife = life;
+        this.color = color;
     }
 
     public float[] getPosition() {
@@ -39,12 +48,26 @@ public class Particle {
         color = newColor;
     }
 
+    public void setColorAlpha(float alphaValue) {
+        color[3] = alphaValue;
+    }
+
     public void decreaseLife() {
         remainingLife--;
     }
 
     public int getRemainingLife() {
         return remainingLife;
+    }
+
+    public float getPercentLife() { return remainingLife / (float) totalLife; }
+
+    public PointF getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(PointF newVelocity) {
+        velocity = newVelocity;
     }
 
 }
