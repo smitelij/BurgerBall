@@ -239,7 +239,7 @@ public class CollisionHandling {
 
             } else {
                 mBoundaryCollisions.add(currentCollision);
-                currentCollision.getBall().addBoundaryCollision(currentCollision);
+                currentCollision.getBall().addObstacleCollision(currentCollision);
             }
         }
     }

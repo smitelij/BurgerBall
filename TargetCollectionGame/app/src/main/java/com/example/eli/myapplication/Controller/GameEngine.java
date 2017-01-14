@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.opengl.GLES30;
-import android.opengl.GLES30;
 import android.opengl.Matrix;
 
 import com.example.eli.myapplication.Model.GameState;
@@ -257,7 +256,7 @@ public class GameEngine {
         //This is the bulk of the advance frame logic.
         //Here we will advance through a frame, potentially step by step if collisions occur,
         //keeping track of all collisions and adjusting velocities accordingly.
-        advanceFrameCollisionChecks();
+        advanceFrameStep();
 
         //Handle logic after the frame has been moved.
         //(Update score, move balls forward, check end conditions, etc)
@@ -270,8 +269,9 @@ public class GameEngine {
         //Usually it's not very useful but it's an interesting setting regardless.
         mCurrentFrameSize = getFrameSize();
 
-        //Determine how fast the game is running. Unless FRAME_RATE_CAP is specified in GameState,
-        //this is just a piece of diagnostic information.
+        //Determine how fast the game is running. This may be used if
+        // FRAME_RATE_CAP is specified in GameState, or if we are throttling particle
+        // generation based on frame rate.
         updateFPSinfo();
 
         //Activate any balls that are ready to be fired.
@@ -280,7 +280,7 @@ public class GameEngine {
         }
     }
 
-    private void advanceFrameCollisionChecks(){
+    private void advanceFrameStep(){
         //start each frame at 0
         float timeElapsed = 0f;
 
@@ -296,8 +296,10 @@ public class GameEngine {
 
             //At first, we try to advance the whole frame (or whatever is remaining), and see if any collisions happen.
             float timeStep = mCurrentFrameSize - timeElapsed;
-
             System.out.println("time step: " + timeStep);
+
+            //Move non-colliding objects like rolling balls and moving obstacles
+            advanceNonCollisionObjects(timeStep);
 
             //Initialize and run collision detection
             CollisionDetection CD = new CollisionDetection();
@@ -312,6 +314,25 @@ public class GameEngine {
 
         }
     }
+
+    //This function moves objects that need to be moved each step, because
+    // balls could collide with them, but they don't need to be actively
+    // collision checked
+    private void advanceNonCollisionObjects(float timeStep) {
+
+        //Moving obstacles
+        for(MovingObstacle currentObstacle : allMovingObstacles){
+            currentObstacle.moveTempCoordsByFrame(timeStep);
+        }
+
+        //Rolling balls
+        for (Ball currentBall : mAllBalls) {
+            if (currentBall.isBallRolling()) {
+                currentBall.moveByFrame(timeStep);
+            }
+        }
+    }
+
 
     private void postAdvanceFrame(){
 
@@ -374,7 +395,7 @@ public class GameEngine {
                 if (isBallInFiringZone(null, currentBall) && !areAllBallsFired()) {
                     currentBall.deactivateBall();
                 } else {
-                    currentBall.stopBall();
+                    handleSlowedBall(currentBall);
                 }
                 mNumActiveBalls--;
             }
@@ -382,7 +403,7 @@ public class GameEngine {
             System.out.println("ball collisions this frame: " + currentBall.getBallCollisionCountThisFrame());
             if (currentBall.getBallCollisionCountThisFrame() > GameState.BALL_BOUNCE_CONSTANT * GameState.FRAME_SIZE) {
                 stuckBalls.add(currentBall);
-            }
+        }
 
         }
 
@@ -390,12 +411,46 @@ public class GameEngine {
             handleBallOnTopOfBall(stuckBalls);
 
         }
-        /*
-        for (Ball deadBall : deactivationList){
-            //mActiveBalls.remove(deadBall);
-            allInteractableObjects.remove(deadBall);
-        }*/
 
+    }
+
+    private void handleSlowedBall(Ball ball) {
+        if (isBallOnFlatObstacle(ball)) {
+            if (isBallOnMovingObstacle(ball)) {
+                //Keep the ball 'rolling' if the surface is still moving
+                ball.rollingBall();
+                ball.setVelocity(new PointF(0f,0f));
+            } else {
+                ball.stopBall();
+            }
+        } else {
+            System.out.println("BALL IS NOW ROLLING");
+            ball.rollingBall();
+            ball.calculateRollingAccel();
+            ball.setInitialRollingVelocity();
+            ball.calculateRollTime();
+        }
+
+
+    }
+
+    /**
+     * This function will break if gravity changes substantially.
+     * @param ball
+     * @return
+     */
+    private boolean isBallOnFlatObstacle(Ball ball) {
+        if (ball.getLastCollision().getBoundaryAxis().equals(0, -1)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isBallOnMovingObstacle(Ball ball) {
+        if (ball.getLastCollision().getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+            return true;
+        }
+        return false;
     }
 
     private void handleBallOnTopOfBall(ArrayList<Ball> stuckBalls) {
@@ -486,10 +541,6 @@ public class GameEngine {
             }*/
 
         System.out.println("Begin collision detection frame. Size: " + mCurrentFrameSize);
-
-        for(MovingObstacle currentObstacle : allMovingObstacles){
-            currentObstacle.moveTempCoordsByFrame(timeStep);
-        }
 
         //go through all active balls
         for (Ball currentBall : mAllBalls) {
@@ -656,12 +707,25 @@ public class GameEngine {
         //Go through all active balls
         for (Ball currentBall : mAllBalls){
 
-            if(!currentBall.isBallActive()){
+            if(currentBall.isBallInactive() || currentBall.isBallStopped()){
                 continue;
             }
 
-            //calculate displacement that will result in new position
-            PointF newDisplacementVector = currentBall.calculatePositionChange(collisionTime);
+            PointF newDisplacementVector = new PointF(0f, 0f);
+
+            //Rolling balls - calculate displacement based on last position
+            if (currentBall.isBallRolling()) {
+                PointF currentCenter = currentBall.getCenter();
+                PointF prevCenter = currentBall.getPrevCenter();
+                float fractionOfFrame = collisionTime / GameState.FRAME_SIZE;
+                newDisplacementVector = new PointF((currentCenter.x - prevCenter.x) * fractionOfFrame, (currentCenter.y - prevCenter.y) * fractionOfFrame);
+
+            //Active balls - calculate displacement manually (maybe we could also use 'last position' here?)
+            } else if (currentBall.isBallActive()) {
+                //calculate displacement that will result in new position
+                newDisplacementVector = currentBall.calculatePositionChange(collisionTime);
+
+            }
 
             //Add the current displacement to the balls running tally of total displacement for this frame
             currentBall.addToDisplacementVector(newDisplacementVector);
@@ -717,12 +781,25 @@ public class GameEngine {
                 }
             }
 
+            //Handle rolling balls
+            if (currentBall.isBallRolling()) {
+                if (currentBall.didBallCollide()) {
+                    currentBall.updateVelocityCollision(timeStep);
+                    currentBall.activateBall(); //In case ball was previously stopped
+                    mNumActiveBalls++;
+                    currentBall.clearStepCollisionHistory();
+                    currentBall.clearRollingAccel();
+                } else {
+                    currentBall.updateVelocityNonCollision(timeStep);
+                }
+            }
+
             //Handle active balls
             if (currentBall.isBallActive()) {
                 if (currentBall.didBallCollide()) {
                     currentBall.updateVelocityCollision(timeStep);
                 } else {
-                    currentBall.updateVelocityGravity(timeStep);
+                    currentBall.updateVelocityNonCollision(timeStep);
                 }
                 currentBall.clearStepCollisionHistory();
             }
@@ -733,12 +810,12 @@ public class GameEngine {
 
         for (Ball currentBall : mAllBalls){
 
-            if (!currentBall.isBallActive()){
+            if (currentBall.isBallInactive() || currentBall.isBallStopped()){
                 continue;
             }
 
-            // just factor in the current gravity and return a new velocity.
-            currentBall.updateVelocityGravity(timeStep);
+            // just factor in the current acceleration and return a new velocity.
+            currentBall.updateVelocityNonCollision(timeStep);
             currentBall.clearStepCollisionHistory();
         }
     }
@@ -761,7 +838,7 @@ public class GameEngine {
         for (Ball currentBall : mAllBalls) {
 
             //skip inactive and stopped balls
-            if (!currentBall.isBallActive()){
+            if (currentBall.isBallInactive() || currentBall.isBallStopped()){
                 continue;
             }
 

@@ -14,4 +14,6 @@ public interface Movable {
     void updatePrevAABB();
 
     PointF getVelocity();
+
+    PointF getVelocity(float timeStep);
 }

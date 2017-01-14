@@ -58,7 +58,7 @@ public class MovingObstacle extends Obstacle implements Movable {
         for (int i = 0; i < coords.length; i++){
             PointF curCoordinate = coords[i];
             PointF newCoordinate = new PointF(curCoordinate.x + (mVelocity.x * timeStep), curCoordinate.y + (mVelocity.y * timeStep));
-            coords[i]=newCoordinate;
+            coords[i] = newCoordinate;
         }
 
         return coords;
@@ -109,7 +109,6 @@ public class MovingObstacle extends Obstacle implements Movable {
     public void resetAABB(){
         mMinXCoord = mPrevAABB[0];
         mMaxXCoord = mPrevAABB[1];
-
         mMinYCoord = mPrevAABB[2];
         mMaxYCoord = mPrevAABB[3];
     }
@@ -124,6 +123,11 @@ public class MovingObstacle extends Obstacle implements Movable {
     //Get a balls velocity after timeStep (calculates gravity)
     public PointF getVelocity(){
         return mVelocity;
+    }
+
+    public PointF getVelocity(float timeStep) {
+        float frameFraction = timeStep / GameState.FRAME_SIZE;
+        return new PointF(mVelocity.x * frameFraction, mVelocity.y * frameFraction);
     }
 
 
