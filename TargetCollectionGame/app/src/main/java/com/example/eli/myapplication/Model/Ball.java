@@ -36,6 +36,7 @@ public class Ball extends Interactable implements Movable {
     private PointF mSurfaceVelocity = new PointF(0f,0f);
     private PointF mRollingAccel = new PointF(0f,0f);
     private Collision mLastCollision;
+    float mRollTime = 0;
 
     float color[] = { 0.6f, 0.75f, 0.6f, 0.5f };
     private PointF mDisplacementVector = new PointF(0f, 0f);
@@ -197,6 +198,7 @@ public class Ball extends Interactable implements Movable {
             mNumOfBoundaryCollisionsThisFrame = 1;
             mLastCollision = collision;
         }
+        System.out.println("number of boundary collisions: " + mNumOfBoundaryCollisionsThisFrame);
     }
 
     private boolean sameLastCollision(Collision collision) {
@@ -461,20 +463,45 @@ public class Ball extends Interactable implements Movable {
             vertexB = temp;
         }
 
-        PointF boundaryVector = new PointF(vertexB.x - vertexA.x, vertexB.y - vertexA.y);
         PointF ballCenter = getCenter();
-        float multiplier = GameState.dotProduct(ballCenter,boundaryVector) / GameState.dotProduct(boundaryVector, boundaryVector);
-        PointF vectorOffset = new PointF(boundaryVector.x * multiplier, boundaryVector.y * multiplier);
-        PointF ballPointOnLine = new PointF(vertexA.x + vectorOffset.x, vertexA.y + vectorOffset.y);
+        PointF ballPointOnLine = projectPointOntoLine(vertexA, vertexB, ballCenter);
         PointF remainingLength = new PointF(vertexB.x - ballPointOnLine.x, vertexB.y - ballPointOnLine.y);
 
         double quadA = mRollingAccel.length() / 2;
         double quadB = getVelocity().length();
-        //double quad
+        double quadC = -remainingLength.length();
 
-       // double squareRoot = Math.sqrt((quadB * quadB) - (4*quadA*quadC));
-       // double result1 = (-quadB + squareRoot) / (2*quadA);
-       // double result2 = (-quadB - squareRoot) / (2*quadA);
+        double squareRoot = Math.sqrt((quadB * quadB) - (4*quadA*quadC));
+        double result1 = (-quadB + squareRoot) / (2*quadA);
+        double result2 = (-quadB - squareRoot) / (2*quadA);
+
+        float rollTime;
+        if ((result1 < 0) && (result2 < 0)) {
+            rollTime = 0;
+        } else if (result1 < 0) {
+            rollTime = (float) result2;
+        } else {
+            rollTime = (float) result1;
+        }
+        mRollTime = rollTime;
+    }
+
+    private PointF projectPointOntoLine(PointF vertexA, PointF vertexB, PointF pointToProject) {
+        PointF pointVector = new PointF(pointToProject.x - vertexA.x, pointToProject.y - vertexA.y);
+        PointF line = new PointF(vertexB.x - vertexA.x, vertexB.y - vertexA.y);
+        PointF lineUnit = new PointF(line.x / line.length(), line.y / line.length());
+        float scalar = GameState.dotProduct(pointVector, lineUnit);
+        PointF pointOffset = new PointF(lineUnit.x * scalar, lineUnit.y * scalar);
+        PointF finalPoint = new PointF(vertexA.x + pointOffset.x, vertexA.y + pointOffset.y);
+        return finalPoint;
+    }
+
+    public void decreaseRollTime(float frameLength) {
+        mRollTime = mRollTime - frameLength;
+    }
+
+    public float getRemainingRollTime() {
+        return mRollTime;
     }
 
 

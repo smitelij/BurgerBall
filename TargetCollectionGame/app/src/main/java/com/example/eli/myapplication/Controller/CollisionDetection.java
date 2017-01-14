@@ -509,7 +509,7 @@ public class CollisionDetection {
         //Now, do a projection test on every vertex pair.
         //calculate normal axis for each vertex pair, and project all the points onto each normal axis
         for (int index = 0; index < obstacleCoords.length; index++) {
-            normalAxis = makeNormalVectorBetweenPoints(obstacleCoords, index);
+            normalAxis = obstacle.getBoundaryAxis(index);
 
             //project each vertex / circle onto the current normal axis, check for gap
             gapDetected = projectPointsAndTestForGap(normalAxis, obstacleCoords, ballCenter, radius, obstacleCoords[index], false, null);

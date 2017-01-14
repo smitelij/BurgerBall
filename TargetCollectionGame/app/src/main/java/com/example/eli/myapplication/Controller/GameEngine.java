@@ -328,7 +328,15 @@ public class GameEngine {
         //Rolling balls
         for (Ball currentBall : mAllBalls) {
             if (currentBall.isBallRolling()) {
-                currentBall.moveByFrame(timeStep);
+                if (currentBall.getRemainingRollTime() < 0) {
+                    //TODO The following 3 lines also occur in updateVelocities when a collision occurs for a rolling ball.
+                    // might want to centralize it.
+                    currentBall.activateBall();
+                    mNumActiveBalls++;
+                    currentBall.clearRollingAccel();
+                } else {
+                    currentBall.moveByFrame(timeStep);
+                }
             }
         }
     }
@@ -719,6 +727,7 @@ public class GameEngine {
                 PointF prevCenter = currentBall.getPrevCenter();
                 float fractionOfFrame = collisionTime / GameState.FRAME_SIZE;
                 newDisplacementVector = new PointF((currentCenter.x - prevCenter.x) * fractionOfFrame, (currentCenter.y - prevCenter.y) * fractionOfFrame);
+                currentBall.decreaseRollTime(collisionTime);
 
             //Active balls - calculate displacement manually (maybe we could also use 'last position' here?)
             } else if (currentBall.isBallActive()) {

@@ -20,10 +20,14 @@ import android.graphics.PointF;
 import com.example.eli.myapplication.Model.GameState;
 import com.example.eli.myapplication.Model.Interactable;
 
+import java.util.ArrayList;
+
 /**
  * A two-dimensional border
  */
 public class Obstacle extends Interactable {
+
+    ArrayList<PointF> boundaryAxisCollection = new ArrayList<>();
 
 
     /**
@@ -33,6 +37,7 @@ public class Obstacle extends Interactable {
         // initialize vertex byte buffer for shape coordinates
         super(borderCoords, texturePointer);
         setType(GameState.INTERACTABLE_OBSTACLE);
+        calculateBoundaryAxes();
 
     }
 
@@ -44,6 +49,39 @@ public class Obstacle extends Interactable {
      */
     public void draw(float[] mvpMatrix) {
         super.draw(mvpMatrix);
+    }
+
+    private void calculateBoundaryAxes() {
+        PointF[] obstacleCoords = get2dCoordArray();
+
+        for (int index = 0; index < obstacleCoords.length; index++) {
+            PointF normalAxis = makeNormalVectorBetweenPoints(obstacleCoords, index);
+            boundaryAxisCollection.add(normalAxis);
+        }
+    }
+
+    private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index) {
+        //We need to make a line between two vertexes
+        int vertexA = index;
+        int vertexB = (index + 1) % obstacleCoords.length; //We need to wrap back to the first vertex at the end, so use modulus
+
+        //formula to find the normal vector from a line is (-y, x)
+        float xComponent = -(obstacleCoords[vertexB].y - obstacleCoords[vertexA].y);
+        float yComponent = (obstacleCoords[vertexB].x - obstacleCoords[vertexA].x);
+
+        //create vector and normalize
+        PointF normalAxis = new PointF(xComponent, yComponent);
+        float normalAxisLength = normalAxis.length();
+        normalAxis.set(normalAxis.x / normalAxisLength, normalAxis.y / normalAxisLength);
+
+        return normalAxis;
+    }
+
+    public PointF getBoundaryAxis(int index) {
+        if (index < boundaryAxisCollection.size()) {
+            return boundaryAxisCollection.get(index);
+        }
+        return new PointF(0f,0f);
     }
 
 }
