@@ -108,7 +108,8 @@ public class CollisionHandling {
         float velocityChange = 2 * GameState.dotProduct(oldVelocity, boundaryAxis);
         PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
         PointF newVelocity = new PointF(oldVelocity.x - velocityChangeVector.x, oldVelocity.y - velocityChangeVector.y);
-        newVelocity.set(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
+
+        newVelocity = reduceVelocityElasticLoss(ball, newVelocity);
 
         if (debug == false) {
             ball.setVelocity(newVelocity);
@@ -160,8 +161,8 @@ public class CollisionHandling {
         PointF newVelocity2 = new PointF(newVelocity2normalVector.x + newVelocity2tangentVector.x, newVelocity2normalVector.y + newVelocity2tangentVector.y);
 
         //subtract for elasticity
-        newVelocity1.set(newVelocity1.x * GameState.ELASTIC_CONSTANT, newVelocity1.y * GameState.ELASTIC_CONSTANT);
-        newVelocity2.set(newVelocity2.x * GameState.ELASTIC_CONSTANT, newVelocity2.y * GameState.ELASTIC_CONSTANT);
+        newVelocity1 = reduceVelocityElasticLoss(ball1, newVelocity1);
+        newVelocity2 = reduceVelocityElasticLoss(ball2, newVelocity2);
 
         //set velocity
         ball1.addNewVelocity(newVelocity1);
@@ -348,7 +349,8 @@ public class CollisionHandling {
         float velocityChange = 2 * GameState.dotProduct(totalCollisionVelocity, boundaryAxis);
         PointF velocityChangeVector = new PointF(boundaryAxis.x * velocityChange, boundaryAxis.y * velocityChange);
         PointF newVelocity = new PointF(totalCollisionVelocity.x - velocityChangeVector.x, totalCollisionVelocity.y - velocityChangeVector.y);
-        PointF newVelocityElastic = new PointF(newVelocity.x * GameState.ELASTIC_CONSTANT, newVelocity.y * GameState.ELASTIC_CONSTANT);
+
+        PointF newVelocityElastic = reduceVelocityElasticLoss(ball, newVelocity);
         System.out.println("new velocity elastic: " + newVelocityElastic);
 
         //Finally, we must add the obstacle directional velocity with the post-collision change
@@ -363,6 +365,13 @@ public class CollisionHandling {
             System.out.println("NEW VELOCITY (additive velocities method): " + finalVelocity);
         }
 
+    }
+
+    private PointF reduceVelocityElasticLoss(Ball currentBall, PointF velocity) {
+        if (currentBall.getBoundaryCollisionCountThisFrame() < GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME) {
+            velocity = new PointF(velocity.x * GameState.ELASTIC_CONSTANT, velocity.y * GameState.ELASTIC_CONSTANT);
+        }
+        return velocity;
     }
 
 }

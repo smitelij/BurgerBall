@@ -282,7 +282,46 @@ public class LevelData {
     private void loadSet2Level(int levelIndex) {
         switch (levelIndex) {
             case 1:
-                //
+
+                //Obstacles
+                float obstacle111coords[] = {
+                        10f, 40f, 0.0f,   // top left
+                        10f, 30f, 0.0f,   // bottom left
+                        80f, 15f, 0.0f,   // bottom right
+                        80f, 25f, 0.0f }; // top right
+
+
+                float obstacle112coords[] = {
+                        130f,  40f, 0.0f,   // top left
+                        130f, 30f, 0.0f,   // bottom left
+                        250f, 40f, 0.0f,   // bottom right
+                        250f, 50f, 0.0f }; // top right
+
+                MovePath path211 = new MovePath();
+                path211.addMovement(new SingleMovement(new PointF(-.25f,0f), 170));
+                path211.addMovement(new SingleMovement(new PointF(.25f, 0f), 170));
+
+                MovePath path212 = new MovePath();
+                path212.addMovement(new SingleMovement(new PointF(-.25f,0f), 170));
+                path212.addMovement(new SingleMovement(new PointF(.25f, 0f), 170));
+
+                mMovingObstacleCoords.add(obstacle111coords);
+                mMovingObstacleCoords.add(obstacle112coords);
+
+                mMovingObstaclePaths.add(path211);
+                mMovingObstaclePaths.add(path212);
+
+                //Targets
+
+                float[] target111coords = GameState.createCircleCoords(100, 230, 8f);
+                float[] target112coords = GameState.createCircleCoords(150,180,8f);
+
+                mTargetCoords.add(target111coords);
+                mTargetCoords.add(target112coords);
+
+                //num of balls
+                mNumOfBalls = 3;
+
                 break;
 
             case 2:

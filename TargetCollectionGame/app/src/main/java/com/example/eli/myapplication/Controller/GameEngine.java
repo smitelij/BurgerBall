@@ -7,6 +7,7 @@ import android.graphics.PointF;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
+import com.example.eli.myapplication.Model.BallStuckException;
 import com.example.eli.myapplication.Model.GameState;
 import com.example.eli.myapplication.Model.Interactable;
 import com.example.eli.myapplication.Model.LevelData;
@@ -333,6 +334,11 @@ public class GameEngine {
                     // might want to centralize it.
                     currentBall.activateBall();
                     mNumActiveBalls++;
+                    //We need to update the balls current velocity, because if we
+                    // are on a moving object, then we will forget that velocity
+                    // when we reactivate the ball.
+                    PointF currentVelocity = currentBall.getVelocity(0); //Get balls instantaneous velocity
+                    currentBall.setVelocity(currentVelocity);
                     currentBall.clearRollingAccel();
                 } else {
                     currentBall.moveByFrame(timeStep);
@@ -386,6 +392,8 @@ public class GameEngine {
 
     }
 
+    //Should eventually be moved to BallEngine class
+    // rename - update ball statuses?
     private void testForDeactivatingBalls(){
 
         ArrayList<Ball> stuckBalls = new ArrayList<>();
@@ -397,8 +405,8 @@ public class GameEngine {
                 continue;
             }
 
-            //System.out.println("Ball: " + currentBall.hashCode() + ". current collision count: " + currentBall.getBoundaryCollisionCountThisFrame());
-            if (currentBall.getBoundaryCollisionCountThisFrame() > (mCurrentFrameSize * GameState.DEACTIVATION_CONSTANT)){
+            //Check if a ball has collided with an identical axis enough times to activate 'slowed ball logic'
+            if (currentBall.getSameBoundaryCollisionCountThisFrame() > (mCurrentFrameSize * GameState.SLOWED_BALL_CONSTANT)){
                 //deactivationList.add(currentBall);
                 if (isBallInFiringZone(null, currentBall) && !areAllBallsFired()) {
                     currentBall.deactivateBall();
@@ -406,6 +414,11 @@ public class GameEngine {
                     handleSlowedBall(currentBall);
                 }
                 mNumActiveBalls--;
+            }
+
+            //Check if a ball has collided with any obstacle enough that we can say it is 'stuck'
+            if (currentBall.getBoundaryCollisionCountThisFrame() > (mCurrentFrameSize * GameState.STUCK_POINT_CONSTANT)) {
+                stuckBalls.add(currentBall);
             }
 
             System.out.println("ball collisions this frame: " + currentBall.getBallCollisionCountThisFrame());
@@ -417,7 +430,8 @@ public class GameEngine {
 
         if (stuckBalls.size()==2) {
             handleBallOnTopOfBall(stuckBalls);
-
+        } else if (stuckBalls.size() == 1) {
+            handleStuckBall(stuckBalls.get(0));
         }
 
     }
@@ -478,6 +492,33 @@ public class GameEngine {
         PointF distanceVector = new PointF(topBallCenter.x - bottomBallCenter.x, topBallCenter.y - bottomBallCenter.y);
         PointF distanceVectorNormal = new PointF(distanceVector.x / distanceVector.length(), distanceVector.y / distanceVector.length());
         topBall.setVelocity(distanceVectorNormal);
+    }
+
+    private void handleStuckBall(Ball stuckBall) {
+        float penetrationDepth = stuckBall.getLastCollision().getPenetrationDepth();
+        PointF collisionAxis = stuckBall.getLastCollision().getBoundaryAxis();
+        //If we know how stuck it is, give the ball enough additional velocity to move it out
+
+        if (penetrationDepth == 0) {
+            PointF displacementVelocity = new PointF(-collisionAxis.x * penetrationDepth * 5, -collisionAxis.y * penetrationDepth * 5);
+            PointF currentVelocity = stuckBall.getVelocity();
+            PointF newVelocity = new PointF(currentVelocity.x + displacementVelocity.x, currentVelocity.y + displacementVelocity.y);
+            stuckBall.setVelocity(newVelocity);
+
+        //otherwise, just displace it a normalized amount out from the collision axis
+        } else {
+            stuckBall.setVelocity(new PointF(-collisionAxis.x, -collisionAxis.y));
+        }
+/*
+        PointF displacementVector;
+        if (penetrationDepth > 0) {
+            displacementVector = new PointF(-collisionAxis.x * penetrationDepth * 100f, -collisionAxis.y * penetrationDepth * 100f);
+        } else {
+            displacementVector = new PointF(-collisionAxis.x, -collisionAxis.y);
+        }
+
+        stuckBall.updateAABB(displacementVector.x, displacementVector.y);
+        stuckBall.addToDisplacementVector(displacementVector);*/
     }
 
     private void clearCollisionHistories() {
@@ -604,8 +645,10 @@ public class GameEngine {
                 try {
                     //System.out.println("do detailed collision testing.");
                     CD.detailedCollisionTesting(currentBall, curObject, timeStep);
-                } catch (Exception e) {
-                    freezeGame();
+                } catch (BallStuckException ballStuckException) {
+                    PointF collisionAxis = ballStuckException.getCollisionAxis();
+                    //Set velocity in opposite direction because collision axis points inward
+                    currentBall.setVelocity(new PointF(-collisionAxis.x, -collisionAxis.y));
                 }
 
             }

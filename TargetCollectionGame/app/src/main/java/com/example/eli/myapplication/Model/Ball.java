@@ -50,7 +50,8 @@ public class Ball extends Interactable implements Movable {
     //(includes collisions where this ball is not the main ball)
     private int mNumOfBallCollisionsThisStep;
     private int mNumOfBallCollisionsThisFrame;
-    private int mNumOfBoundaryCollisionsThisFrame = 0;
+    private int mNumOfBoundaryCollisionsThisFrame;
+    private int mNumOfSameBoundaryCollisionsThisFrame = 0;
 
 
     /**
@@ -182,23 +183,25 @@ public class Ball extends Interactable implements Movable {
         mNumOfBallCollisionsThisStep++;
         mNumOfBallCollisionsThisFrame++;
 
-        //mNumOfBoundaryCollisionsThisFrame++;
+        //mNumOfSameBoundaryCollisionsThisFrame++;
     }
 
     public void addObstacleCollision(Collision collision){
 
+        mNumOfBoundaryCollisionsThisFrame++;
+
         if (mLastCollision == null) {
-            mNumOfBoundaryCollisionsThisFrame++;
+            mNumOfSameBoundaryCollisionsThisFrame++;
             mLastCollision = collision;
         }
 
         if (sameLastCollision(collision)) {
-            mNumOfBoundaryCollisionsThisFrame++;
+            mNumOfSameBoundaryCollisionsThisFrame++;
         } else {
-            mNumOfBoundaryCollisionsThisFrame = 1;
+            mNumOfSameBoundaryCollisionsThisFrame = 1;
             mLastCollision = collision;
         }
-        System.out.println("number of boundary collisions: " + mNumOfBoundaryCollisionsThisFrame);
+        System.out.println("number of same boundary collisions: " + mNumOfSameBoundaryCollisionsThisFrame);
     }
 
     private boolean sameLastCollision(Collision collision) {
@@ -210,9 +213,13 @@ public class Ball extends Interactable implements Movable {
         return false;
     }
 
-
-    public int getBoundaryCollisionCountThisFrame(){
+    public int getBoundaryCollisionCountThisFrame() {
         return mNumOfBoundaryCollisionsThisFrame;
+    }
+
+
+    public int getSameBoundaryCollisionCountThisFrame(){
+        return mNumOfSameBoundaryCollisionsThisFrame;
     }
 
     public int getBallCollisionCountThisFrame(){
@@ -220,8 +227,9 @@ public class Ball extends Interactable implements Movable {
     }
 
     public void clearFrameCollisionCount(){
-        mNumOfBoundaryCollisionsThisFrame = 0;
+        mNumOfSameBoundaryCollisionsThisFrame = 0;
         mNumOfBallCollisionsThisFrame = 0;
+        mNumOfBoundaryCollisionsThisFrame = 0;
     }
 
     //get a balls current velocity
@@ -405,7 +413,7 @@ public class Ball extends Interactable implements Movable {
     }
 
     public void setInitialRollingVelocity() {
-        /*
+
         PointF rollingVector;
         PointF collisionAxis = getLastCollision().getBoundaryAxis();
         //warning - this code will break if gravity isn't solely in the negative Y-direction
@@ -415,15 +423,21 @@ public class Ball extends Interactable implements Movable {
             rollingVector = new PointF(-collisionAxis.y, collisionAxis.x);
         }
         PointF rollingVectorNormal = new PointF(rollingVector.x / rollingVector.length(), rollingVector.y / rollingVector.length());
+        PointF currentVelocity = getVelocity(0);
         float totalVelocity = getVelocity().length();
-        PointF newVelocity = new PointF(rollingVectorNormal.x * totalVelocity, rollingVectorNormal.y * totalVelocity);
-        setVelocity(newVelocity);*/
+        PointF directionalVelocity;
+        if (currentVelocity.y > 0) {
+            directionalVelocity = new PointF(-rollingVectorNormal.x * totalVelocity, -rollingVectorNormal.y * totalVelocity);
+        } else {
+            directionalVelocity = new PointF(rollingVectorNormal.x * totalVelocity, rollingVectorNormal.y * totalVelocity);
+        }
 
         //Before a ball starts rolling, it undergoes a number of collisions each resulting in loss due to elasticity.
-        //Here, we add that loss back in. The 7 is a bit arbitrary but it looked more realistic.
-        float elasticLoss = (float) Math.pow(GameState.ELASTIC_CONSTANT, (GameState.DEACTIVATION_CONSTANT + 7) * GameState.FRAME_SIZE);
-        PointF oldVelocity = getVelocity();
-        PointF newVelocity = new PointF(oldVelocity.x / elasticLoss, oldVelocity.y / elasticLoss);
+        //Here, we add that loss back in.
+        //Add an extra 1/2 due to frame straddling possibility (some collisions occurred in the previous frame).
+        int affectedFrames = GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME + (GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME / 2);
+        float elasticLoss = (float) Math.pow(GameState.ELASTIC_CONSTANT, affectedFrames);
+        PointF newVelocity = new PointF(directionalVelocity.x / elasticLoss, directionalVelocity.y / elasticLoss);
         setVelocity(newVelocity);
     }
 
@@ -483,6 +497,7 @@ public class Ball extends Interactable implements Movable {
         } else {
             rollTime = (float) result1;
         }
+        rollTime = rollTime * 1.05f;
         mRollTime = rollTime;
     }
 

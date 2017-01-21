@@ -3,6 +3,7 @@ package com.example.eli.myapplication.Controller;
 import android.graphics.PointF;
 import android.util.Log;
 
+import com.example.eli.myapplication.Model.BallStuckException;
 import com.example.eli.myapplication.Model.GameState;
 import com.example.eli.myapplication.Model.Interactable;
 import com.example.eli.myapplication.Model.Ball;
@@ -112,7 +113,7 @@ public class CollisionDetection {
      * in Interactable. However, I rejected this due to the increased complexity this would add
      * to each object class, preferring to keep all collision detection code isolated in one class.
      */
-    public void detailedCollisionTesting(Ball ball, Interactable object, float timeStep) throws Exception{
+    public void detailedCollisionTesting(Ball ball, Interactable object, float timeStep) throws BallStuckException{
 
         if (object.getType()== GameState.INTERACTABLE_BALL){
             doBallCollisionDetection(ball, (Ball) object, timeStep);
@@ -131,7 +132,7 @@ public class CollisionDetection {
 
     }
 
-    private void doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep) throws Exception {
+    private void doBallCollisionDetection(Ball ball1, Ball ball2, float timeStep) throws BallStuckException {
         PointF ball1center;
         PointF ball2center;
 
@@ -175,7 +176,7 @@ public class CollisionDetection {
 
         //We now can be sure that there was a collision.
         //Calculate more collision info, such as timing, and save the collision event
-        calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius());
+        calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius(), 0f);
     }
 
     /**
@@ -227,7 +228,7 @@ public class CollisionDetection {
         mCollisions.add(curCollision);
     }
 
-    private void calculateBallMovingBoundaryCollisionInfo(Ball ball, Penetration penetration, Interactable obstacle, float timeStep) throws Exception {
+    private void calculateBallMovingBoundaryCollisionInfo(Ball ball, Penetration penetration, Interactable obstacle, float timeStep) throws BallStuckException {
 
         //grab information from the penetration object
         PointF boundaryAxis = penetration.mNormalAxis;
@@ -249,7 +250,7 @@ public class CollisionDetection {
         //Calculate the angle of the ball's velocity against the boundary axis
         if (totalVelocity.length() == 0) {
             System.out.println("total velocity 0?");
-            throw new Exception();
+            throw new BallStuckException(boundaryAxis);
         }
 
         double prevAngle = Math.acos(GameState.dotProduct(boundaryAxis, totalVelocity) / (boundaryAxis.length() * totalVelocity.length()));
@@ -275,7 +276,7 @@ public class CollisionDetection {
     }
 
 
-    private void calculateBallBallCollisionInfo(Ball ball1, Ball ball2, float timeStep) throws Exception {
+    private void calculateBallBallCollisionInfo(Ball ball1, Ball ball2, float timeStep) throws BallStuckException {
 
         //get necessary information to calculate quadratic
         PointF ball1PrevCenter = ball1.getPrevCenter();
@@ -295,10 +296,6 @@ public class CollisionDetection {
             collisionTime = (float) quadraticCollisionTime(velocityDifference, oldDistanceVector, distanceBetweenBalls, timeStep);
         } catch (Exception e) {}
 
-        //sanity check
-        if (collisionTime < -0.5) {
-            //throw new Exception();
-        }
         if (collisionTime < 0) {
             collisionTime = 0.01f;
         }
@@ -315,7 +312,8 @@ public class CollisionDetection {
         mCollisions.add(new Collision(collisionTime, boundaryAxis, ball2, ball1));
     }
 
-    private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle, float timeStep, float radius){
+    private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle,
+                                                 float timeStep, float radius, float penetrationDistance){
 
         //get necessary information to calculate quadratic
         PointF boundaryAxis = new PointF(0f,0f);
@@ -342,10 +340,12 @@ public class CollisionDetection {
         }
 
         //add this collision to the collection
-        mCollisions.add(new Collision(collisionTime, boundaryAxis, obstacle, ball));
+        Collision collision = new Collision(collisionTime, boundaryAxis, obstacle, ball);
+        collision.setPenetrationDepth(penetrationDistance);
+        mCollisions.add(collision);
     }
 
-    private void calculateBallMovingPointCollisionInfo(Ball ball, Penetration penetration, MovingObstacle obstacle, float timeStep) throws Exception{
+    private void calculateBallMovingPointCollisionInfo(Ball ball, Penetration penetration, MovingObstacle obstacle, float timeStep) throws BallStuckException {
 
         //Get vertex from penetration
         PointF vertex = penetration.mVertex;
@@ -372,7 +372,7 @@ public class CollisionDetection {
 
         PointF velocityDifference = new PointF(ballVelocity.x - obstacleVelocity.x, ballVelocity.y - obstacleVelocity.y);
         if (velocityDifference.length() == 0) {
-            throw new Exception();
+            throw new BallStuckException(penetration.mNormalAxis);
         }
         float distanceThreshold = ball.getRadius();
 
@@ -383,11 +383,14 @@ public class CollisionDetection {
         Log.d("my app","distance value: " + distanceFromVertex.length());
 
         //calculate the collision time using the quadratic formula
-        float collisionTime = (float) quadraticCollisionTime(velocityDifference, distanceFromVertex, distanceThreshold, timeStep);
+        float collisionTime = 0.01f;
+        try {
+            collisionTime = (float) quadraticCollisionTime(velocityDifference, distanceFromVertex, distanceThreshold, timeStep);
+        } catch (Exception e) {}
 
         if (collisionTime > timeStep) {
             System.out.println("error.");
-            throw new Exception();
+            throw new BallStuckException(penetration.mNormalAxis);
         }
 
         boolean displaceBallFromObstacle = false;
@@ -402,21 +405,21 @@ public class CollisionDetection {
             System.out.println("old boundary axis: " + penetration.mNormalAxis);
             System.out.println("new boundary axis: " + boundaryAxis);
         }
-
+        /*
         if (displaceBallFromObstacle) {
             float penetrationDistance = calculateCurrentPenetration(ball, collisionTime, obstacleVelocity, vertex);
             displaceBallFromObstacle(ball, penetrationDistance, boundaryAxis);
-        }
+        }*/
 
         if (collisionTime < 0) {
-            displaceBallFromObstacle = true;
-            collisionTime = 0.01f;
-            throw new Exception();
+            throw new BallStuckException(penetration.mNormalAxis);
         }
 
 
         //add this collision to the collection
-        mCollisions.add(new Collision(collisionTime, boundaryAxis, obstacle, ball));
+        Collision collision = new Collision(collisionTime, boundaryAxis, obstacle, ball);
+        collision.setPenetrationDepth(penetration.mPenetrationDistance);
+        mCollisions.add(collision);
     }
 
 
@@ -462,7 +465,7 @@ public class CollisionDetection {
         }
     }
 
-    private void doPolygonCollisionDetection(Ball ball, Obstacle obstacle, float timeStep) throws Exception{
+    private void doPolygonCollisionDetection(Ball ball, Obstacle obstacle, float timeStep) throws BallStuckException{
 
         //reset projection history
         clearPenetrationHistory();
@@ -551,7 +554,7 @@ public class CollisionDetection {
      * @param timeStep
      * @throws Exception
      */
-    private void getBoundaryCollisionInfo(Ball ball, Obstacle obstacle, float timeStep) throws Exception{
+    private void getBoundaryCollisionInfo(Ball ball, Obstacle obstacle, float timeStep) throws BallStuckException{
 
         //Find the most likely axis of penetration, based on depth of penetration.
         Penetration pHistory = findClosestAxis(ball, obstacle);
@@ -565,7 +568,7 @@ public class CollisionDetection {
                 MovingObstacle movingObstacle = (MovingObstacle) obstacle;
                 calculateBallMovingPointCollisionInfo(ball, pHistory, movingObstacle, timeStep);
             } else {
-                calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0);
+                calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0, pHistory.mPenetrationDistance);
             }
 
         //Otherwise, we know the ball collided on a normal boundary of the obstacle

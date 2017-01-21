@@ -413,6 +413,15 @@ public class ParticleEngine {
                 particleMediumColor = new float[]{0.96f,0.96f,0.235f,1f};
                 particleFastColor = new float[]{0.98f,1f,0.83f,1f};
                 particleDispersionColor = new float[]{0f,0f,1f,1f};
+                break;
+
+            case 2:
+                particleBaseColor = new float[]{0.44f,0.13f,0.52f,1f}; //purple
+                particleSlowColor = new float[]{0.13f,0.13f,0.647f,1f}; //blue
+                particleMediumColor = new float[]{0.09f,0.70f,0.37f,1f}; //green (with hint of blue)
+                particleFastColor = new float[]{0.82f,1f,0.90f,1f}; //white green-blue
+                particleDispersionColor = new float[]{1f,0.33f,0.71f,1f}; //pink-red
+                break;
         }
     }
 

@@ -10,6 +10,7 @@ public class Collision {
     private PointF mBoundaryAxis; //normalized boundary axis of the obstacle where collision occurred
     private Interactable mObstacle; //the obstacle that was struck
     private Ball mBall;
+    private float mPenetrationDepth = 0f; //amount that the ball penetrated the obstacle when the collision was detected
 
     public Collision(float time, PointF boundaryAxis, Interactable obstacle, Ball ball){
         mTime = time;
@@ -28,5 +29,11 @@ public class Collision {
 
     public Interactable getObstacle(){
         return mObstacle;
+    }
+
+    public float getPenetrationDepth() { return mPenetrationDepth; }
+
+    public void setPenetrationDepth(float penetrationDepth) {
+        mPenetrationDepth = Math.abs(penetrationDepth);
     }
 }

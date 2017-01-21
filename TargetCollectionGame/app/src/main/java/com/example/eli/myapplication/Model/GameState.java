@@ -37,13 +37,17 @@ public class GameState {
     //It will do nothing if FRAME_RATE_CAP is set to false.
     public static final boolean AUTO_CAP_FRAME_RATE_SIZE = false;
 
-    //num of collisions per frame size of 1 that will deactivate a ball.
-    //For example, if frame size is 1, and a ball has 8 collisions in the span of 1 frame,
-    //the ball will be deactivated. If frame size is 1/2, then the ball will need to have
-    //4 collisions in the span of 1 frame.
-    public static final int DEACTIVATION_CONSTANT = 20;
-    //num of collisions per frame size that will bounce a stuck ball.
+    //num of collisions with an identical surface per frame size of 1 that will activate slowed ball handling.
+    //If the ball is currently on a flat, non-moving obstacle, it will be deactivated.
+    // If the surface isn't flat or the obstacle is moving, 'rolling' mode will be activated.
+    public static final int SLOWED_BALL_CONSTANT = 20;
+    //num of collisions per frame size that will 'bounce' a ball stuck on another ball.
     public static final int BALL_BOUNCE_CONSTANT = 16;
+    //num of collisions with any obstacle surface within 1 frame that will 'bounce' a stuck ball.
+    // Practically speaking, this should only happen when a ball gets stuck on a point of an obstacle.
+    // Any other consecutive collisions should activate SLOWED_BALL_CONSTANT first. Points are different
+    // because they never have the exact same collision boundary axis.
+    public static final int STUCK_POINT_CONSTANT = 30;
 
     //Max possible firing velocity for balls in the X and Y components.
     static final float MAX_INITIAL_X_VELOCITY = 8f;
@@ -56,6 +60,8 @@ public class GameState {
     static final PointF PARTICLE_GRAVITY_CONSTANT = new PointF(GRAVITY_CONSTANT.x * 0.25f, GRAVITY_CONSTANT.y * 0.25f);
     //How velocity is affected after a collision (setting at 0.9 means 10% of energy is lost in a collision).
     public static final float ELASTIC_CONSTANT = 0.9f;
+    //Number of times per frame elastic loss may be applied (preventing ridiculous losses when ball starts rolling)
+    public static final int MAX_ELASTIC_COLLISIONS_PER_FRAME = 2;
 
     //Currently controls whether FPS stats are printed to console.
     //Eventually should be used to display an FPS rate within the game.
