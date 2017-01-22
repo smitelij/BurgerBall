@@ -44,7 +44,6 @@ public class GameEngine {
     private ScoreDigits[] mScoreDigits = new ScoreDigits[5];
 
     private ArrayList<Ball> mAllBalls;     //Collection of all balls
-    private int mNumActiveBalls = 0;
     private int mTargetsHit = 0;
 
     private float[] mVPMatrix = new float[16];  //View-Projection matrix to place objects into actual device coordinates
@@ -172,7 +171,6 @@ public class GameEngine {
                 //mActiveBalls.add(ball);
                 ball.activateBall();
                 mCurrentActiveBallID++;
-                mNumActiveBalls++;
                 mLevelActive = true;
                 mBallWaiting = false; //clear the flag in case it got activated
                 System.out.println("Ball activated." );
@@ -333,10 +331,7 @@ public class GameEngine {
         //Rolling balls
         for (Ball currentBall : mAllBalls) {
 
-            //If this method returns true, a ball has been reactivated.
-            if (ballPhysics.moveRollingBall(currentBall, timeStep)) {
-                mNumActiveBalls++;
-            }
+            ballPhysics.moveRollingBall(currentBall, timeStep);
         }
     }
 
@@ -404,7 +399,6 @@ public class GameEngine {
                 } else {
                     ballPhysics.handleSlowedBall(currentBall);
                 }
-                mNumActiveBalls--;
             }
 
             //Check if a ball has collided with any obstacle enough that we can say it is 'stuck'
@@ -433,7 +427,7 @@ public class GameEngine {
         }
 
         //If all available balls have been fired, and none are still active, then we are done.
-        if ((mCurrentActiveBallID == (mTotalBalls)) && (mNumActiveBalls == 0)){
+        if ((mCurrentActiveBallID == (mTotalBalls)) && (getBallsInPlayCount() == 0)){
             endLevelFail();
         }
 
@@ -712,20 +706,14 @@ public class GameEngine {
     private void updateVelocitiesCollision(float timeStep){
 
         for (Ball currentBall : mAllBalls) {
-            //If this function returns true, it means we have reactivated a ball
-            if (ballPhysics.updateBallVelocity(currentBall, true, timeStep)) {
-                mNumActiveBalls++;
-            }
+            ballPhysics.updateBallVelocity(currentBall, true, timeStep);
         }
     }
 
     private void updateVelocitiesNoCollision(float timeStep){
 
         for (Ball currentBall : mAllBalls){
-            //If this function returns true, it means we have reactivated a ball
-            if (ballPhysics.updateBallVelocity(currentBall, false, timeStep)) {
-                mNumActiveBalls++;
-            }
+            ballPhysics.updateBallVelocity(currentBall, false, timeStep);
         }
     }
 
@@ -1001,6 +989,17 @@ public class GameEngine {
 
     private boolean areAllBallsFired() {
         return (mCurrentActiveBallID == mAllBalls.size());
+    }
+
+    private int getBallsInPlayCount() {
+        int count = 0;
+
+        for (Ball currentBall : mAllBalls) {
+            if (currentBall.isBallActive() || currentBall.isBallRolling()) {
+                count++;
+            }
+        }
+        return count;
     }
 
 

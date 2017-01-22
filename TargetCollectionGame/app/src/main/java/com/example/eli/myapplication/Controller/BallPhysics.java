@@ -51,10 +51,6 @@ public class BallPhysics {
         }
     }
 
-    public void clearStepCollisionHistory(Ball currentBall){
-        ballCollisionsThisStep.put(currentBall, 0);
-    }
-
     public void increaseBallCollisionCounts(Ball currentBall){
         ballCollisionsThisStep = incrementCollisionMapEntry(ballCollisionsThisStep, currentBall);
         ballCollisionsThisFrame = incrementCollisionMapEntry(ballCollisionsThisFrame, currentBall);
@@ -70,8 +66,10 @@ public class BallPhysics {
         }
 
         if (sameLastCollision(currentBall, collision)) {
+            System.out.println("same last collision");
             sameBoundaryCollisionsThisFrame = incrementCollisionMapEntry(sameBoundaryCollisionsThisFrame, currentBall);
         } else {
+            System.out.println("different last collision");
             sameBoundaryCollisionsThisFrame.put(currentBall, 1);
             lastCollisionMap.put(currentBall, collision);
         }
@@ -79,7 +77,7 @@ public class BallPhysics {
 
     private boolean sameLastCollision(Ball currentBall, Collision collision) {
         Collision lastCollision = lastCollisionMap.get(currentBall);
-        if (collision.getObstacle().equals(lastCollision)) {
+        if (collision.getObstacle().equals(lastCollision.getObstacle())) {
             if (collision.getBoundaryAxis().equals(lastCollision.getBoundaryAxis())) {
                 return true;
             }
@@ -422,30 +420,21 @@ public class BallPhysics {
     /**
      *
      * @param currentBall
-     * @return boolean - if True, a ball has been reactivated.
      */
-    public boolean moveRollingBall(Ball currentBall, float timeStep) {
-
-        boolean reactivateBall = false;
+    public void moveRollingBall(Ball currentBall, float timeStep) {
 
         if (currentBall.isBallRolling()) {
             if (getRollTimeForBall(currentBall) < 0) {
-                //TODO The following 3 lines also occur in updateVelocities when a collision occurs for a rolling ball.
-                // might want to centralize it.
                 activateBall(currentBall);
-                reactivateBall = true;
                 //We need to update the balls current velocity, because if we
                 // are on a moving object, then we will forget that velocity
                 // when we reactivate the ball.
                 PointF currentVelocity = getVelocity(currentBall, 0); //Get balls instantaneous velocity
                 currentBall.setVelocity(currentVelocity);
-                clearRollingAccel(currentBall);
             } else {
                 moveByFrame(currentBall, timeStep);
             }
         }
-
-        return reactivateBall;
     }
 
     public boolean isBallSlowedOnConsecutiveCollisionAxis(Ball currentBall) {
@@ -464,22 +453,22 @@ public class BallPhysics {
         return (getBoundaryCollisionCountThisFrame(currentBall) < GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME);
     }
 
-    public boolean updateBallVelocity(Ball currentBall, boolean collisionOccurred, float timeStep) {
+    public void updateBallVelocity(Ball currentBall, boolean collisionOccurred, float timeStep) {
 
         if (currentBall.isBallInactive()) {
-            return false;
+            return;
         }
 
         if (!collisionOccurred) {
 
             if (currentBall.isBallStopped()) {
-                return false;
+                return;
             }
 
             // just factor in the current acceleration and return a new velocity.
             updateVelocityNonCollision(currentBall, timeStep);
             ballCollisionsThisStep.put(currentBall, 0);
-            return false;
+            return;
         }
 
         //At this point we know a collision occurred.
@@ -490,7 +479,7 @@ public class BallPhysics {
                 updateVelocityCollision(currentBall, timeStep);
                 activateBall(currentBall); //In case ball was previously stopped
                 ballCollisionsThisStep.put(currentBall, 0);
-                return true;
+                return;
             }
         }
 
@@ -498,13 +487,12 @@ public class BallPhysics {
         if (currentBall.isBallRolling()) {
             if (currentBall.didBallCollide()) {
                 updateVelocityCollision(currentBall, timeStep);
-                activateBall(currentBall); //In case ball was previously stopped
+                reactivateRollingBall(currentBall); //In case ball was previously stopped
                 ballCollisionsThisStep.put(currentBall, 0);
-                rollingAccelMap.put(currentBall, new PointF(0f,0f));
-                return true;
+                return;
             } else {
                 updateVelocityNonCollision(currentBall, timeStep);
-                return false;
+                return;
             }
         }
 
@@ -518,12 +506,17 @@ public class BallPhysics {
             ballCollisionsThisStep.put(currentBall, 0);
         }
 
-        return false;
+        return;
     }
 
     public void decreaseRollTime(Ball currentBall, float timeStep) {
         float currentRollTime = getRollTimeForBall(currentBall);
         rollTimeMap.put(currentBall, currentRollTime - timeStep);
+    }
+
+    private void reactivateRollingBall(Ball currentBall) {
+        activateBall(currentBall);
+        clearRollingAccel(currentBall);
     }
 
     protected void activateBall(Ball currentBall) {
