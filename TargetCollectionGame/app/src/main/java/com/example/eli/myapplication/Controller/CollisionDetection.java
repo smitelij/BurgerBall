@@ -24,6 +24,12 @@ import java.util.Collections;
  */
 public class CollisionDetection {
 
+    private BallPhysics ballPhysics;
+
+    public CollisionDetection(BallPhysics ballPhysics) {
+        this.ballPhysics = ballPhysics;
+    }
+
     private class Penetration {
         PointF mNormalAxis;
         float mPenetrationDistance;
@@ -176,7 +182,7 @@ public class CollisionDetection {
 
         //We now can be sure that there was a collision.
         //Calculate more collision info, such as timing, and save the collision event
-        calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius(), 0f);
+        calculateBallPointCollisionInfo(ball, targetCenter, target, timeStep, target.getRadius());
     }
 
     /**
@@ -197,7 +203,7 @@ public class CollisionDetection {
         float penetrationDistance = penetration.mPenetrationDistance;
 
         //get general info about the ball and frame
-        PointF ballVelocity = ball.getAvgVelocity(timeStep);
+        PointF ballVelocity = ballPhysics.getAvgVelocity(ball, timeStep);
         PointF prevVelocityStep;
         PointF totalVelocity;
 
@@ -235,7 +241,7 @@ public class CollisionDetection {
         float penetrationDistance = penetration.mPenetrationDistance;
 
         //get general info about the ball and frame
-        PointF ballVelocity = ball.getAvgVelocity(timeStep);
+        PointF ballVelocity = ballPhysics.getAvgVelocity(ball, timeStep);
         PointF prevVelocityStep;
         PointF totalVelocity;
 
@@ -285,8 +291,8 @@ public class CollisionDetection {
 
         //technically, we would need to do a cubic equation if we wanted to factor gravity in perfectly.
         //However, it will be close enough to use the average velocity from the current timestep
-        PointF ball1AvgVel = ball1.getAvgVelocity(timeStep);
-        PointF ball2AvgVel = ball2.getAvgVelocity(timeStep);
+        PointF ball1AvgVel = ballPhysics.getAvgVelocity(ball1, timeStep);
+        PointF ball2AvgVel = ballPhysics.getAvgVelocity(ball2, timeStep);
         PointF velocityDifference = new PointF(ball1AvgVel.x - ball2AvgVel.x, ball1AvgVel.y - ball2AvgVel.y);
         float distanceBetweenBalls = ball1.getRadius() + ball2.getRadius();
 
@@ -301,8 +307,8 @@ public class CollisionDetection {
         }
 
         //calculate the boundary axis based on the collision-point location of the two balls
-        PointF ball1Displacement = ball1.calculatePositionChange(collisionTime);
-        PointF ball2Displacement = ball2.calculatePositionChange(collisionTime);
+        PointF ball1Displacement = ballPhysics.calculatePositionChange(ball1, collisionTime);
+        PointF ball2Displacement = ballPhysics.calculatePositionChange(ball2, collisionTime);
         PointF ball1NewPos = new PointF(ball1PrevCenter.x + ball1Displacement.x, ball1PrevCenter.y + ball1Displacement.y);
         PointF ball2NewPos = new PointF(ball2PrevCenter.x + ball2Displacement.x, ball2PrevCenter.y + ball2Displacement.y);
         PointF[] vertexArray = new PointF[]{ball1NewPos, ball2NewPos};
@@ -313,13 +319,13 @@ public class CollisionDetection {
     }
 
     private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle,
-                                                 float timeStep, float radius, float penetrationDistance){
+                                                 float timeStep, float radius){
 
         //get necessary information to calculate quadratic
         PointF boundaryAxis = new PointF(0f,0f);
         PointF ball1PrevCenter = ball.getPrevCenter();
         PointF distanceFromVertex = new PointF(ball1PrevCenter.x - vertex.x, ball1PrevCenter.y - vertex.y);
-        PointF velocityDifference = ball.getAvgVelocity(timeStep);
+        PointF velocityDifference = ballPhysics.getAvgVelocity(ball, timeStep);
         float distanceThreshold = ball.getRadius() + radius;
 
         float collisionTime = 0.01f;
@@ -341,11 +347,11 @@ public class CollisionDetection {
 
         //add this collision to the collection
         Collision collision = new Collision(collisionTime, boundaryAxis, obstacle, ball);
-        collision.setPenetrationDepth(penetrationDistance);
         mCollisions.add(collision);
     }
 
-    private void calculateBallMovingPointCollisionInfo(Ball ball, Penetration penetration, MovingObstacle obstacle, float timeStep) throws BallStuckException {
+    private void calculateBallMovingPointCollisionInfo(Ball ball, Penetration penetration,
+                                                       MovingObstacle obstacle, float timeStep) throws BallStuckException {
 
         //Get vertex from penetration
         PointF vertex = penetration.mVertex;
@@ -355,7 +361,7 @@ public class CollisionDetection {
         //get necessary information to calculate quadratic
         PointF ball1PrevCenter = ball.getPrevCenter();
         PointF distanceFromVertex = new PointF(ball1PrevCenter.x - vertex.x, ball1PrevCenter.y - vertex.y);
-        PointF ballVelocity = ball.getAvgVelocity(timeStep);
+        PointF ballVelocity = ballPhysics.getAvgVelocity(ball, timeStep);
         PointF obstacleVelocity = obstacle.getVelocity();
 
         //get current distance (instead of prev distance)
@@ -418,7 +424,6 @@ public class CollisionDetection {
 
         //add this collision to the collection
         Collision collision = new Collision(collisionTime, boundaryAxis, obstacle, ball);
-        collision.setPenetrationDepth(penetration.mPenetrationDistance);
         mCollisions.add(collision);
     }
 
@@ -568,7 +573,7 @@ public class CollisionDetection {
                 MovingObstacle movingObstacle = (MovingObstacle) obstacle;
                 calculateBallMovingPointCollisionInfo(ball, pHistory, movingObstacle, timeStep);
             } else {
-                calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0, pHistory.mPenetrationDistance);
+                calculateBallPointCollisionInfo(ball, pHistory.mVertex, obstacle, timeStep, 0);
             }
 
         //Otherwise, we know the ball collided on a normal boundary of the obstacle
@@ -610,23 +615,9 @@ public class CollisionDetection {
         return collisionAxis;
     }
 
-    private float calculateCurrentPenetration(Ball ball, float collisionTime, PointF obstacleVelocity, PointF nearestVertex) {
-        //move ball to new pos
-        PointF newBallPos = calculateNewBallPos(ball, collisionTime);
-
-        //Move vertex to new pos
-        PointF newVertexPos = calculateNewVertexPos(nearestVertex, collisionTime, obstacleVelocity);
-
-        //Calculate distance between ball and vertex
-        float distance = new PointF(newBallPos.x - newVertexPos.x, newBallPos.y - newVertexPos.y).length();
-        float penetration = ball.getRadius() - distance;
-
-        return penetration;
-    }
-
     private PointF calculateNewBallPos(Ball ball, float collisionTime) {
         PointF prevBallPos = ball.getPrevCenter();
-        PointF ballDisplacement = ball.calculatePositionChange(collisionTime);
+        PointF ballDisplacement = ballPhysics.calculatePositionChange(ball, collisionTime);
         //new ball position
         return new PointF(prevBallPos.x + ballDisplacement.x, prevBallPos.y + ballDisplacement.y);
     }
@@ -634,12 +625,6 @@ public class CollisionDetection {
     private PointF calculateNewVertexPos(PointF vertex, float collisionTime, PointF vertexVelocity) {
         PointF vertexDisplacement = new PointF(vertexVelocity.x * collisionTime, vertexVelocity.y * collisionTime);
         return new PointF(vertex.x + vertexDisplacement.x, vertex.y + vertexDisplacement.y);
-    }
-
-    private void displaceBallFromObstacle(Ball ball, float penetrationDistance, PointF boundaryAxis) {
-        PointF displacementVector = new PointF(-boundaryAxis.x * penetrationDistance, -boundaryAxis.y * penetrationDistance);
-        System.out.println("BALL DISPLACED: " + displacementVector);
-        ball.addToDisplacementVector(displacementVector);
     }
 
     private int getNearestVertexIndex(PointF[] obstacleCoords, PointF ballCenter){
