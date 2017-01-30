@@ -51,9 +51,10 @@ public class BallPhysics {
         }
     }
 
-    public void increaseBallCollisionCounts(Ball currentBall){
+    public void addBallCollision(Ball currentBall, Collision collision){
         ballCollisionsThisStep = incrementCollisionMapEntry(ballCollisionsThisStep, currentBall);
         ballCollisionsThisFrame = incrementCollisionMapEntry(ballCollisionsThisFrame, currentBall);
+        lastCollisionMap.put(currentBall,collision);
     }
 
     public void addObstacleCollision(Ball currentBall, Collision collision){
@@ -87,8 +88,10 @@ public class BallPhysics {
 
     public int getBoundaryCollisionCountThisFrame(Ball currentBall) {
         if (boundaryCollisionsThisFrame.get(currentBall) == null) {
+            System.out.println("bounday collisions this frame: " + 0);
             return 0;
         }
+        System.out.println("bounday collisions this frame: " + boundaryCollisionsThisFrame.get(currentBall));
         return boundaryCollisionsThisFrame.get(currentBall);
     }
 
@@ -375,16 +378,19 @@ public class BallPhysics {
         return false;
     }
 
-    public void handleBallOnTopOfBall(ArrayList<Ball> stuckBalls) {
+    public void handleBallOnTopOfBall(Ball stuckBall) {
+
+        Ball otherBall = (Ball) getLastCollision(stuckBall).getObstacle();
+
+        //Determine which is on top
         Ball topBall;
         Ball bottomBall;
-
-        if (stuckBalls.get(0).getCenter().y > stuckBalls.get(1).getCenter().y){
-            topBall = stuckBalls.get(0);
-            bottomBall = stuckBalls.get(1);
+        if (stuckBall.getCenter().y > otherBall.getCenter().y){
+            topBall = stuckBall;
+            bottomBall = otherBall;
         } else {
-            topBall = stuckBalls.get(1);
-            bottomBall = stuckBalls.get(0);
+            topBall = otherBall;
+            bottomBall = stuckBall;
         }
 
         PointF topBallCenter = topBall.getCenter();
@@ -446,7 +452,12 @@ public class BallPhysics {
     }
 
     public boolean isBallSlowedOnAnotherBall(Ball currentBall) {
+        System.out.println("get ball collisions this frame: " + getBallCollisionsThisFrame(currentBall));
         return (getBallCollisionsThisFrame(currentBall) > GameState.BALL_BOUNCE_CONSTANT * GameState.FRAME_SIZE);
+    }
+
+    public boolean isBallReallyStuck(Ball currentBall) {
+        return (getBoundaryCollisionCountThisFrame(currentBall) > (GameState.FRAME_SIZE * GameState.DEACTIVATE_STUCK_BALL_CONSTANT));
     }
 
     public boolean shouldElasticLossBeAppliedForCollision(Ball currentBall) {

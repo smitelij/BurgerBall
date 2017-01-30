@@ -293,7 +293,7 @@ public class GameEngine {
         while (timeElapsed < mCurrentFrameSize) {
 
             //check if any balls should be deactivated
-            updateActiveBalls();
+            updateBallStatuses();
 
             System.out.println("time elapsed (beginning) : " + timeElapsed);
 
@@ -340,16 +340,11 @@ public class GameEngine {
 
         //based on each balls displacement tally, translate the balls model matrix by that amount
         moveBallsForward();
-
-        //decrement a constant value from the score, update digits with correct texture
         updateScore();
-
         //check if a ball should be deactivated
-        updateActiveBalls();
-
+        updateBallStatuses();
         //clear collision histories
         ballPhysics.clearCollisionHistories();
-
         //check if all balls have been fired or all targets collected
         endLevelChecks();
     }
@@ -380,43 +375,51 @@ public class GameEngine {
 
     }
 
-    //need to rename
-    private void updateActiveBalls(){
+    private void updateBallStatuses(){
 
-        ArrayList<Ball> stuckBalls = new ArrayList<>();
-        ArrayList<Ball> deactivationList = new ArrayList<>();
+        for (Ball currentBall : mAllBalls) {
 
-        for (Ball currentBall : mAllBalls){
+            System.out.println("UPDATE ACTIVE BALLZ");
 
-            if (!currentBall.isBallActive()){
-                continue;
-            }
+            if (currentBall.isBallActive()) {
+                System.out.println("break 1");
+                //Check if a ball has collided with an identical axis enough times to activate 'slowed ball logic'
+                if (ballPhysics.isBallSlowedOnConsecutiveCollisionAxis(currentBall)) {
+                    if (isBallInFiringZone(null, currentBall) && !areAllBallsFired()) {
+                        currentBall.deactivateBall();
+                    } else {
+                        ballPhysics.handleSlowedBall(currentBall);
+                    }
+                }
 
-            //Check if a ball has collided with an identical axis enough times to activate 'slowed ball logic'
-            if (ballPhysics.isBallSlowedOnConsecutiveCollisionAxis(currentBall)){
-                if (isBallInFiringZone(null, currentBall) && !areAllBallsFired()) {
+                System.out.println("break 2");
+                //Check if a ball has collided with any obstacle enough that we can say it is 'stuck'
+                if (ballPhysics.isBallSlowedOnAnyAxis(currentBall)) {
+                    ballPhysics.handleStuckBall(currentBall);
+                }
+
+                if (ballPhysics.isBallSlowedOnAnotherBall(currentBall)) {
+                    System.out.println("add stuck ball...");
+                    ballPhysics.handleBallOnTopOfBall(currentBall);
+                }
+
+                //If ball has been stuck for a while, we will simply deactivate.
+                System.out.println("testing if ball is really stuck.");
+                if (ballPhysics.isBallReallyStuck(currentBall)) {
+                    System.out.println("deactivating BALLZ");
                     currentBall.deactivateBall();
-                } else {
-                    ballPhysics.handleSlowedBall(currentBall);
+                }
+
+            } else if (currentBall.isBallStopped() || currentBall.isBallRolling()) {
+                //If ball is stopped or rolling and is stuck, we will only deactivate.
+                System.out.println("testing if ball is really stuck.");
+                if (ballPhysics.isBallReallyStuck(currentBall)) {
+                    System.out.println("deactivating BALLZ");
+                    currentBall.deactivateBall();
                 }
             }
-
-            //Check if a ball has collided with any obstacle enough that we can say it is 'stuck'
-            if (ballPhysics.isBallSlowedOnAnyAxis(currentBall)) {
-                stuckBalls.add(currentBall);
-            }
-
-            if (ballPhysics.isBallSlowedOnAnotherBall(currentBall)) {
-                stuckBalls.add(currentBall);
-            }
-
         }
 
-        if (stuckBalls.size()==2) {
-            ballPhysics.handleBallOnTopOfBall(stuckBalls);
-        } else if (stuckBalls.size() == 1) {
-            ballPhysics.handleStuckBall(stuckBalls.get(0));
-        }
 
     }
 
@@ -485,18 +488,24 @@ public class GameEngine {
 
             System.out.println("..Collision detection for ball.");
 
-            if (!currentBall.isBallActive()){
+            if (currentBall.isBallInactive()){
                 continue;
             }
 
-            //temporarily advance the balls location by the time step
-            ballPhysics.moveByFrame(currentBall, timeStep);
+            //For active balls, we need to advance them and set them to 'moved' here, surrounding
+            // the collision testing.
+            if (currentBall.isBallActive()) {
 
-            //do collision testing between the current ball and each active object
-            collisionTestAllActiveObjects(CD, currentBall, timeStep);
+                //temporarily advance the balls location by the time step
+                ballPhysics.moveByFrame(currentBall, timeStep);
+                collisionTestAllActiveObjects(CD, currentBall, timeStep);
+                //set the ball to 'moved' so it is included on future collision tests in this frame
+                currentBall.setBallMoved();
 
-            //set the ball to 'moved' so it is included on future collision tests in this frame
-            currentBall.setBallMoved();
+            //For other ball states (stopped and rolling), we just need to collision test.
+            } else {
+                collisionTestAllActiveObjects(CD, currentBall, timeStep);
+            }
         }
 
         //clear the moved status once we have gone through all balls
@@ -523,10 +532,12 @@ public class GameEngine {
         //Go through all objects that could be hit
         for (Interactable curObject : allInteractableObjects) {
 
-            //System.out.println("###### collision testing - ball: " + currentBall.hashCode() + " _ obstacle: " + curObject.hashCode());
+            //Exclude certain collision pairs
+            if (ballCollisionObjectTest(currentBall, curObject) == false) {
+                continue;
+            }
 
             //Do a first test on their bounding boxes
-            //TODO should the bounding boxes be increased by 1 on all sides? should we slow down time step if a ball is moving too quickly?
             if (CD.coarseCollisionTesting(currentBall, curObject)) {
 
                 //There may have been a collision, further testing is necessary.
@@ -542,6 +553,69 @@ public class GameEngine {
 
             }
         }
+    }
+
+    /**
+     * Exclude testing certain objects (inactive balls, balls that haven't been moved
+     * yet this frame, etc.), based on the state that the ball is in.
+     * @param otherObject
+     * @return TRUE if we should test this object, FALSE if we don't need to test
+     */
+    private boolean ballCollisionObjectTest(Ball currentBall, Interactable otherObject) {
+
+        //For stopped balls, the only thing we need to test are moving obstacles.
+        if (currentBall.getBallState() == Ball.ballStatus.STOPPED) {
+
+            if (otherObject.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+                return true;
+            }
+
+            return false;
+
+        //For active balls, we can exclude inactive balls, and balls that haven't moved yet this frame.
+        // Everything else should be tested.
+        } else if (currentBall.getBallState() == Ball.ballStatus.ACTIVE) {
+
+            //Do pre-checks if the other obstacle is a ball
+            if (otherObject.getType() == GameState.INTERACTABLE_BALL) {
+                Ball tempBall = (Ball) otherObject;
+
+                //Don't need to check inactive balls
+                if (tempBall.isBallInactive()) {
+                    return false;
+                }
+
+                //If the other ball is active (moving), make sure it has been moved this frame.
+                if (tempBall.isBallActive() && !tempBall.hasBallMoved()) {
+                    return false;
+                }
+
+            }
+
+            return true;
+
+        //For rolling balls, we need to exclude the current rolling surface.
+        //Besides that, the only thing we care to test are moving obstacles.
+        } else if (currentBall.getBallState() == Ball.ballStatus.ROLLING) {
+
+            Interactable obstacleRollingDown = ballPhysics.getLastCollision(currentBall).getObstacle();
+            if (obstacleRollingDown.equals(otherObject)) {
+                return false;
+            }
+
+            if (otherObject.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
+                return true;
+            }
+
+            return false;
+
+        }
+
+
+
+
+
+        return false;
     }
 
     private void freezeGame() {
@@ -581,13 +655,10 @@ public class GameEngine {
         if (firstCollisions == null) {
             //Move all balls forward by timestep
             handleNoCollisionsForBalls(timeStep);
-
             //Any target collisions will be valid, since there were no trajectory affecting collisions
             handleTargetCollisions(CH, timeStep);
-
             //Need to update coords & AABB for moving obstacles
             handleMovingObstacles(timeStep);
-
             timeElapsed = mCurrentFrameSize;
 
         //one or multiple collisions
@@ -595,18 +666,13 @@ public class GameEngine {
 
             //we can just grab the first member here since they all have the same time
             float collisionTime = firstCollisions.get(0).getTime();
-
             System.out.println("COLLISION DETECTED. Collision time: " + collisionTime);
-
             //move all balls forward by collision time, and update velocity for colliding balls
             handleCollisionsForBalls(CH, firstCollisions, collisionTime);
-
             //Only target collisions before collision time will be valid
             handleTargetCollisions(CH, collisionTime);
-
             //Need to update coords & AABB for moving obstacles
             handleMovingObstacles(collisionTime);
-
             timeElapsed = timeElapsed + collisionTime;
 
         }

@@ -284,40 +284,48 @@ public class LevelData {
             case 1:
 
                 //Obstacles
-                float obstacle111coords[] = {
-                        10f, 40f, 0.0f,   // top left
-                        10f, 30f, 0.0f,   // bottom left
-                        80f, 15f, 0.0f,   // bottom right
-                        80f, 25f, 0.0f }; // top right
+                float obstacle211coords[] = {
+                        80f, 140f, 0.0f,   // top left
+                        80f, 95f, 0.0f,   // bottom left
+                        130f, 95f, 0.0f,   // bottom right
+                        130f, 105f, 0.0f }; // top right
 
 
-                float obstacle112coords[] = {
-                        130f,  40f, 0.0f,   // top left
-                        130f, 30f, 0.0f,   // bottom left
-                        250f, 40f, 0.0f,   // bottom right
-                        250f, 50f, 0.0f }; // top right
+                float obstacle212coords[] = {
+                        0f,  170f, 0.0f,   // top left
+                        0f, 0, 0.0f,   // bottom left
+                        60f, 0f, 0.0f,   // bottom right
+                        10f, 170f, 0.0f }; // top right
+
+                float obstacle213coords[] = {
+                        130f,  170f, 0.0f,   // top left
+                        190f, 6f, 0.0f,   // bottom left
+                        200f, 6f, 0.0f,   // bottom right
+                        200f, 170f, 0.0f }; // top right
 
                 MovePath path211 = new MovePath();
-                path211.addMovement(new SingleMovement(new PointF(-.25f,0f), 170));
-                path211.addMovement(new SingleMovement(new PointF(.25f, 0f), 170));
+                path211.addMovement(new SingleMovement(new PointF(-.4f,0f), 170));
+                path211.addMovement(new SingleMovement(new PointF(.4f, 0f), 170));
 
                 MovePath path212 = new MovePath();
-                path212.addMovement(new SingleMovement(new PointF(-.25f,0f), 170));
-                path212.addMovement(new SingleMovement(new PointF(.25f, 0f), 170));
+                path212.addMovement(new SingleMovement(new PointF(-0.2f,0f), 85));
+                path212.addMovement(new SingleMovement(new PointF(0.2f, 0f), 85));
 
-                mMovingObstacleCoords.add(obstacle111coords);
-                mMovingObstacleCoords.add(obstacle112coords);
+                mMovingObstacleCoords.add(obstacle211coords);
+                mMovingObstacleCoords.add(obstacle212coords);
 
                 mMovingObstaclePaths.add(path211);
                 mMovingObstaclePaths.add(path212);
 
+                mObstacleCoords.add(obstacle213coords);
+
                 //Targets
 
-                float[] target111coords = GameState.createCircleCoords(100, 230, 8f);
-                float[] target112coords = GameState.createCircleCoords(150,180,8f);
+                float[] target211coords = GameState.createCircleCoords(185, 260, 8f);
+                float[] target212coords = GameState.createCircleCoords(130,150,8f);
 
-                mTargetCoords.add(target111coords);
-                mTargetCoords.add(target112coords);
+                mTargetCoords.add(target211coords);
+                mTargetCoords.add(target212coords);
 
                 //num of balls
                 mNumOfBalls = 3;
@@ -325,7 +333,159 @@ public class LevelData {
                 break;
 
             case 2:
+
+                //Obstacles
+                float obstacle221coords[] = {
+                        30f, 0f, 0.0f,   // top left
+                        30f, -10f, 0.0f,   // bottom left
+                        75f, 20f, 0.0f,   // bottom right
+                        75f, 30f, 0.0f }; // top right
+
+
+                float obstacle222coords[] = {
+                        125f,  60f, 0.0f,   // top left
+                        125f, 50, 0.0f,   // bottom left
+                        170f, 20f, 0.0f,   // bottom right
+                        170f, 30f, 0.0f }; // top right
+
+                float obstacle223coords[] = {
+                        60f,  170f, 0.0f,   // top left
+                        60f, 160f, 0.0f,   // bottom left
+                        135f, 160f, 0.0f,   // bottom right
+                        135f, 170f, 0.0f }; // top right
+
+                MovePath path221 = new MovePath();
+                path221.addMovement(new SingleMovement(new PointF(0f,0.8f), 550));
+                path221.addMovement(new SingleMovement(new PointF(-1.0f, 0f), 100));
+                path221.addMovement(new SingleMovement(new PointF(0f, -0.8f), 550));
+                path221.addMovement(new SingleMovement(new PointF(1.0f, 0f), 100));
+
+                MovePath path222 = new MovePath();
+                path222.addMovement(new SingleMovement(new PointF(0f,0.8f), 512));
+                path222.addMovement(new SingleMovement(new PointF(1.0f, 0f), 100));
+                path222.addMovement(new SingleMovement(new PointF(0f, -0.8f), 550));
+                path222.addMovement(new SingleMovement(new PointF(-1.0f, 0f), 100));
+                path222.addMovement(new SingleMovement(new PointF(0f,0.8f), 38));
+
+                mMovingObstacleCoords.add(obstacle221coords);
+                mMovingObstacleCoords.add(obstacle222coords);
+
+                mMovingObstaclePaths.add(path221);
+                mMovingObstaclePaths.add(path222);
+
+                mObstacleCoords.add(obstacle223coords);
+
+                //Targets
+
+                float[] target221coords = GameState.createCircleCoords(185, 260, 8f);
+                float[] target222coords = GameState.createCircleCoords(10,260,8f);
+
+                mTargetCoords.add(target221coords);
+                mTargetCoords.add(target222coords);
+
+                //num of balls
+                mNumOfBalls = 3;
+
+
                 //
+                break;
+
+            case 3:
+
+                //Obstacles
+                float obstacle231coords[] = {
+                        44f, 120f, 0.0f,   // top left
+                        44f, 60f, 0.0f,   // bottom left
+                        64f, 60f, 0.0f,   // bottom right
+                        64f, 120f, 0.0f }; // top right
+
+
+                float obstacle232coords[] = {
+                        135f,  180f, 0.0f,   // top left
+                        135f, 120, 0.0f,   // bottom left
+                        155f, 120f, 0.0f,   // bottom right
+                        155f, 180f, 0.0f }; // top right
+
+                float obstacle233coords[] = {
+                        80f,  250f, 0.0f,   // top left
+                        80f, 190f, 0.0f,   // bottom left
+                        100f, 190f, 0.0f,   // bottom right
+                        100f, 250f, 0.0f }; // top right
+
+
+                mObstacleCoords.add(obstacle231coords);
+                mObstacleCoords.add(obstacle232coords);
+                mObstacleCoords.add(obstacle233coords);
+
+                //Targets
+
+                float[] target231coords = GameState.createCircleCoords(22, 110, 8f);
+                float[] target232coords = GameState.createCircleCoords(90,260,8f);
+                float[] target233coords = GameState.createCircleCoords(165,150,8f);
+
+                mTargetCoords.add(target231coords);
+                mTargetCoords.add(target232coords);
+                mTargetCoords.add(target233coords);
+
+                //num of balls
+                mNumOfBalls = 2;
+
+                break;
+
+            case 4:
+
+                //Obstacles
+                float obstacle241coords[] = {
+                        6f, 30f, 0.0f,   // left
+                        36f, 12f, 0.0f,   // bottom
+                        66f, 30f, 0.0f,   // right
+                        36f, 48f, 0.0f }; // top
+
+                //Obstacles
+                float obstacle242coords[] = {
+                        86f, 130f, 0.0f,   // left
+                        116f, 112f, 0.0f,   // bottom
+                        146f, 130f, 0.0f,   // right
+                        116f, 148f, 0.0f }; // top
+
+                //Obstacles
+                float obstacle243coords[] = {
+                        6f, 180f, 0.0f,   // left
+                        36f, 162f, 0.0f,   // bottom
+                        66f, 180f, 0.0f,   // right
+                        36f, 198f, 0.0f }; // top
+
+                MovePath path241 = new MovePath();
+                path241.addMovement(new SingleMovement(new PointF(0.3f,0.5f), 200));
+                path241.addMovement(new SingleMovement(new PointF(-0.3f, -0.5f), 200));
+
+                MovePath path242 = new MovePath();
+                path242.addMovement(new SingleMovement(new PointF(0.4f,-0.4f), 200));
+                path242.addMovement(new SingleMovement(new PointF(-0.4f, 0.4f), 200));
+
+                MovePath path243 = new MovePath();
+                path243.addMovement(new SingleMovement(new PointF(0.2f,-0.6f), 200));
+                path243.addMovement(new SingleMovement(new PointF(-0.2f, 0.6f), 200));
+
+                mMovingObstacleCoords.add(obstacle241coords);
+                mMovingObstacleCoords.add(obstacle242coords);
+                mMovingObstacleCoords.add(obstacle243coords);
+
+                mMovingObstaclePaths.add(path241);
+                mMovingObstaclePaths.add(path242);
+                mMovingObstaclePaths.add(path243);
+
+                //Targets
+
+                float[] target241coords = GameState.createCircleCoords(185, 260, 8f);
+                float[] target242coords = GameState.createCircleCoords(10,260,8f);
+
+                mTargetCoords.add(target241coords);
+                mTargetCoords.add(target242coords);
+
+                //num of balls
+                mNumOfBalls = 3;
+
                 break;
         }
     }

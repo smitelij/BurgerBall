@@ -235,8 +235,8 @@ public class CollisionHandling {
                 Ball currentBall = currentCollision.getBall();
                 Ball otherBall = (Ball) currentCollision.getObstacle();
 
-                ballPhysics.increaseBallCollisionCounts(currentBall);
-                ballPhysics.increaseBallCollisionCounts(otherBall);
+                ballPhysics.addBallCollision(currentBall, currentCollision);
+                ballPhysics.addBallCollision(otherBall, currentCollision);
 
                 mBallCollisions.add(currentCollision);
 

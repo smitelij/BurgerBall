@@ -16,6 +16,11 @@ public class Collision {
         mBoundaryAxis = boundaryAxis;
         mObstacle = obstacle;
         mBall = ball;
+
+        //in case we accidentally divide by zero when calculating collision time
+        if (Float.isNaN(mTime)) {
+            mTime = 0.01f;
+        }
     }
 
     public float getTime(){

@@ -48,6 +48,8 @@ public class GameState {
     // Any other consecutive collisions should activate SLOWED_BALL_CONSTANT first. Points are different
     // because they never have the exact same collision boundary axis.
     public static final int STUCK_POINT_CONSTANT = 30;
+    //num of collisions in 1 frame with any obstacle surface that will deactivate a stuck ball.
+    public static final int DEACTIVATE_STUCK_BALL_CONSTANT = 40;
 
     //Max possible firing velocity for balls in the X and Y components.
     static final float MAX_INITIAL_X_VELOCITY = 8f;
