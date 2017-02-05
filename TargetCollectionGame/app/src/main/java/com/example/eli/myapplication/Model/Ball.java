@@ -18,12 +18,14 @@ package com.example.eli.myapplication.Model;
 import android.graphics.PointF;
 import android.opengl.Matrix;
 
+import com.example.eli.myapplication.Resources.GameState;
+
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */
 public class Ball extends Interactable implements Movable {
 
-    public enum ballStatus {INACTIVE, ACTIVE, STOPPED, ROLLING};
+    public enum ballStatus {INACTIVE, ACTIVE, STOPPED, ROLLING}
 
     private float[] mModelMatrix = new float[16];
     private float[] mModelProjectionMatrix = new float[16];
@@ -70,12 +72,14 @@ public class Ball extends Interactable implements Movable {
     }
 
     //Fake method to appease Movable interface. The real 'moveByFrame' became too complex
-    // and so was moved to the BallPhysics class. Call that one if you want to moveByFrame.
+    // and so was moved to the BallEngine class. Call that one if you want to moveByFrame.
     public void moveByFrame(float timeStep) {
-        //Call BallPhysics.moveByFrame!
+        //Call BallEngine.moveByFrame!
     }
 
     public void setVelocity(PointF newVelocity){
+
+        System.out.println("setting velocity: " + newVelocity);
         mVelocity = newVelocity;
     }
 
@@ -122,7 +126,7 @@ public class Ball extends Interactable implements Movable {
         mHasMovedForward = true;
     }
 
-    public boolean hasBallMoved(){
+    public boolean hasBallBeenAdvanced(){
         return mHasMovedForward;
     }
 
@@ -140,7 +144,7 @@ public class Ball extends Interactable implements Movable {
     //Another fake method to appease the interface.
     // I wonder if there's a better way to do things...
     public PointF getVelocity(float timeStep) {
-        //Call BallPhysics.getVelocity for the actual method
+        //Call BallEngine.getVelocity for the actual method
         return null;
     }
 
@@ -164,6 +168,10 @@ public class Ball extends Interactable implements Movable {
     }
 
     public boolean isBallRolling() { return (ballState == ballStatus.ROLLING); }
+
+    public boolean isBallMoving() {
+        return ((ballState == ballStatus.ACTIVE) || (ballState == ballStatus.ROLLING));
+    }
 
     public ballStatus getBallState() {
         return ballState;

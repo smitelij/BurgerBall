@@ -20,9 +20,7 @@ import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
 
-import com.example.eli.myapplication.Controller.GameEngine;
-import com.example.eli.myapplication.Controller.MyGLRenderer;
-import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Resources.CommonFunctions;
 
 /**
  * A view container where OpenGL ES graphics can be drawn on screen.
@@ -69,8 +67,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
 
-                PointF responseCenter = GameState.getResponseCenter();
-                float responseRange = GameState.getResponseRange();
+                PointF responseCenter = CommonFunctions.getResponseCenter();
+                float responseRange = CommonFunctions.getResponseRange();
 
                 float xDistance = x - responseCenter.x;
                 float yDistance = y - responseCenter.y;
@@ -94,7 +92,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
                     float xChange = x - mPreviousX;
                     float yChange = y - mPreviousY;
 
-                    PointF initialVelocity = GameState.calculateInitialVelocity(xChange,yChange);
+                    PointF initialVelocity = CommonFunctions.calculateInitialVelocity(xChange,yChange);
                     mGame.activateBall(initialVelocity);
                     if (firstBall) {
                         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);

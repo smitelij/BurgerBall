@@ -1,11 +1,13 @@
-package com.example.eli.myapplication.Controller;
+package com.example.eli.myapplication.Logic.Ball;
 
 import android.graphics.PointF;
 
 import com.example.eli.myapplication.Model.Ball;
 import com.example.eli.myapplication.Model.Collision;
-import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Resources.CommonFunctions;
+import com.example.eli.myapplication.Resources.GameState;
 import com.example.eli.myapplication.Model.MovingObstacle;
+import com.example.eli.myapplication.Model.Obstacle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +16,7 @@ import java.util.HashMap;
  * Created by Eli on 1/21/2017.
  */
 
-public class BallPhysics {
+public class BallEngine {
 
     private HashMap<Ball, PointF> rollingAccelMap = new HashMap<>();
     private HashMap<Ball, Float> rollTimeMap = new HashMap<>();
@@ -26,29 +28,31 @@ public class BallPhysics {
     private HashMap<Ball, Integer> ballCollisionsThisFrame = new HashMap<>();
     private HashMap<Ball, Integer> boundaryCollisionsThisFrame = new HashMap<>();
     private HashMap<Ball, Integer> sameBoundaryCollisionsThisFrame = new HashMap<>();
-
     private HashMap<Ball, Collision> lastCollisionMap = new HashMap<>();
+
+    private BallStateMachine ballStateMachine = new BallStateMachine();
+
+    public void updateBallState(Ball currentBall) {
+        ballStateMachine.updateBallState(currentBall, this);
+    }
 
     public void moveByFrame(Ball currentBall, float percentOfFrame){
         PointF positionChange = calculatePositionChange(currentBall, percentOfFrame);
         currentBall.updateAABB(positionChange.x, positionChange.y);
     }
 
+    /**
+     * Calculate the position change of a ball after percentOfFrame, by computing the average
+     * velocity starting at current time and and ending at percentOfFrame. This is a slight
+     * simplification of how acceleration, velocity, and displacement are related, but for
+     * our purposes and over small frame steps, it is close enough.
+     * @param currentBall
+     * @param percentOfFrame
+     * @return
+     */
     public PointF calculatePositionChange(Ball currentBall, float percentOfFrame){
-
-        if (currentBall.getBallState() == Ball.ballStatus.ACTIVE) {
-
-            //This isn't precisely accurate- we would need much more complicated calculations
-            //to perfectly account for gravities affect on displacement. However, taking the average
-            //velocity (beginning / end of frame) should be more than accurate enough for our purposes.
-            PointF avgVelocity = getAvgVelocity(currentBall, percentOfFrame);
-            return new PointF(avgVelocity.x * percentOfFrame, avgVelocity.y * percentOfFrame);
-
-        //Otherwise, we have a rolling ball.
-        } else {
-            PointF avgVelocity = getAvgVelocity(currentBall, percentOfFrame);
-            return new PointF(avgVelocity.x * percentOfFrame, avgVelocity.y * percentOfFrame);
-        }
+        PointF avgVelocity = getAvgVelocity(currentBall, percentOfFrame);
+        return new PointF(avgVelocity.x * percentOfFrame, avgVelocity.y * percentOfFrame);
     }
 
     public void addBallCollision(Ball currentBall, Collision collision){
@@ -116,7 +120,10 @@ public class BallPhysics {
         return ballCollisionsThisStep.get(currentBall);
     }
 
-    public PointF getRollingAccelForBall(Ball currentBall) {
+    private PointF getRollingAccelForBall(Ball currentBall) {
+        if (isBallOnFlatObstacle(currentBall)) {
+            return getCurrentFlatRollDeceleration(currentBall);
+        }
         if (rollingAccelMap.get(currentBall) == null) {
             return new PointF(0f,0f);
         }
@@ -136,17 +143,25 @@ public class BallPhysics {
         boundaryCollisionsThisFrame.put(currentBall, 0);
     }
 
-    //Get a balls velocity after timeStep (takes into account gravity and everything else)
+    /**
+     * Get a balls velocity at the current moment + timeStep
+     * There are two different velocity calculations, one for active balls (bouncing around),
+     * and one for rolling balls (moving linearly across a single surface.
+     * @param currentBall
+     * @param timeStep
+     * @return
+     */
     public PointF getVelocity(Ball currentBall, float timeStep){
 
         PointF currentVelocity = currentBall.getVelocity();
 
         //we should either have an active ball,
-        if (currentBall.getBallState() == Ball.ballStatus.ACTIVE) {
+        if (currentBall.isBallActive()) {
             return new PointF(currentVelocity.x + (GameState.GRAVITY_CONSTANT.x * timeStep), currentVelocity.y + (GameState.GRAVITY_CONSTANT.y * timeStep));
 
             //or else we have a rolling ball
-        } else if (currentBall.getBallState() == Ball.ballStatus.ROLLING){
+        } else if (currentBall.isBallRolling()){
+
             PointF surfaceVelocity = getSurfaceVelocity(currentBall);
             PointF rollingAccel = getRollingAccelForBall(currentBall);
 
@@ -159,6 +174,15 @@ public class BallPhysics {
         } else {
             return new PointF(0f,0f);
         }
+    }
+
+    private PointF getCurrentFlatRollDeceleration(Ball currentBall) {
+        System.out.println("get current flat roll deceleration");
+        PointF currentVelocity = currentBall.getVelocity();
+        System.out.println("current ball velocity: " + currentVelocity);
+        System.out.println("flat roll deceleration: " + new PointF(-currentVelocity.x * GameState.ROLLING_DECELERATION_CONSTANT,0f));
+        return new PointF(-currentVelocity.x * GameState.ROLLING_DECELERATION_CONSTANT,0f);
+
     }
 
     /**
@@ -184,6 +208,7 @@ public class BallPhysics {
 
         //if mNewVelocity exists, then we have updated the balls new velocity elsewhere
         if (currentBall.didBallCollide()) {
+            System.out.println("ball collided?");
             currentBall.updateVelocityWithNewVelocity();
 
         //otherwise, just update based on gravity
@@ -197,38 +222,37 @@ public class BallPhysics {
     public void updateVelocityNonCollision(Ball currentBall, float timeStep) {
         PointF ballVelocity = getVelocity(currentBall, timeStep);
         //Subtract surface velocity here so it doesn't accumulate
-        if (currentBall.getBallState() == Ball.ballStatus.ROLLING) {
+        if (currentBall.isBallRolling()) {
             PointF surfaceVelocity = getSurfaceVelocity(currentBall);
             ballVelocity.set(ballVelocity.x - surfaceVelocity.x, ballVelocity.y - surfaceVelocity.y);
         }
+        System.out.println("setting non collision velocity: " + new PointF(ballVelocity.x, ballVelocity.y));
         currentBall.setVelocity(new PointF(ballVelocity.x, ballVelocity.y));
     }
 
-    //Get average velocity from current time until timeStep
+    //Get average velocity between current time and timeStep
     public PointF getAvgVelocity(Ball currentBall, float timeStep){
         PointF currentVelocity = getVelocity(currentBall, 0);
-        PointF newVelocity = getVelocity(currentBall, timeStep);
-        PointF finalVelocity = new PointF((currentVelocity.x + newVelocity.x) / 2, (currentVelocity.y + newVelocity.y) / 2);
-        System.out.println("GET BALL VELOCITY= " + finalVelocity.x + " | " + finalVelocity.y);
-        return new PointF((currentVelocity.x + newVelocity.x) / 2, (currentVelocity.y + newVelocity.y) / 2);
+        PointF finalVelocity = getVelocity(currentBall, timeStep);
+        return new PointF((currentVelocity.x + finalVelocity.x) / 2, (currentVelocity.y + finalVelocity.y) / 2);
     }
 
     public Collision getLastCollision(Ball currentBall) {
         return lastCollisionMap.get(currentBall);
     }
 
-    //This should probably be moved into game engine-
-    // no reason for so much math to be in the ball class
-    public void calculateRollingAccel(Ball currentBall) {
-
-        PointF rollingVector;
-        PointF collisionAxis = getLastCollision(currentBall).getBoundaryAxis();
-        //warning - this code will break if gravity isn't solely in the negative Y-direction
-        if (collisionAxis.x > 0 ) {
-            rollingVector = new PointF(collisionAxis.y, -collisionAxis.x);
-        } else {
-            rollingVector = new PointF(-collisionAxis.y, collisionAxis.x);
+    private void setRollingAcceleration(Ball currentBall, boolean flatObstacle) {
+        if (flatObstacle) {
+            return;
         }
+
+        setRollingAccelIncline(currentBall);
+
+    }
+
+    private void setRollingAccelIncline(Ball currentBall) {
+
+        PointF rollingVector = calculateRollingVectorIncline(currentBall);
         double rollingAngle = Math.atan2(rollingVector.y, rollingVector.x);
         float rollingAcceleration = (float) (0.666 * GameState.GRAVITY_CONSTANT.y * Math.sin(rollingAngle));
         PointF rollingAccelVector = new PointF(rollingAcceleration * (float) Math.cos(rollingAngle), rollingAcceleration * (float) Math.sin(rollingAngle));
@@ -236,104 +260,175 @@ public class BallPhysics {
         rollingAccelMap.put(currentBall, rollingAccelVector);
     }
 
-    public void clearRollingAccel(Ball currentBall) {
+    private void clearRollingAccel(Ball currentBall) {
         rollingAccelMap.put(currentBall, new PointF(0f,0f));
     }
 
-    public void setInitialRollingVelocity(Ball currentBall) {
+    private void setInitialRollingVelocity(Ball currentBall, boolean flatSurface) {
+        System.out.println("set initial rolling velocity.");
+        PointF rollingVector = calculateRollingVector(currentBall, flatSurface);
+        PointF directionalVelocity = calculateDirectionalVelocity(currentBall, rollingVector, flatSurface);
+        PointF finalVelocity = increaseVelocityForElasticLoss(directionalVelocity);
+        currentBall.setVelocity(finalVelocity);
+    }
 
-        PointF rollingVector;
+    /**
+     * Before a ball starts rolling, it undergoes a number of collisions each resulting in loss
+     * due to elasticity. Here, we add that loss back in.
+     * @param directionalVelocity
+     * @return
+     */
+    private PointF increaseVelocityForElasticLoss(PointF directionalVelocity) {
+        int affectedFrames = GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME;
+        float elasticLoss = (float) Math.pow(GameState.ELASTIC_CONSTANT, affectedFrames);
+        return new PointF(directionalVelocity.x / elasticLoss, directionalVelocity.y / elasticLoss);
+    }
+
+    private PointF calculateRollingVector(Ball currentBall, boolean flatSurface) {
+        if (flatSurface) {
+            return calculateRollingVectorFlat(currentBall);
+        } else {
+            return calculateRollingVectorIncline(currentBall);
+        }
+    }
+
+    /**
+     * Calculate a vector representation of the surface the ball will be rolling down
+     * @param currentBall
+     * @return
+     */
+    private PointF calculateRollingVectorIncline(Ball currentBall) {
         PointF collisionAxis = getLastCollision(currentBall).getBoundaryAxis();
         //warning - this code will break if gravity isn't solely in the negative Y-direction
         if (collisionAxis.x > 0 ) {
-            rollingVector = new PointF(collisionAxis.y, -collisionAxis.x);
+            return new PointF(collisionAxis.y, -collisionAxis.x);
         } else {
-            rollingVector = new PointF(-collisionAxis.y, collisionAxis.x);
+            return new PointF(-collisionAxis.y, collisionAxis.x);
         }
-        PointF rollingVectorNormal = new PointF(rollingVector.x / rollingVector.length(), rollingVector.y / rollingVector.length());
-        PointF currentVelocity = getVelocity(currentBall, 0);
-        float totalVelocity = currentVelocity.length();
-        PointF directionalVelocity;
-        if (currentVelocity.y > 0) {
-            directionalVelocity = new PointF(-rollingVectorNormal.x * totalVelocity, -rollingVectorNormal.y * totalVelocity);
-        } else {
-            directionalVelocity = new PointF(rollingVectorNormal.x * totalVelocity, rollingVectorNormal.y * totalVelocity);
-        }
-
-        //Before a ball starts rolling, it undergoes a number of collisions each resulting in loss due to elasticity.
-        //Here, we add that loss back in.
-        //Add an extra 1/2 due to frame straddling possibility (some collisions occurred in the previous frame).
-        int affectedFrames = GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME + (GameState.MAX_ELASTIC_COLLISIONS_PER_FRAME / 2);
-        float elasticLoss = (float) Math.pow(GameState.ELASTIC_CONSTANT, affectedFrames);
-        PointF newVelocity = new PointF(directionalVelocity.x / elasticLoss, directionalVelocity.y / elasticLoss);
-        currentBall.setVelocity(newVelocity);
     }
 
-    public void calculateRollTime(Ball currentBall) {
-        PointF boundaryAxis = getLastCollision(currentBall).getBoundaryAxis();
-        PointF[] obstacleCoords = getLastCollision(currentBall).getObstacle().get2dCoordArray();
+    private PointF calculateRollingVectorFlat(Ball currentBall) {
+        PointF currentVelocity = getVelocity(currentBall, 0);
+        if (currentVelocity.x > 0) {
+            return new PointF(1f,0f);
+        } else {
+            return new PointF(-1f,0f);
+        }
+    }
 
-        PointF vertexA = new PointF();
-        PointF vertexB = new PointF();
-        for (int index = 0; index < obstacleCoords.length; index++) {
-            //NOTE - THIS IS THE SAME CODE AS in collision detection so maybe should move it to a shared location
-            //We need to make a line between two vertexes
-            int vertexAIndex = index;
-            int vertexBIndex = (index + 1) % obstacleCoords.length; //We need to wrap back to the first vertex at the end, so use modulus
+    private PointF calculateDirectionalVelocity(Ball currentBall, PointF rollingVector, boolean flatSurface) {
+        PointF currentVelocity = getVelocity(currentBall, 0);
+        float totalVelocity = currentVelocity.length();
 
-            vertexA = obstacleCoords[vertexAIndex];
-            vertexB = obstacleCoords[vertexBIndex];
+        if (flatSurface) {
+            return new PointF(rollingVector.x * totalVelocity, 0f);
+        }
+        if (currentVelocity.y > 0) {
+            return new PointF(-rollingVector.x * totalVelocity, -rollingVector.y * totalVelocity);
+        } else {
+            return new PointF(rollingVector.x * totalVelocity, rollingVector.y * totalVelocity);
+        }
+    }
 
-            //formula to find the normal vector from a line is (-y, x)
-            float xComponent = -(vertexB.y - vertexA.y);
-            float yComponent = (vertexB.x - vertexA.x);
+    private void setRollTime(Ball currentBall, boolean bottomBoundary) {
 
-            //create vector and normalize
-            PointF normalAxis = new PointF(xComponent, yComponent);
-            float normalAxisLength = normalAxis.length();
-            normalAxis.set(normalAxis.x / normalAxisLength, normalAxis.y / normalAxisLength);
-
-            if (normalAxis.equals(boundaryAxis.x, boundaryAxis.y)) {
-                break;
-            }
+        if (bottomBoundary) {
+            setInfiniteRollTime(currentBall);
+            return;
         }
 
-        //Make sure vertices are oriented correctly (A is above B)
-        if (vertexA.y < vertexB.y) {
-            PointF temp = new PointF(vertexA.x, vertexA.y);
-            vertexA = vertexB;
-            vertexB = temp;
-        }
+        PointF remainingLength = calculateRemainingDistanceToBeRolled(currentBall);
+        System.out.println("remaining length to be rolleD: " + remainingLength);
+        float rollTime = calculateQuadraticRollTime(currentBall, remainingLength);
+        System.out.println("remaining time to be rolled: " + rollTime);
+        rollTime = rollTime * 1.05f; //Add a bit extra so we don't get stuck on a corner after rolling.
+        rollTimeMap.put(currentBall, rollTime);
+    }
+
+    /**
+     * If a ball is rolling across the bottom, then we set the roll time to be infinite.
+     * @param currentBall
+     */
+    private void setInfiniteRollTime(Ball currentBall) {
+        rollTimeMap.put(currentBall, GameState.LARGE_NUMBER);
+    }
+
+    private PointF calculateRemainingDistanceToBeRolled(Ball currentBall) {
+        ArrayList<PointF> surfaceVertices = getSurfaceVertices(currentBall);
+
+        PointF vertexA = surfaceVertices.get(0);
+        PointF vertexB = surfaceVertices.get(1);
 
         PointF ballCenter = currentBall.getCenter();
         PointF ballPointOnLine = projectPointOntoLine(vertexA, vertexB, ballCenter);
-        PointF remainingLength = new PointF(vertexB.x - ballPointOnLine.x, vertexB.y - ballPointOnLine.y);
+        return new PointF(vertexB.x - ballPointOnLine.x, vertexB.y - ballPointOnLine.y);
+    }
 
+    /**
+     * Helper function for setRollTime. Performs a quadratic calculation, and returns
+     * the length of time that the ball will be rolling.
+     * @param currentBall
+     * @param remainingDistance - Distance vector remaining on the surface that ball is rolling down
+     * @return
+     */
+    private float calculateQuadraticRollTime(Ball currentBall, PointF remainingDistance) {
         double quadA = getRollingAccelForBall(currentBall).length() / 2;
         double quadB = currentBall.getVelocity().length();
-        double quadC = -remainingLength.length();
+        double quadC = -remainingDistance.length();
+
+        //If ball is rolling on flat obstacle, accel will always be negative (slowing down)
+        if (isBallOnFlatObstacle(currentBall)) {
+            quadA = -quadA;
+        } else {
+            //If ball is rolling UP a slanted surface, set velocity to be negative.
+            if (currentBall.getVelocity().y > 0) {
+                quadB = -quadB;
+            }
+        }
 
         double squareRoot = Math.sqrt((quadB * quadB) - (4*quadA*quadC));
         double result1 = (-quadB + squareRoot) / (2*quadA);
         double result2 = (-quadB - squareRoot) / (2*quadA);
 
-        float rollTime;
         if ((result1 < 0) && (result2 < 0)) {
-            rollTime = 0;
+            return 0;
         } else if (result1 < 0) {
-            rollTime = (float) result2;
+            return (float) result2;
         } else {
-            rollTime = (float) result1;
+            return (float) result1;
         }
-        rollTime = rollTime * 1.05f;
-        rollTimeMap.put(currentBall, rollTime);
+    }
+
+    private ArrayList<PointF> getSurfaceVertices(Ball currentBall) {
+        Obstacle obstacle = (Obstacle) getLastCollision(currentBall).getObstacle();
+
+        PointF collisionAxis = getLastCollision(currentBall).getBoundaryAxis();
+
+        int boundaryIndex = 0;
+        for (int index = 0; index < obstacle.get2dCoordArray().length; index++) {
+            PointF currentBoundaryAxis = obstacle.getBoundaryAxis(index);
+            if (currentBoundaryAxis.equals(collisionAxis.x, collisionAxis.y)) {
+                boundaryIndex = index;
+                break;
+            }
+        }
+
+        ArrayList<PointF> vertices = obstacle.getSurfaceVertices(boundaryIndex);
+
+        //Make sure vertices are oriented correctly (first is above second)
+        if (vertices.get(0).y < vertices.get(1).y) {
+            PointF first = vertices.get(0);
+            vertices.remove(0);
+            vertices.add(first);
+        }
+        return vertices;
     }
 
     private PointF projectPointOntoLine(PointF vertexA, PointF vertexB, PointF pointToProject) {
         PointF pointVector = new PointF(pointToProject.x - vertexA.x, pointToProject.y - vertexA.y);
         PointF line = new PointF(vertexB.x - vertexA.x, vertexB.y - vertexA.y);
         PointF lineUnit = new PointF(line.x / line.length(), line.y / line.length());
-        float scalar = GameState.dotProduct(pointVector, lineUnit);
+        float scalar = CommonFunctions.dotProduct(pointVector, lineUnit);
         PointF pointOffset = new PointF(lineUnit.x * scalar, lineUnit.y * scalar);
         PointF finalPoint = new PointF(vertexA.x + pointOffset.x, vertexA.y + pointOffset.y);
         return finalPoint;
@@ -341,22 +436,15 @@ public class BallPhysics {
 
 
     public void handleSlowedBall(Ball currentBall) {
-        if (isBallOnFlatObstacle(currentBall)) {
-            if (isBallOnMovingObstacle(currentBall)) {
-                //Keep the ball 'rolling' if the surface is still moving
-                currentBall.rollingBall();
-                currentBall.setVelocity(new PointF(0f,0f));
-            } else {
-                currentBall.stopBall();
-            }
-        } else {
-            currentBall.rollingBall();
-            calculateRollingAccel(currentBall);
-            setInitialRollingVelocity(currentBall);
-            calculateRollTime(currentBall);
-        }
+        boolean onFlatSurface = isBallOnFlatObstacle(currentBall);
+        boolean onBottomObstacle = isBallOnBottomObstacle(currentBall);
 
-
+        //Order is important here- initial rolling velocity must be calculated before ball status
+        // has been updated to rolling, but roll time must be calculated after.
+        setRollingAcceleration(currentBall, onFlatSurface);
+        setInitialRollingVelocity(currentBall, onFlatSurface);
+        currentBall.rollingBall();
+        setRollTime(currentBall, onBottomObstacle);
     }
 
     /**
@@ -364,18 +452,16 @@ public class BallPhysics {
      * @param currentBall
      * @return
      */
-    private boolean isBallOnFlatObstacle(Ball currentBall) {
+    public boolean isBallOnFlatObstacle(Ball currentBall) {
         if (getLastCollision(currentBall).getBoundaryAxis().equals(0, -1)) {
             return true;
         }
         return false;
     }
 
-    private boolean isBallOnMovingObstacle(Ball currentBall) {
-        if (getLastCollision(currentBall).getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
-            return true;
-        }
-        return false;
+    private boolean isBallOnBottomObstacle(Ball currentBall) {
+        Obstacle obstacle = (Obstacle) getLastCollision(currentBall).getObstacle();
+        return (obstacle.isBottomBoundary());
     }
 
     public void handleBallOnTopOfBall(Ball stuckBall) {
@@ -401,6 +487,7 @@ public class BallPhysics {
     }
 
     public void handleStuckBall(Ball stuckBall) {
+        System.out.println("HANDLING STUCK BALL");
         PointF collisionAxis = getLastCollision(stuckBall).getBoundaryAxis();
         //displace ball away from the collision axis
         stuckBall.setVelocity(new PointF(-collisionAxis.x, -collisionAxis.y));
@@ -423,31 +510,12 @@ public class BallPhysics {
         return map;
     }
 
-    /**
-     *
-     * @param currentBall
-     */
-    public void moveRollingBall(Ball currentBall, float timeStep) {
-
-        if (currentBall.isBallRolling()) {
-            if (getRollTimeForBall(currentBall) < 0) {
-                activateBall(currentBall);
-                //We need to update the balls current velocity, because if we
-                // are on a moving object, then we will forget that velocity
-                // when we reactivate the ball.
-                PointF currentVelocity = getVelocity(currentBall, 0); //Get balls instantaneous velocity
-                currentBall.setVelocity(currentVelocity);
-            } else {
-                moveByFrame(currentBall, timeStep);
-            }
-        }
-    }
 
     public boolean isBallSlowedOnConsecutiveCollisionAxis(Ball currentBall) {
         return (getSameBoundaryCollisionCountThisFrame(currentBall) > (GameState.FRAME_SIZE * GameState.SLOWED_BALL_CONSTANT));
     }
 
-    public boolean isBallSlowedOnAnyAxis(Ball currentBall) {
+    public boolean isBallSlowedOnCorner(Ball currentBall) {
         return (getBoundaryCollisionCountThisFrame(currentBall) > (GameState.FRAME_SIZE * GameState.STUCK_POINT_CONSTANT));
     }
 
@@ -530,9 +598,18 @@ public class BallPhysics {
         clearRollingAccel(currentBall);
     }
 
-    protected void activateBall(Ball currentBall) {
+    public void activateBall(Ball currentBall) {
         currentBall.activateBall();
         clearFrameCollisionCount(currentBall);
+    }
+
+    public void stopBall(Ball currentBall) {
+        currentBall.stopBall();
+        clearFrameCollisionCount(currentBall);
+    }
+
+    protected void deactivateBall(Ball currentBall) {
+        currentBall.deactivateBall();
     }
 
     //Get the available velocity (amount that is free to be transferred) at timeStep
@@ -540,6 +617,10 @@ public class BallPhysics {
         PointF newVelocity = getVelocity(currentBall, timeStep);
         int ballCollisions = getBallCollisionsThisStep(currentBall);
         return new PointF(newVelocity.x / ballCollisions, newVelocity.y / ballCollisions);
+    }
+
+    public void setAllBallsFired() {
+        ballStateMachine.setAllBallsFired();
     }
 
 }

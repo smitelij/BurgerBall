@@ -21,7 +21,6 @@ package com.example.eli.myapplication.Model;
 
 import android.content.Context;
 import android.opengl.GLES30;
-import android.opengl.GLES30;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -29,6 +28,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import com.example.eli.myapplication.Controller.MyGLRenderer;
+import com.example.eli.myapplication.Resources.GameState;
 
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.

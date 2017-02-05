@@ -6,11 +6,11 @@ import android.graphics.PointF;
  * Created by Eli on 1/21/2017.
  */
 
-public class BallStuckException extends Exception {
+public class InvalidBallPositionException extends Exception {
 
     private PointF collisionAxis;
 
-    public BallStuckException(PointF collisionAxis) {
+    public InvalidBallPositionException(PointF collisionAxis) {
         this.collisionAxis = collisionAxis;
     }
 

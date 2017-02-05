@@ -1,5 +1,7 @@
 package com.example.eli.myapplication.Model;
 
+import com.example.eli.myapplication.Resources.GameState;
+
 /**
  * Created by Eli on 7/24/2016.
 */

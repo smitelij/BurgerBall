@@ -2,6 +2,8 @@ package com.example.eli.myapplication.Model;
 
 import android.graphics.PointF;
 
+import com.example.eli.myapplication.Resources.GameState;
+
 /**
  * Created by Eli on 9/10/2016.
  */

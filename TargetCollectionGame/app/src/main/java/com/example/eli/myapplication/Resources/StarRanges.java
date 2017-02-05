@@ -1,4 +1,4 @@
-package com.example.eli.myapplication.Model;
+package com.example.eli.myapplication.Resources;
 
 /**
  * Created by Eli on 9/3/2016.

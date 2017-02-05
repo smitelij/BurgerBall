@@ -17,6 +17,8 @@ package com.example.eli.myapplication.Model;
 
 import android.graphics.PointF;
 
+import com.example.eli.myapplication.Resources.GameState;
+
 /**
  * A two-dimensional square for use as a drawn object in OpenGL ES 2.0.
  */

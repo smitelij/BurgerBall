@@ -14,9 +14,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.example.eli.myapplication.Controller.GameEngine;
-import com.example.eli.myapplication.Model.HighScoreController;
+import com.example.eli.myapplication.Logic.HighScoreController;
 import com.example.eli.myapplication.R;
-import com.example.eli.myapplication.Model.StarRanges;
+import com.example.eli.myapplication.Resources.StarRanges;
 
 import java.util.HashMap;
 

@@ -20,13 +20,11 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
 import android.opengl.GLES30;
-import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.example.eli.myapplication.Controller.GameEngine;
-import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Resources.GameState;
 
 /**
  * Provides drawing instructions for a GLSurfaceView object. This class

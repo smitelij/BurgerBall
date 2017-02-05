@@ -1,4 +1,4 @@
-package com.example.eli.myapplication.Model;
+package com.example.eli.myapplication.Logic;
 
 import android.content.Context;
 

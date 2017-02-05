@@ -1,8 +1,9 @@
-package com.example.eli.myapplication.Model;
+package com.example.eli.myapplication.Resources;
 
 import android.graphics.PointF;
 
-import com.example.eli.myapplication.Model.GameState;
+import com.example.eli.myapplication.Model.MovePath;
+import com.example.eli.myapplication.Model.SingleMovement;
 
 import java.util.ArrayList;
 
@@ -56,8 +57,8 @@ public class LevelData {
 
                 //Targets
 
-                float[] target111coords = GameState.createCircleCoords(90, 160, 8f);
-                float[] target112coords = GameState.createCircleCoords(150,180,8f);
+                float[] target111coords = CommonFunctions.createCircleCoords(90, 160, 8f);
+                float[] target112coords = CommonFunctions.createCircleCoords(150,180,8f);
 
                 mTargetCoords.add(target111coords);
                 mTargetCoords.add(target112coords);
@@ -96,8 +97,8 @@ public class LevelData {
 
                 //Targets
 
-                float[] target121coords = GameState.createCircleCoords(20,135,8f);
-                float[] target122coords = GameState.createCircleCoords(180,135,8f);
+                float[] target121coords = CommonFunctions.createCircleCoords(20,135,8f);
+                float[] target122coords = CommonFunctions.createCircleCoords(180,135,8f);
 
                 mTargetCoords.add(target121coords);
                 mTargetCoords.add(target122coords);
@@ -142,9 +143,9 @@ public class LevelData {
 
                 //Targets
 
-                float[] target131coords = GameState.createCircleCoords(100,235,8f);
-                float[] target132coords = GameState.createCircleCoords(15,128,8f);
-                float[] target133coords = GameState.createCircleCoords(185,128,8f);
+                float[] target131coords = CommonFunctions.createCircleCoords(100,235,8f);
+                float[] target132coords = CommonFunctions.createCircleCoords(15,128,8f);
+                float[] target133coords = CommonFunctions.createCircleCoords(185,128,8f);
 
                 mTargetCoords.add(target131coords);
                 mTargetCoords.add(target132coords);
@@ -191,8 +192,8 @@ public class LevelData {
 
                 //Targets
 
-                float[] target141coords = GameState.createCircleCoords(30,190,8f);
-                float[] target142coords = GameState.createCircleCoords(185,240,8f);
+                float[] target141coords = CommonFunctions.createCircleCoords(30,190,8f);
+                float[] target142coords = CommonFunctions.createCircleCoords(185,240,8f);
 
                 mTargetCoords.add(target141coords);
                 mTargetCoords.add(target142coords);
@@ -259,8 +260,8 @@ public class LevelData {
 
                 //Targets
 
-                float[] target151coords = GameState.createCircleCoords(60,260,8f);
-                float[] target152coords = GameState.createCircleCoords(185,100,8f);
+                float[] target151coords = CommonFunctions.createCircleCoords(60,260,8f);
+                float[] target152coords = CommonFunctions.createCircleCoords(185,100,8f);
 
                 mTargetCoords.add(target151coords);
                 mTargetCoords.add(target152coords);
@@ -321,8 +322,8 @@ public class LevelData {
 
                 //Targets
 
-                float[] target211coords = GameState.createCircleCoords(185, 260, 8f);
-                float[] target212coords = GameState.createCircleCoords(130,150,8f);
+                float[] target211coords = CommonFunctions.createCircleCoords(185, 260, 8f);
+                float[] target212coords = CommonFunctions.createCircleCoords(130,150,8f);
 
                 mTargetCoords.add(target211coords);
                 mTargetCoords.add(target212coords);
@@ -377,8 +378,8 @@ public class LevelData {
 
                 //Targets
 
-                float[] target221coords = GameState.createCircleCoords(185, 260, 8f);
-                float[] target222coords = GameState.createCircleCoords(10,260,8f);
+                float[] target221coords = CommonFunctions.createCircleCoords(185, 260, 8f);
+                float[] target222coords = CommonFunctions.createCircleCoords(10,260,8f);
 
                 mTargetCoords.add(target221coords);
                 mTargetCoords.add(target222coords);
@@ -419,9 +420,9 @@ public class LevelData {
 
                 //Targets
 
-                float[] target231coords = GameState.createCircleCoords(22, 110, 8f);
-                float[] target232coords = GameState.createCircleCoords(90,260,8f);
-                float[] target233coords = GameState.createCircleCoords(165,150,8f);
+                float[] target231coords = CommonFunctions.createCircleCoords(22, 110, 8f);
+                float[] target232coords = CommonFunctions.createCircleCoords(90,260,8f);
+                float[] target233coords = CommonFunctions.createCircleCoords(165,150,8f);
 
                 mTargetCoords.add(target231coords);
                 mTargetCoords.add(target232coords);
@@ -456,16 +457,16 @@ public class LevelData {
                         36f, 198f, 0.0f }; // top
 
                 MovePath path241 = new MovePath();
-                path241.addMovement(new SingleMovement(new PointF(0.3f,0.5f), 200));
-                path241.addMovement(new SingleMovement(new PointF(-0.3f, -0.5f), 200));
+                path241.addMovement(new SingleMovement(new PointF(0.3f,0.5f), 100));
+                path241.addMovement(new SingleMovement(new PointF(-0.3f, -0.5f), 100));
 
                 MovePath path242 = new MovePath();
-                path242.addMovement(new SingleMovement(new PointF(0.4f,-0.4f), 200));
-                path242.addMovement(new SingleMovement(new PointF(-0.4f, 0.4f), 200));
+                path242.addMovement(new SingleMovement(new PointF(0.4f,-0.4f), 100));
+                path242.addMovement(new SingleMovement(new PointF(-0.4f, 0.4f), 100));
 
                 MovePath path243 = new MovePath();
-                path243.addMovement(new SingleMovement(new PointF(0.2f,-0.6f), 200));
-                path243.addMovement(new SingleMovement(new PointF(-0.2f, 0.6f), 200));
+                path243.addMovement(new SingleMovement(new PointF(0.2f,-0.6f), 100));
+                path243.addMovement(new SingleMovement(new PointF(-0.2f, 0.6f), 100));
 
                 mMovingObstacleCoords.add(obstacle241coords);
                 mMovingObstacleCoords.add(obstacle242coords);
@@ -477,11 +478,41 @@ public class LevelData {
 
                 //Targets
 
-                float[] target241coords = GameState.createCircleCoords(185, 260, 8f);
-                float[] target242coords = GameState.createCircleCoords(10,260,8f);
+                float[] target241coords = CommonFunctions.createCircleCoords(185, 260, 8f);
+                float[] target242coords = CommonFunctions.createCircleCoords(10,260,8f);
 
                 mTargetCoords.add(target241coords);
                 mTargetCoords.add(target242coords);
+
+                //num of balls
+                mNumOfBalls = 3;
+
+                break;
+
+            case 5:
+
+                //Obstacles
+                float obstacle251coords[] = {
+                        6f, 20f, 0.0f,   // top left
+                        6f, 12f, 0.0f,   //bottom left
+                        80f, 12f, 0.0f,   //bottom right
+                        80f, 20f, 0.0f }; //top right
+
+
+                MovePath path251 = new MovePath();
+                path251.addMovement(new SingleMovement(new PointF(0f,0.2f), 100));
+                path251.addMovement(new SingleMovement(new PointF(0f, -0.2f), 100));
+
+                mMovingObstacleCoords.add(obstacle251coords);
+                mMovingObstaclePaths.add(path251);
+
+                //Targets
+
+                float[] target251coords = CommonFunctions.createCircleCoords(185, 260, 8f);
+                float[] target252coords = CommonFunctions.createCircleCoords(10,260,8f);
+
+                mTargetCoords.add(target251coords);
+                mTargetCoords.add(target252coords);
 
                 //num of balls
                 mNumOfBalls = 3;

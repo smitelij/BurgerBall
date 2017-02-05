@@ -13,13 +13,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageView;
 
-import com.example.eli.myapplication.Model.StarRanges;
+import com.example.eli.myapplication.Resources.StarRanges;
 import com.example.eli.myapplication.R;
-import com.example.eli.myapplication.View.SetSelect;
 
 import java.util.HashMap;
 

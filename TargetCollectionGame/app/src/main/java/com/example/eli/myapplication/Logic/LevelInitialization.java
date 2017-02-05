@@ -1,4 +1,4 @@
-package com.example.eli.myapplication.Model;
+package com.example.eli.myapplication.Logic;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -6,6 +6,23 @@ import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+
+import com.example.eli.myapplication.Model.Ball;
+import com.example.eli.myapplication.Model.BallsRemainingIcon;
+import com.example.eli.myapplication.Model.Borders;
+import com.example.eli.myapplication.Model.Drawable;
+import com.example.eli.myapplication.Model.GhostBall;
+import com.example.eli.myapplication.Model.Interactable;
+import com.example.eli.myapplication.Model.MovePath;
+import com.example.eli.myapplication.Model.MovingObstacle;
+import com.example.eli.myapplication.Model.Obstacle;
+import com.example.eli.myapplication.Model.ScoreDigits;
+import com.example.eli.myapplication.Model.SelectionCircle;
+import com.example.eli.myapplication.Model.Target;
+import com.example.eli.myapplication.Model.VelocityArrow;
+import com.example.eli.myapplication.Resources.CommonFunctions;
+import com.example.eli.myapplication.Resources.GameState;
+import com.example.eli.myapplication.Resources.LevelData;
 
 import java.util.ArrayList;
 
@@ -61,7 +78,7 @@ public class LevelInitialization {
         mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL);
 
         //Get initial ball coordinates
-        float[] newBallCoords = GameState.getInitialBallCoords();
+        float[] newBallCoords = CommonFunctions.getInitialBallCoords();
 
         //create balls and add them to collection
         for(int index=0; index < mTotalBalls; index++) {

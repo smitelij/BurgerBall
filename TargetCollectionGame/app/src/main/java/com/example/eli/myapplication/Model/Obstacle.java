@@ -17,8 +17,7 @@ package com.example.eli.myapplication.Model;
 
 import android.graphics.PointF;
 
-import com.example.eli.myapplication.Model.GameState;
-import com.example.eli.myapplication.Model.Interactable;
+import com.example.eli.myapplication.Resources.GameState;
 
 import java.util.ArrayList;
 
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 public class Obstacle extends Interactable {
 
     ArrayList<PointF> boundaryAxisCollection = new ArrayList<>();
-
+    boolean isBottomBoundary = false;
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -82,6 +81,30 @@ public class Obstacle extends Interactable {
             return boundaryAxisCollection.get(index);
         }
         return new PointF(0f,0f);
+    }
+
+    public ArrayList<PointF> getAllBoundaryAxis() {
+        return boundaryAxisCollection;
+    }
+
+    public ArrayList<PointF> getSurfaceVertices(int surfaceIndex) {
+        PointF[] obstacleCoords = get2dCoordArray();
+
+        int vertexA = surfaceIndex;
+        int vertexB = (surfaceIndex + 1) % obstacleCoords.length; //We need to wrap back to the first vertex at the end, so use modulus
+
+        ArrayList<PointF> vertices = new ArrayList<>();
+        vertices.add(obstacleCoords[vertexA]);
+        vertices.add(obstacleCoords[vertexB]);
+        return vertices;
+    }
+
+    public void setBottomBoundary() {
+        isBottomBoundary = true;
+    }
+
+    public boolean isBottomBoundary() {
+        return isBottomBoundary;
     }
 
 }

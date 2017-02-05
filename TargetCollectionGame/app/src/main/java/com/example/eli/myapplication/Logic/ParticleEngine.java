@@ -1,18 +1,20 @@
-package com.example.eli.myapplication.Model;
+package com.example.eli.myapplication.Logic;
 
 import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.opengl.GLES30;
 
 import com.example.eli.myapplication.Controller.MyGLRenderer;
+import com.example.eli.myapplication.Model.Ball;
+import com.example.eli.myapplication.Model.Particle;
+import com.example.eli.myapplication.Resources.GameState;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import static com.example.eli.myapplication.Model.ParticleEngine.ParticleSpeed.*;
+import static com.example.eli.myapplication.Logic.ParticleEngine.ParticleSpeed.*;
 
 
 /**
