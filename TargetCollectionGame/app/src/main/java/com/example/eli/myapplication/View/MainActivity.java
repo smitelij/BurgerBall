@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -20,7 +21,7 @@ import com.example.eli.myapplication.Resources.StarRanges;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnFocusChangeListener{
 
     private Context context;
     public final static String LEVEL_MESSAGE = "com.example.eli.myapplication.LEVEL_MESSAGE";
@@ -53,13 +54,15 @@ public class MainActivity extends AppCompatActivity {
         if (currentSet.compareTo("1")==0){
             chapterImage.setImageResource(R.drawable.chapter1small);
         } else if (currentSet.compareTo("2")==0){
-            chapterImage.setImageResource(R.drawable.chapter2);
+            chapterImage.setImageResource(R.drawable.chapter2edit);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(Color.LTGRAY);
         toolbar.setLogo(R.drawable.burgericon);
+
+        initializeButtons();
 
         context = getApplicationContext();
         highScoreController = new HighScoreController(context,STORAGE_LOCATION);
@@ -98,27 +101,27 @@ public class MainActivity extends AppCompatActivity {
 
         switch (view.getId()){
 
-            case (R.id.level1):
+            case (R.id.level1button):
                 currentLevel = currentSet + ".1";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
-            case (R.id.level2):
+            case (R.id.level2button):
                 currentLevel = currentSet + ".2";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
-            case (R.id.level3):
+            case (R.id.level3button):
                 currentLevel = currentSet + ".3";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
-            case (R.id.level4):
+            case (R.id.level4button):
                 currentLevel = currentSet + ".4";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
 
-            case (R.id.level5):
+            case (R.id.level5button):
                 currentLevel = currentSet + ".5";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
@@ -244,6 +247,59 @@ public class MainActivity extends AppCompatActivity {
         return rating;
     }
 
+    private void initializeButtons() {
+        Button button1 = (Button) findViewById(R.id.level1button);
+        button1.requestFocus();
+        button1.setOnFocusChangeListener(this);
+        Button button2 = (Button) findViewById(R.id.level2button);
+        button2.setOnFocusChangeListener(this);
+        Button button3 = (Button) findViewById(R.id.level3button);
+        button3.setOnFocusChangeListener(this);
+        Button button4 = (Button) findViewById(R.id.level4button);
+        button4.setOnFocusChangeListener(this);
+        Button button5 = (Button) findViewById(R.id.level5button);
+        button5.setOnFocusChangeListener(this);
+
+    }
+
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+
+        if (!hasFocus) {
+            return;
+        }
+
+        Intent intent = new Intent(this, OpenGLES20Activity.class);
+
+        switch(v.getId()){
+            case (R.id.level1button):
+                currentLevel = currentSet + ".1";
+                intent.putExtra(LEVEL_MESSAGE, currentLevel);
+                break;
+
+            case (R.id.level2button):
+                currentLevel = currentSet + ".2";
+                intent.putExtra(LEVEL_MESSAGE, currentLevel);
+                break;
+
+            case (R.id.level3button):
+                currentLevel = currentSet + ".3";
+                intent.putExtra(LEVEL_MESSAGE, currentLevel);
+                break;
+
+            case (R.id.level4button):
+                currentLevel = currentSet + ".4";
+                intent.putExtra(LEVEL_MESSAGE, currentLevel);
+                break;
+
+            case (R.id.level5button):
+                currentLevel = currentSet + ".5";
+                intent.putExtra(LEVEL_MESSAGE, currentLevel);
+                break;
+        }
+
+        startActivityForResult(intent, START_LEVEL);
+    }
 
 
 }

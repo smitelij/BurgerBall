@@ -23,6 +23,8 @@ import static com.example.eli.myapplication.Logic.ParticleEngine.ParticleSpeed.*
 
 public class ParticleEngine {
 
+    private boolean active = false;
+
     public enum ParticleSpeed {SPEED_SLOW, SPEED_MEDIUM, SPEED_FAST}
 
     private static final float speedClassSlow = 4.5f;
@@ -89,6 +91,7 @@ public class ParticleEngine {
 
     public ParticleEngine(int chapter) {
 
+        active = true;
         setParticleColors(chapter);
 
         // First, generate 3 buffers- vertex (constant), positions, and colors
@@ -117,7 +120,7 @@ public class ParticleEngine {
 
 
     @TargetApi(18)
-    public void drawAllParticles2(float[] mvpMatrix) {
+    public void drawAllParticles(float[] mvpMatrix) {
 
         updateBuffers();
 
@@ -496,6 +499,14 @@ public class ParticleEngine {
         float ballVelocityLength = ballVelocity.length();
         PointF velocityNormalB = new PointF((ballVelocity.y / ballVelocityLength), (-ballVelocity.x / ballVelocityLength));
         return new PointF(velocityNormalB.x - velocityOpposite.x, velocityNormalB.y - velocityOpposite.y);
+    }
+
+    public void deactivate() {
+        active = false;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
 }

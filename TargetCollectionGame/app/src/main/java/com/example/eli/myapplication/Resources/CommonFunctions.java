@@ -35,6 +35,79 @@ public class CommonFunctions {
         return createCircleCoords(adjustedResponseCenter.x, adjustedResponseCenter.y, adjustedRadius);
     }
 
+    public static float[] getEndLevelSuccessImageCoords(int stage, float[] multipliers) {
+
+        if (multipliers == null) {
+            multipliers = new float[]{0f,0f,0f,0f};
+        }
+
+        float adjustedHeight = GameState.mHeight * GameState.yRatioAndroidToArena;
+        float adjustedWidth = GameState.mWidth * GameState.xRatioAndroidToArena;
+
+        return new float[]{
+                0, adjustedHeight * (0.7f + (multipliers[0] * stage)), 0f,
+                0, adjustedHeight * (0.4f + (multipliers[1] * stage)), 0f,
+                adjustedWidth, adjustedHeight * (0.4f + (multipliers[2] * stage)), 0f,
+                adjustedWidth, adjustedHeight * (0.7f + (multipliers[3] * stage)), 0f};
+    }
+
+    public static float[] getEndLevelFailImageCoords() {
+
+        float adjustedHeight = GameState.mHeight * GameState.yRatioAndroidToArena;
+        float adjustedWidth = GameState.mWidth * GameState.xRatioAndroidToArena;
+
+        return new float[]{
+                0, adjustedHeight * 0.7f, 0f,
+                0, adjustedHeight * 0.034f, 0f,
+                adjustedWidth, adjustedHeight * 0.034f, 0f,
+                adjustedWidth, adjustedHeight * 0.7f, 0f};
+    }
+
+    public static float[] getFinalScoreTextCoords(int stage, float[] multipliers) {
+
+        if (multipliers == null) {
+            multipliers = new float[]{0f,0f,0f,0f};
+        }
+
+        float adjustedHeight = GameState.mHeight * GameState.yRatioAndroidToArena;
+        float adjustedWidth = GameState.mWidth * GameState.xRatioAndroidToArena;
+
+        return new float[]{
+                0, adjustedHeight * (0.4f + (multipliers[0] * stage)), 0f,
+                0, adjustedHeight * (0.2f + (multipliers[1] * stage)), 0f,
+                adjustedWidth * 0.3f, adjustedHeight * (0.2f + (multipliers[2] * stage)), 0f,
+                adjustedWidth *  0.3f, adjustedHeight * (0.4f + (multipliers[3] * stage)), 0f};
+    }
+
+    public static float[] getFinalScoreDigitCoords(int digitIndex, int stage, float[] multipliers) {
+
+        if (multipliers == null) {
+            multipliers = new float[]{0f,0f,0f,0f};
+        }
+
+        float adjustedHeight = GameState.mHeight * GameState.yRatioAndroidToArena;
+        float adjustedWidth = GameState.mWidth * GameState.xRatioAndroidToArena;
+        float boxWidth = adjustedWidth / 14f;
+        float boxHeightRatio = boxWidth / adjustedHeight;
+
+        //Some crazy weirdness to make the score digits waver as one whole unit instead of per-digit
+        float[] currentDigitMultiplier = new float[4];
+        currentDigitMultiplier[0] = (((5 - digitIndex) / 5f) * multipliers[0]) + ((digitIndex / 5f) * multipliers[3]);
+        currentDigitMultiplier[1] = ((5 - digitIndex) / 5f) * multipliers[1] + ((digitIndex / 5f) * multipliers[2]);
+        currentDigitMultiplier[2] = ((digitIndex + 1) / 5f) * multipliers[2] + (((5 - (digitIndex + 1)) / 5f) * multipliers[1]);
+        currentDigitMultiplier[3] = ((digitIndex + 1) / 5f) * multipliers[3] + (((5 - (digitIndex + 1)) / 5f) * multipliers[0]);
+
+
+        return new float[]{
+                (adjustedWidth * 0.71f) - (boxWidth * (digitIndex+1)), (adjustedHeight * (0.4f + (currentDigitMultiplier[0] * stage))), 0f,                      //top left
+                (adjustedWidth * 0.71f) - (boxWidth * (digitIndex+1)), (adjustedHeight * (0.4f - boxHeightRatio + (currentDigitMultiplier[1] * stage))), 0f,         //bottom left
+                (adjustedWidth * 0.71f) - (boxWidth * digitIndex), (adjustedHeight * (0.4f - boxHeightRatio + (currentDigitMultiplier[2] * stage))), 0f,             //bottom right
+                (adjustedWidth * 0.71f) - (boxWidth * digitIndex), (adjustedHeight * (0.4f + (currentDigitMultiplier[3] * stage))), 0f                           //top right
+        };
+    }
+
+
+
     //Initialize as empty so we don't display anything until the user begins dragging
     public static float[] getVelocityArrowCoords(){
         return new float[]{

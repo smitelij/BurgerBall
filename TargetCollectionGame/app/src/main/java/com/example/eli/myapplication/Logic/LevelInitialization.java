@@ -11,6 +11,9 @@ import com.example.eli.myapplication.Model.Ball;
 import com.example.eli.myapplication.Model.BallsRemainingIcon;
 import com.example.eli.myapplication.Model.Borders;
 import com.example.eli.myapplication.Model.Drawable;
+import com.example.eli.myapplication.Model.EndLevelFailImage;
+import com.example.eli.myapplication.Model.EndLevelSuccessImage;
+import com.example.eli.myapplication.Model.FinalScoreText;
 import com.example.eli.myapplication.Model.GhostBall;
 import com.example.eli.myapplication.Model.Interactable;
 import com.example.eli.myapplication.Model.MovePath;
@@ -37,6 +40,9 @@ public class LevelInitialization {
     private ArrayList<MovingObstacle> mAllMovingObstacles = new ArrayList<>();
     private ScoreDigits[] mScoreDigits = new ScoreDigits[5];
     private VelocityArrow mVelocityArrow;
+    private EndLevelSuccessImage endLevelSuccessImage;
+    private EndLevelFailImage endLevelFailImage;
+    private FinalScoreText finalScoreText;
 
     private static Context mActivityContext;
 
@@ -165,6 +171,9 @@ public class LevelInitialization {
 
         //Score digits
         initializeScoreDigits();
+
+        //End level images
+        initializeEndLevelImages();
     }
 
     private void initializeBallsRemainingCounter(){
@@ -205,7 +214,6 @@ public class LevelInitialization {
             mScoreDigits[index] = new ScoreDigits(coords, mDigitTextures[9], mDigitTextures);
             mAllDrawableObjects.add(mScoreDigits[index]);
         }
-
     }
 
     private void loadDigitTextures(){
@@ -220,6 +228,18 @@ public class LevelInitialization {
         mDigitTextures[8] = loadGLTexture(GameState.TEXTURE_DIGIT_8);
         mDigitTextures[9] = loadGLTexture(GameState.TEXTURE_DIGIT_9);
     }
+
+    private void initializeEndLevelImages() {
+        int endLevelSuccessTexture = loadGLTexture(GameState.TEXTURE_END_LEVEL_SUCCESS);
+        endLevelSuccessImage = new EndLevelSuccessImage(endLevelSuccessTexture);
+
+        int endLevelFailTexture = loadGLTexture(GameState.TEXTURE_END_LEVEL_FAIL);
+        endLevelFailImage = new EndLevelFailImage(endLevelFailTexture);
+
+        int finalScoreTexture = loadGLTexture(GameState.TEXTURE_FINAL_SCORE_TEXTURE);
+        finalScoreText = new FinalScoreText(finalScoreTexture);
+    }
+
 
     public static int loadGLTexture(int imagePointer) {
 
@@ -268,4 +288,10 @@ public class LevelInitialization {
     public VelocityArrow getVelocityArrow(){
         return mVelocityArrow;
     }
+
+    public EndLevelSuccessImage getEndLevelSuccessImage() { return endLevelSuccessImage; }
+
+    public EndLevelFailImage getEndLevelFailImage() { return endLevelFailImage; }
+
+    public FinalScoreText getFinalScoreText() { return finalScoreText; }
 }

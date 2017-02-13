@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/chapterImage"
             android:layout_column="0"
-            android:paddingBottom="50dp"
+            android:paddingBottom="10dp"
             android:paddingRight="100dp" />
     </TableRow>
 
@@ -118,11 +118,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="     Level 1     "
-                android:id="@+id/level1"
+                android:id="@+id/level1button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="#3a1d32"
-                android:textColor="#cae4c3" />
+                android:background="@drawable/button"
+                android:textColor="#cae4c3"
+                android:focusableInTouchMode="true" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -130,13 +131,17 @@
                 android:id="@+id/ratingBar1"
                 android:layout_column="18"
                 android:numStars="4"
+                android:scaleX=".7"
+                android:scaleY=".7"
                 android:longClickable="false"
                 android:isIndicator="true"
                 android:progressTint="#4700aa"
                 android:rating="3"
                 android:secondaryProgressTint="#000000"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="6dp" />
+                android:layout_marginLeft="-10dp"
+                android:layout_marginRight="6dp"
+                android:background="#000000"
+                android:progressBackgroundTint="#2f0a47" />
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -154,8 +159,8 @@
                 android:textColor="#786f6f"
                 android:enabled="false"
                 android:visibility="invisible"
-                android:layout_marginTop="15dp"
-                android:textSize="12dp" />
+                android:layout_marginTop="12dp"
+                android:textSize="14sp"/>
         </TableRow>
 
         <TableRow
@@ -167,11 +172,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Level 2"
-                android:id="@+id/level2"
+                android:id="@+id/level2button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
                 android:textColor="#cae4c3"
-                android:background="#3a1d32" />
+                android:background="@drawable/button"
+                android:focusableInTouchMode="true" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -179,13 +185,16 @@
                 android:id="@+id/ratingBar2"
                 android:layout_column="18"
                 android:numStars="4"
+                android:scaleX=".7"
+                android:scaleY=".7"
                 android:longClickable="false"
                 android:isIndicator="true"
                 android:progressTint="#4700aa"
                 android:rating="3"
                 android:secondaryProgressTint="#000000"
                 android:layout_marginRight="6dp"
-                android:layout_marginLeft="12dp" />
+                android:layout_marginLeft="-10dp"
+                android:progressBackgroundTint="#2f0a47" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -196,8 +205,8 @@
                 android:layout_column="21"
                 android:textColor="#786f6f"
                 android:visibility="invisible"
-                android:layout_marginTop="15dp"
-                android:textSize="12dp" />
+                android:layout_marginTop="12dp"
+                android:textSize="14sp" />
         </TableRow>
 
         <TableRow
@@ -209,11 +218,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Level 3"
-                android:id="@+id/level3"
+                android:id="@+id/level3button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="#3a1d32"
-                android:textColor="#cae4c3" />
+                android:background="@drawable/button"
+                android:textColor="#cae4c3"
+                android:focusableInTouchMode="true" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -221,13 +231,16 @@
                 android:id="@+id/ratingBar3"
                 android:layout_column="18"
                 android:numStars="4"
+                android:scaleX=".7"
+                android:scaleY=".7"
                 android:longClickable="false"
                 android:isIndicator="true"
                 android:progressTint="#4700aa"
                 android:rating="2"
                 android:secondaryProgressTint="#000000"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="6dp" />
+                android:layout_marginLeft="-10dp"
+                android:layout_marginRight="6dp"
+                android:progressBackgroundTint="#2f0a47" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -238,8 +251,8 @@
                 android:layout_column="21"
                 android:textColor="#786f6f"
                 android:visibility="invisible"
-                android:textSize="12dp"
-                android:layout_marginTop="15dp" />
+                android:layout_marginTop="12dp"
+                android:textSize="14sp" />
         </TableRow>
 
         <TableRow
@@ -251,11 +264,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Level 4"
-                android:id="@+id/level4"
+                android:id="@+id/level4button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="#3a1d32"
-                android:textColor="#cae4c3" />
+                android:background="@drawable/button"
+                android:textColor="#cae4c3"
+                android:focusableInTouchMode="true" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -263,13 +277,16 @@
                 android:id="@+id/ratingBar4"
                 android:layout_column="18"
                 android:numStars="4"
+                android:scaleX=".7"
+                android:scaleY=".7"
                 android:longClickable="false"
                 android:isIndicator="true"
                 android:progressTint="#4700aa"
                 android:rating="0"
                 android:secondaryProgressTint="#000000"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="6dp" />
+                android:layout_marginLeft="-10dp"
+                android:layout_marginRight="6dp"
+                android:progressBackgroundTint="#2f0a47" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -280,8 +297,8 @@
                 android:layout_column="21"
                 android:textColor="#786f6f"
                 android:visibility="invisible"
-                android:layout_marginTop="15dp"
-                android:textSize="12dp" />
+                android:layout_marginTop="12dp"
+                android:textSize="14sp" />
         </TableRow>
 
         <TableRow
@@ -293,25 +310,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Level 5"
-                android:id="@+id/level5"
+                android:id="@+id/level5button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="#3a1d32"
-                android:textColor="#cae4c3" />
+                android:background="@drawable/button"
+                android:textColor="#cae4c3"
+                android:focusableInTouchMode="true" />
 
             <RatingBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/ratingBar5"
                 android:layout_column="18"
-                android:numStars="4"
+                android:numStars="2"
+                android:scaleX=".7"
+                android:scaleY=".7"
                 android:longClickable="false"
                 android:isIndicator="true"
                 android:progressTint="#4700aa"
                 android:rating="0"
-                android:secondaryProgressTint="#000000"
                 android:layout_marginRight="6dp"
-                android:layout_marginLeft="12dp" />
+                android:layout_marginLeft="-10dp"
+                android:progressBackgroundTint="#2f0a47"
+                android:backgroundTintMode="multiply" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -322,8 +343,8 @@
                 android:layout_column="21"
                 android:textColor="#786f6f"
                 android:visibility="invisible"
-                android:textSize="12dp"
-                android:layout_marginTop="15dp" />
+                android:layout_marginTop="12dp"
+                android:textSize="14sp" />
         </TableRow>
 
         <TableRow

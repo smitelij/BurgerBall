@@ -25,6 +25,7 @@ import android.opengl.Matrix;
 import android.util.Log;
 
 import com.example.eli.myapplication.Resources.GameState;
+import com.example.eli.myapplication.Resources.GameState.GameStatus;
 
 /**
  * Provides drawing instructions for a GLSurfaceView object. This class
@@ -99,31 +100,28 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 unused) {
-/*
-        if (mSlowMo==1) {
-            try {
-                Thread.sleep(1500);
-            } catch (Exception e) {
-            }
-        } */
 
-        if (! mGame.isLevelActive()){
+        GameStatus levelStatus = mGame.getCurrentLevelStatus();
 
-            mGame.advanceMovingObstacles();
-            mGame.drawObjects(); /*
-            if (! mGame.hasLevelBeenRendered()){
-                //mGame.drawObjects();
-            }
-            */
+        switch (levelStatus) {
+            case BEFORE_PLAY:
+                mGame.advanceMovingObstacles();
+                mGame.drawObjects();
+                break;
 
-            return;
-        }
+            case ACTIVE:
+                mGame.advanceFrame();
+                mGame.drawObjects();
 
-        mGame.advanceFrame();
-        mGame.drawObjects();
+                if (GameState.FRAME_RATE_CAP){
+                    capFrameRate();
+                }
+                break;
 
-        if (GameState.FRAME_RATE_CAP){
-            capFrameRate();
+            case POST_PLAY:
+                mGame.drawObjects();
+                mGame.postPlaySequence();
+                break;
         }
 
     }

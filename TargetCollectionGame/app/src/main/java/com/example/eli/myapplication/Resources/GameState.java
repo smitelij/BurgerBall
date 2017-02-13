@@ -121,6 +121,7 @@ public class GameState {
     public static final int DRAWABLE_VELOCITY_ARROW = 2002;
     public static final int DRAWABLE_CIRCLE = 2003;
     public static final int DRAWABLE_BALLS_REMAINING = 2004;
+    public static final int DRAWABLE_POST_LEVEL_IMAGE = 2005;
 
     //Used as initializers when searching for larger or smaller numbers
     public static final float LARGE_NUMBER = 99999f;
@@ -129,7 +130,7 @@ public class GameState {
     //Location of texture files
     public static final int TEXTURE_WALL = R.drawable.largebrick;
     public static final int TEXTURE_WALL2 = R.drawable.electric;
-    public static final int TEXTURE_BALL = R.drawable.circle;
+    public static final int TEXTURE_BALL = R.drawable.newball3;
     public static final int TEXTURE_TARGET = R.drawable.burger2;
     public static final int TEXTURE_SELECTION_CIRCLE = R.drawable.selectioncircle;
     public static final int TEXTURE_SELECTION_ARROW = R.drawable.selectionarrow;
@@ -146,6 +147,16 @@ public class GameState {
     public static final int TEXTURE_DIGIT_8 = R.drawable.digit8;
     public static final int TEXTURE_DIGIT_9 = R.drawable.digit9;
 
+    //end level image renderings
+    public static final int TEXTURE_END_LEVEL_SUCCESS = R.drawable.anothersuccess;
+    public static final int TEXTURE_END_LEVEL_FAIL = R.drawable.faillevel;
+    public static final int TEXTURE_FINAL_SCORE_TEXTURE = R.drawable.finalscore;
 
+
+
+
+
+    //State of the game
+    public enum GameStatus {BEFORE_PLAY, ACTIVE, POST_PLAY}
 }
 

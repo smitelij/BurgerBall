@@ -11,9 +11,13 @@ import com.example.eli.myapplication.Logic.Ball.ActivateBallLogic;
 import com.example.eli.myapplication.Logic.Ball.BallEngine;
 import com.example.eli.myapplication.Logic.CollisionDetection;
 import com.example.eli.myapplication.Logic.CollisionHandling;
+import com.example.eli.myapplication.Model.EndLevelFailImage;
+import com.example.eli.myapplication.Model.EndLevelSuccessImage;
+import com.example.eli.myapplication.Model.FinalScoreText;
 import com.example.eli.myapplication.Model.InvalidBallPositionException;
 import com.example.eli.myapplication.Resources.CommonFunctions;
 import com.example.eli.myapplication.Resources.GameState;
+import com.example.eli.myapplication.Resources.GameState.GameStatus;
 import com.example.eli.myapplication.Model.Interactable;
 import com.example.eli.myapplication.Resources.LevelData;
 import com.example.eli.myapplication.Logic.LevelInitialization;
@@ -35,6 +39,9 @@ import java.util.ArrayList;
  * called every GUI frame from MyGLRenderer.onDrawFrame.
  */
 public class GameEngine {
+
+    private GameStatus currentLevelStatus = GameStatus.BEFORE_PLAY;
+    private boolean success = false;
 
     public final static String END_LEVEL_SCORE = "com.example.eli.myapplication.END_LEVEL_SCORE";
 
@@ -63,8 +70,6 @@ public class GameEngine {
     //So we'll setup flags to determine whether we are in the middle of a frame, and whether a ball is waiting.
     private boolean mBallWaiting;          //True if we are waiting to add a ball
 
-    //Boolean that is true while the level is active (after the first ball has been fired, and before end conditions are met)
-    private boolean mLevelActive = false;
     private boolean mInitialRender = false;
 
     //Frame size stuff
@@ -74,6 +79,7 @@ public class GameEngine {
     //All of these are used to determine the FPS the game is running at.
     private float mPrevTime = 0;  //The time of the previous frame
     private int mFrameCount = 0;  //Total frames that have run
+    private int levelEndFrameCount = 0;
     private float[] timesPerFrame = new float[10];  //Array to keep a running tally of the average FPS
     private float sumTotal = 0;  //Total time
     private float mLastTenFrameAvg = 0;  //Average length (in millisec) of the last ten frames
@@ -101,6 +107,10 @@ public class GameEngine {
     private ParticleEngine particleEngine;
 
     private BallEngine ballEngine;
+
+    private EndLevelSuccessImage endLevelSuccessImage;
+    private EndLevelFailImage endLevelFailImage;
+    private FinalScoreText finalScoreText;
 
 
     //--------------------
@@ -144,6 +154,11 @@ public class GameEngine {
         mScoreDigits = levelInitialization.getScoreDigits();
         mVelocityArrow = levelInitialization.getVelocityArrow();
 
+        //End level images
+        endLevelSuccessImage = levelInitialization.getEndLevelSuccessImage();
+        endLevelFailImage = levelInitialization.getEndLevelFailImage();
+        finalScoreText = levelInitialization.getFinalScoreText();
+
     }
 
     //----------------------
@@ -173,7 +188,7 @@ public class GameEngine {
             if (ActivateBallLogic.canActivateBall(mAllBalls)) {
                 ball.activateBall();
                 mCurrentActiveBallID++;
-                mLevelActive = true;
+                currentLevelStatus = GameStatus.ACTIVE;
                 mBallWaiting = false; //clear the flag in case it got activated
 
                 if (areAllBallsFired()) {
@@ -610,9 +625,11 @@ public class GameEngine {
         // Draw background color
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        particleEngine.createNewParticles(mAllBalls);
-        particleEngine.updateParticles();
-        particleEngine.drawAllParticles2(mVPMatrix);
+        if (particleEngine.isActive()) {
+            particleEngine.createNewParticles(mAllBalls);
+            particleEngine.updateParticles();
+            particleEngine.drawAllParticles(mVPMatrix);
+        }
 
         //Draw all drawable objects
         for (Drawable object : allDrawableObjects) {
@@ -643,7 +660,7 @@ public class GameEngine {
             // while you still have balls remaining. They should not be drawn
             // if the current active ball is the last ball.
             case GameState.DRAWABLE_GHOST_CIRCLES:
-                if (areAllBallsFired()) {
+                if (areAllBallsFired() || (isLevelComplete())) {
                     return false;
                 }
                 break;
@@ -653,7 +670,7 @@ public class GameEngine {
             // This is another firing aid. More specifically than the above ones though,
             // it should only be drawn when the flag mIsVelocityArrowActive is true.
             case GameState.DRAWABLE_VELOCITY_ARROW:
-                if ((!mIsVelocityArrowActive) || (areAllBallsFired())){
+                if ((!mIsVelocityArrowActive) || (areAllBallsFired()) || (isLevelComplete())){
                     return false;
                 }
                 break;
@@ -751,8 +768,14 @@ public class GameEngine {
         System.out.println("!!!FINAL AVG DISCREPANCY: " + (discrepancySum / discrepancyCounter));
     }
 
-    public boolean isLevelActive(){
-        return (mLevelActive);
+    private boolean isLevelActive(){
+        return (currentLevelStatus == GameStatus.ACTIVE);
+    }
+
+    private boolean isLevelComplete() { return (currentLevelStatus == GameStatus.POST_PLAY);}
+
+    public GameStatus getCurrentLevelStatus() {
+        return currentLevelStatus;
     }
 
     public float getFrameSize(){
@@ -842,7 +865,7 @@ public class GameEngine {
     }
 
     private void endLevelChecks(){
-        if (! mLevelActive){
+        if (currentLevelStatus == GameStatus.BEFORE_PLAY){
             return;
         }
 
@@ -859,6 +882,9 @@ public class GameEngine {
 
     private void endLevelSuccess(){
         //eventually put some sort of graphic or message here
+        success = true;
+        moveScoreDigits();
+        updateScoreDigitWaver(finalScoreText.getRandomMultiplier());
 
         //give them at least 1 point for 1 star
         if (currentScore == 0){
@@ -874,16 +900,74 @@ public class GameEngine {
     }
 
     private void endLevel(){
-        mLevelActive = false;
+        currentLevelStatus = GameStatus.POST_PLAY;
         showFinalAvgFPS();
+        particleEngine.deactivate();
 
         System.out.println("FINAL SCORE: " + currentScore);
+    }
+
+    private void returnToSelectScreen() {
         Intent data = new Intent();
         data.putExtra(END_LEVEL_SCORE, currentScore);
         mParentActivity.setResult(mParentActivity.RESULT_OK, data);
 
         mParentActivity.finish();
+    }
 
+    public void postPlaySequence() {
+
+        if (success) {
+            postLevelSuccessSequence();
+        } else {
+            postLevelFailSequence();
+        }
+
+        levelEndFrameCount++;
+
+        if(levelEndFrameCount == 240) {
+            returnToSelectScreen();
+        }
+
+    }
+
+    private void postLevelSuccessSequence() {
+
+        // Set the background frame color
+        GLES30.glClearColor(0.69f, 0.69f, 0.69f, 1.0f);
+
+        endLevelSuccessImage.draw(mVPMatrix);
+        endLevelSuccessImage.updateImage(levelEndFrameCount);
+
+        finalScoreText.draw(mVPMatrix);
+        finalScoreText.updateImage(levelEndFrameCount);
+
+        for (int index = 0; index < 5; index++) {
+            mScoreDigits[index].draw(mVPMatrix);
+            mScoreDigits[index].updateImage(levelEndFrameCount, index);
+        }
+
+    }
+
+    private void postLevelFailSequence() {
+
+        // Set the background frame color
+        GLES30.glClearColor(0.6f, 0.0f, 0.0f, 1.0f);
+
+        endLevelFailImage.draw(mVPMatrix);
+        endLevelFailImage.updateImage();
+    }
+
+    private void moveScoreDigits() {
+        for (int index = 0; index < 5; index++){
+            mScoreDigits[index].setCoords(CommonFunctions.getFinalScoreDigitCoords(index,0,null));
+        }
+    }
+
+    private void updateScoreDigitWaver(float[] randomMultiplier) {
+        for (int index = 0; index < 5; index++) {
+            mScoreDigits[index].setRandomMultiplier(randomMultiplier);
+        }
     }
 
 

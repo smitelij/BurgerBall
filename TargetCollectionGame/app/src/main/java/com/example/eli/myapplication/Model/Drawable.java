@@ -209,7 +209,6 @@ public class Drawable {
         GLES30.glEnableVertexAttribArray(mPositionHandle);
 
 
-
         // Prepare the triangle coordinate data
         GLES30.glVertexAttribPointer(
                 mPositionHandle, COORDS_PER_VERTEX,
