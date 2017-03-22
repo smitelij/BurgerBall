@@ -607,6 +607,7 @@ public class GameEngine {
 
             //Move ball forward by displacement amount
             Matrix.translateM(modelMatrix, 0, modelMatrix, 0, currentBall.getDisplacementVector().x, currentBall.getDisplacementVector().y, 0);
+
             //move into projection coordinates
             Matrix.multiplyMM(modelProjectionMatrix, 0, mVPMatrix, 0, modelMatrix, 0);
 
@@ -617,6 +618,8 @@ public class GameEngine {
 
             //clear displacement vector for next frame
             currentBall.clearDisplacementVector();
+
+            rotateBall(currentBall);
         }
     }
 
@@ -811,6 +814,12 @@ public class GameEngine {
 
     public void disableVelocityArrow(){
         mIsVelocityArrowActive = false;
+    }
+
+    public void rotateBall(Ball currentBall) {
+        float angle = currentBall.getCurrentRotation();
+        float[] newCoords = CommonFunctions.rotateBallCoords(angle);
+        currentBall.setCoords(newCoords);
     }
 
     public void redrawArrow(float xChange, float yChange){

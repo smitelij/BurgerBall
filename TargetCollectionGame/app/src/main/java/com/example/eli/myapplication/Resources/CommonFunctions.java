@@ -214,12 +214,6 @@ public class CommonFunctions {
         float adjustedRadius = GameState.mResponseRadius * GameState.xRatioAndroidToArena;
         PointF adjustedResponseCenter = new PointF(GameState.mResponseCenter.x * GameState.xRatioAndroidToArena, (GameState.BORDER_WIDTH * 4));
 
-        float[] baseCoords = { - 5, (adjustedRadius * height), 0.0f,           //top left
-                                -5, GameState.ballRadius, 0.0f,   //bottom left
-                                5, GameState.ballRadius, 0.0f,   //bottom right
-                                5, (adjustedRadius * height), 0.0f          //top right
-        };
-
         double cosAngle = Math.cos((double) angle);
         double sinAngle = Math.sin((double) angle);
 
@@ -241,5 +235,33 @@ public class CommonFunctions {
 
         return finalCoords;
 
+    }
+
+    public static float[] rotateBallCoords(float angle) {
+
+        float cosAngle = (float) Math.cos((double) angle);
+        float sinAngle = (float) Math.sin((double) angle);
+
+        float[] baseCoords = getInitialBallCoords();
+
+        float cosBallRadius = GameState.ballRadius * cosAngle;
+        float sinBallRadius = GameState.ballRadius * sinAngle;
+
+        PointF rotatedTopLeft = new PointF( -cosBallRadius - sinBallRadius, cosBallRadius - sinBallRadius);
+        PointF rotatedBottomLeft = new PointF( -cosBallRadius + sinBallRadius, -cosBallRadius - sinBallRadius);
+        PointF rotatedBottomRight = new PointF( cosBallRadius + sinBallRadius,  -cosBallRadius + sinBallRadius);
+        PointF rotatedTopRight = new PointF( cosBallRadius - sinBallRadius, cosBallRadius + sinBallRadius);
+
+        float initialBallCenterX = GameState.FULL_WIDTH / 2;
+        float initialBallCenterY = GameState.BORDER_WIDTH * 4;
+
+
+        float[] finalCoords = { rotatedTopLeft.x + initialBallCenterX, rotatedTopLeft.y + initialBallCenterY, 0.0f,
+                rotatedBottomLeft.x + initialBallCenterX, rotatedBottomLeft.y + initialBallCenterY, 0.0f,
+                rotatedBottomRight.x + initialBallCenterX, rotatedBottomRight.y + initialBallCenterY, 0.0f,
+                rotatedTopRight.x + initialBallCenterX, rotatedTopRight.y + initialBallCenterY, 0.0f,
+        };
+
+        return finalCoords;
     }
 }

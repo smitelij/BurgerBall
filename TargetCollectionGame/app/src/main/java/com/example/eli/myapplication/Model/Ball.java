@@ -34,6 +34,7 @@ public class Ball extends Interactable implements Movable {
     private PointF mVelocity;
     private PointF mNewVelocity = new PointF(0f,0f);
     private float[] mPrevAABB = new float[4];
+    private float currentRotation;
 
     private PointF mDisplacementVector = new PointF(0f, 0f);
     private ballStatus ballState;
@@ -69,6 +70,7 @@ public class Ball extends Interactable implements Movable {
         //Each ball should keep its own copy of the model projection matrix to be drawn with
         super.draw(mModelProjectionMatrix);
         updatePrevAABB();
+        currentRotation = (currentRotation + 8) % 360;
     }
 
     //Fake method to appease Movable interface. The real 'moveByFrame' became too complex
@@ -212,6 +214,10 @@ public class Ball extends Interactable implements Movable {
     public void updateVelocityWithNewVelocity() {
         setVelocity(mNewVelocity);
         mNewVelocity = new PointF(0f,0f);
+    }
+
+    public float getCurrentRotation() {
+        return currentRotation;
     }
 
 

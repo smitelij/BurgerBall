@@ -89,7 +89,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
     public void setVPMatrix() {
         // Set the camera position (View matrix)
-        //Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        //Matrix.setLookAtM(mViewMatrix, 0, 10, 10, -3, 10f, 10f, 0f, 0f, 1.0f, 0.0f);
 
         //TODO currently this only uses the projection matrix. is this bad?
         // Calculate the projection and view transformation
