@@ -623,4 +623,19 @@ public class BallEngine {
         ballStateMachine.setAllBallsFired();
     }
 
+    public void updateSpinRollingBall (Ball currentBall){
+
+        PointF currentVelocity = getVelocity(currentBall, 0);
+
+        Collision lastCollision = lastCollisionMap.get(currentBall);
+        PointF lastBoundaryAxis = lastCollision.getBoundaryAxis();
+
+        PointF surfaceVector = new PointF(-lastBoundaryAxis.y, lastBoundaryAxis.x);
+
+        float surfaceVelocity = CommonFunctions.dotProduct(currentVelocity, surfaceVector);
+
+        System.out.println("surface velocity: " + surfaceVelocity);
+        currentBall.setSpin(surfaceVelocity / -8);
+    }
+
 }

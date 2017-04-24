@@ -84,8 +84,10 @@ public class CollisionHandling {
     public void handleBoundaryCollisions(BallEngine ballEngine){
         for (Collision currentCollision : mBoundaryCollisions){
             if (currentCollision.getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
+                calculateSpinChangeMovingBorder(ballEngine, currentCollision);
                 calculateVelocityMovingBorderCollision(ballEngine, currentCollision);
             } else {
+                calculateSpinChangeStationaryBorder(ballEngine, currentCollision);
                 calculateVelocityStationaryBorderCollision(ballEngine, currentCollision);
             }
         }
@@ -93,6 +95,7 @@ public class CollisionHandling {
 
     public void handleBallCollisions(BallEngine ballEngine){
         for (Collision currentCollision : mBallCollisions){
+            calculateSpinChangeBallCollision(currentCollision, ballEngine);
             calculateVelocityBallCollision(currentCollision, ballEngine);
         }
     }
@@ -256,6 +259,73 @@ public class CollisionHandling {
             velocity = new PointF(velocity.x * GameState.ELASTIC_CONSTANT, velocity.y * GameState.ELASTIC_CONSTANT);
         }
         return velocity;
+    }
+
+    private void calculateSpinChangeStationaryBorder(BallEngine ballEngine, Collision collision) {
+        Ball ball = collision.getBall();
+        PointF boundaryAxis = collision.getBoundaryAxis();
+        PointF oldVelocity = ballEngine.getVelocity(ball, collision.getTime());
+
+        calculateSpinChange(ball,oldVelocity,boundaryAxis);
+    }
+
+    private void calculateSpinChangeMovingBorder(BallEngine ballEngine, Collision collision) {
+        Ball ball = collision.getBall();
+        PointF boundaryAxis = collision.getBoundaryAxis();
+        PointF oldVelocity = ballEngine.getVelocity(ball, collision.getTime());
+        MovingObstacle obstacle = (MovingObstacle)collision.getObstacle();
+        PointF obstacleVelocity = obstacle.getVelocity();
+
+        //Use code from calculateVelocityMovingBorderCollision to calculate total impact velocity
+        PointF outerBoundaryAxis = new PointF(-boundaryAxis.x, -boundaryAxis.y); //normal boundary axis points inside, we want to point outside.
+        float velocityInCollisionDirection = (obstacleVelocity.x * outerBoundaryAxis.x) + (obstacleVelocity.y * outerBoundaryAxis.y);
+        PointF obstacleDirectionalVel = new PointF(outerBoundaryAxis.x * velocityInCollisionDirection, outerBoundaryAxis.y * velocityInCollisionDirection);
+        PointF totalCollisionVelocity = new PointF(oldVelocity.x - obstacleDirectionalVel.x, oldVelocity.y - obstacleDirectionalVel.y);
+
+        calculateSpinChange(ball, totalCollisionVelocity, boundaryAxis);
+    }
+
+    private void calculateSpinChangeBallCollision(Collision collision, BallEngine ballEngine) {
+        //get balls
+        Ball ball1 = collision.getBall();
+        Ball ball2 = (Ball) collision.getObstacle();
+
+        //get velocities
+        PointF ball1vel = ballEngine.getVelocity(ball1, collision.getTime());
+        PointF ball2vel = ballEngine.getVelocity(ball2, collision.getTime());
+
+        //get collision axis
+        PointF collisionAxis1 = collision.getBoundaryAxis();
+        collisionAxis1 = new PointF(collisionAxis1.y, -collisionAxis1.x);
+
+        //calculate spin changes
+        calculateSpinChange(ball1, ball1vel, collisionAxis1);
+        calculateSpinChange(ball2, ball2vel, collisionAxis1);
+    }
+
+    private void calculateSpinChange(Ball ball, PointF oldVelocity, PointF boundaryAxis) {
+
+        System.out.println("calculate spin change: boundary axis - " + boundaryAxis);
+        System.out.println("calculate spin change: old velocity - " + oldVelocity);
+
+        PointF surfaceVector = new PointF(-boundaryAxis.y, boundaryAxis.x);
+        float surfaceVelocity = CommonFunctions.dotProduct(oldVelocity, surfaceVector);
+
+        System.out.println("surface velocity: " + surfaceVelocity);
+
+        if (Math.abs(oldVelocity.length()) < 1.2) {
+            System.out.println("less than 1- using normal spin");
+            ball.setSpin(surfaceVelocity / -11);
+        } else if ((Math.abs(surfaceVelocity) < 1.2) && (Math.abs(ball.getCurrentRotation()) > 0.05 )) {
+            System.out.println("surface veloc less than 1: reversing spin");
+            ball.reverseSpin();
+        } else {
+            System.out.println("setting normal spin.");
+            ball.setSpin(surfaceVelocity / -11);
+        }
+
+        //ball.normalizeSpin();
+
     }
 
 }

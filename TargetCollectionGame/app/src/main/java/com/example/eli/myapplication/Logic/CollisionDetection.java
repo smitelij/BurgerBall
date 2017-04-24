@@ -63,54 +63,50 @@ public class CollisionDetection {
     //closest axis = minimum penetration
     public Penetration findClosestAxis(Ball ball, Obstacle obstacle){
 
-         //sanity check
+        //sanity check
         if (penetrationHistory.size() == 0) {
             return null;
         }
 
         //set the defaults
-        Penetration minHistoryItem = penetrationHistory.get(0);
-        float minPenetration = penetrationHistory.get(0).mPenetrationDistance;
+        float minPenetration = GameState.SMALL_NUMBER;
+        Penetration minHistoryItem = null;
 
-        for (Penetration history : penetrationHistory){
+        for (Penetration history : penetrationHistory) {
 
             //Since penetration distances are negative numbers, we want to find the largest value (i.e. closest to zero)
             //to find the minimum penetration.
-            if (history.mPenetrationDistance > minPenetration){
+            if (history.mPenetrationDistance > minPenetration) {
                 minHistoryItem = history;
                 minPenetration = history.mPenetrationDistance;
 
-            //This should mean that we have two parallel axis's. We must determine which one is the intersecting one.
-            } else if (history.mPenetrationDistance == minPenetration){
-                //TODO improve handling for polygon obstacles
-                //when a rectangle:
-                PointF ballCenter = ball.getCenter();
-                float xComponent = history.mNormalAxis.x;
-                //If normal is on the x-axis:
-                if ((xComponent == 1) || (xComponent == -1)){
-                    float diff1 = (Math.abs(ballCenter.x - history.mVertex.x));
-                    float diff2 = (Math.abs(ballCenter.x - minHistoryItem.mVertex.x));
+                //This should mean that we have two parallel axis's. We must determine which one is the intersecting one.
+            } else if (history.mPenetrationDistance == minPenetration) {
 
-                    if (diff1 < diff2) {
-                        minHistoryItem = history;
-                    } else {
-                        //nothing needs to change, minHistoryItem is correct.
-                    }
-                //Otherwise, normal is on the y-axis (we are only handling rectangles here):
-                } else {
-                    float diff1 = (Math.abs(ballCenter.y - history.mVertex.y));
-                    float diff2 = (Math.abs(ballCenter.y - minHistoryItem.mVertex.y));
+                float currentDistance = calculateBallDistanceFromAxis(history, ball);
+                float previousDistance = calculateBallDistanceFromAxis(minHistoryItem, ball);
 
-                    if (diff1 < diff2) {
-                        minHistoryItem = history;
-                    } else {
-                        //nothing needs to change, minHistoryItem is correct.
-                    }
+                if (currentDistance < previousDistance) {
+                    minHistoryItem = history;
+                    minPenetration = history.mPenetrationDistance;
                 }
             }
         }
 
         return minHistoryItem;
+    }
+
+    private float calculateBallDistanceFromAxis(Penetration penetration, Ball ball) {
+        PointF surfaceVector = new PointF(-penetration.mNormalAxis.y, penetration.mNormalAxis.x);
+        PointF nearestPoint = penetration.mVertex;
+        PointF ballPos = ball.getCenter();
+        PointF ballToPointVector = new PointF(ballPos.x - nearestPoint.x, ballPos.y - nearestPoint.y);
+
+        float ballSurfaceProjDistance = CommonFunctions.dotProduct(ballToPointVector, surfaceVector);
+        PointF ballSurfaceProj = new PointF(surfaceVector.x * ballSurfaceProjDistance, surfaceVector.y * ballSurfaceProjDistance);
+
+        PointF ballSurfaceProjCoord = new PointF(nearestPoint.x + ballSurfaceProj.x, nearestPoint.y + ballSurfaceProj.y);
+        return new PointF(ballPos.x - ballSurfaceProjCoord.x, ballPos.y - ballSurfaceProjCoord.y).length();
     }
 
     /**
@@ -384,6 +380,23 @@ public class CollisionDetection {
         mCollisions.add(new Collision(collisionTime, boundaryAxis, ball2, ball1));
     }
 
+    private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index){
+        //We need to make a line between two vertexes
+        int vertexA = index;
+        int vertexB = (index + 1) % obstacleCoords.length; //We need to wrap back to the first vertex at the end, so use modulus
+
+        //formula to find the normal vector from a line is (-y, x)
+        float xComponent = -(obstacleCoords[vertexB].y - obstacleCoords[vertexA].y);
+        float yComponent = (obstacleCoords[vertexB].x - obstacleCoords[vertexA].x);
+
+        //create vector and normalize
+        PointF normalAxis = new PointF(xComponent, yComponent);
+        float normalAxisLength = normalAxis.length();
+        normalAxis.set(normalAxis.x / normalAxisLength, normalAxis.y / normalAxisLength);
+
+        return normalAxis;
+    }
+
     private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle,
                                                  float timeStep, float radius){
 
@@ -467,9 +480,6 @@ public class CollisionDetection {
             throw new InvalidBallPositionException(penetration.mNormalAxis);
         }
 
-        boolean displaceBallFromObstacle = false;
-
-
         //For now, we are only handling moving nearest vertex collisions.
         // if we want to handle moving target collisions, this if-statement will need to change.
         PointF boundaryAxis = new PointF(0f,0f);
@@ -483,7 +493,6 @@ public class CollisionDetection {
         if (collisionTime < 0) {
             throw new InvalidBallPositionException(penetration.mNormalAxis);
         }
-
 
         //add this collision to the collection
         Collision collision = new Collision(collisionTime, boundaryAxis, obstacle, ball);
@@ -590,23 +599,6 @@ public class CollisionDetection {
         //Collision has occurred.
         //Need to calculate timing and save collision info
         getBoundaryCollisionInfo(ball, obstacle, timeStep);
-    }
-
-    private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index){
-        //We need to make a line between two vertexes
-        int vertexA = index;
-        int vertexB = (index + 1) % obstacleCoords.length; //We need to wrap back to the first vertex at the end, so use modulus
-
-        //formula to find the normal vector from a line is (-y, x)
-        float xComponent = -(obstacleCoords[vertexB].y - obstacleCoords[vertexA].y);
-        float yComponent = (obstacleCoords[vertexB].x - obstacleCoords[vertexA].x);
-
-        //create vector and normalize
-        PointF normalAxis = new PointF(xComponent, yComponent);
-        float normalAxisLength = normalAxis.length();
-        normalAxis.set(normalAxis.x / normalAxisLength, normalAxis.y / normalAxisLength);
-
-        return normalAxis;
     }
 
     /**

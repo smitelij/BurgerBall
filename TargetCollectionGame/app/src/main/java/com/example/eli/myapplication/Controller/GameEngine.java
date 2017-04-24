@@ -600,6 +600,10 @@ public class GameEngine {
             if (currentBall.isBallInactive() || currentBall.isBallStopped()){
                 continue;
             }
+            //This is kinda a strange place to hook this, but I couldn't think of any place better.
+            if (currentBall.isBallRolling()) {
+                ballEngine.updateSpinRollingBall(currentBall);
+            }
 
             //get current model matrix
             float[] modelMatrix = currentBall.getModelMatrix();

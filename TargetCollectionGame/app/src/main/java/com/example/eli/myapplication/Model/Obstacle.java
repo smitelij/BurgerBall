@@ -57,6 +57,7 @@ public class Obstacle extends Interactable {
             PointF normalAxis = makeNormalVectorBetweenPoints(obstacleCoords, index);
             boundaryAxisCollection.add(normalAxis);
         }
+        System.out.println("CALCULATE BOUNDARY AXIS");
     }
 
     private PointF makeNormalVectorBetweenPoints(PointF[] obstacleCoords, int index) {
