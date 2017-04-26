@@ -456,6 +456,18 @@ public class LevelData {
                         66f, 180f, 0.0f,   // right
                         36f, 198f, 0.0f }; // top
 
+                float obstacle244coords[] = {
+                        126f, 195f, 0.0f,   // left
+                        156f, 177f, 0.0f,   // bottom
+                        186f, 195f, 0.0f,   // right
+                        156f, 213f, 0.0f }; // top
+
+                float obstacle245coords[] = {
+                        61f, 232f, 0.0f,   // left
+                        91f, 214f, 0.0f,   // bottom
+                        121f, 232f, 0.0f,   // right
+                        91f, 250f, 0.0f }; // top
+
                 MovePath path241 = new MovePath();
                 path241.addMovement(new SingleMovement(new PointF(0.3f,0.5f), 100));
                 path241.addMovement(new SingleMovement(new PointF(-0.3f, -0.5f), 100));
@@ -468,18 +480,30 @@ public class LevelData {
                 path243.addMovement(new SingleMovement(new PointF(0.2f,-0.6f), 100));
                 path243.addMovement(new SingleMovement(new PointF(-0.2f, 0.6f), 100));
 
+                MovePath path244 = new MovePath();
+                path244.addMovement(new SingleMovement(new PointF(-0.2f,-0.6f), 100));
+                path244.addMovement(new SingleMovement(new PointF(0.2f, 0.6f), 100));
+
+                MovePath path245 = new MovePath();
+                path245.addMovement(new SingleMovement(new PointF(-0.6f,-0.2f), 100));
+                path245.addMovement(new SingleMovement(new PointF(0.6f, 0.2f), 100));
+
                 mMovingObstacleCoords.add(obstacle241coords);
                 mMovingObstacleCoords.add(obstacle242coords);
                 mMovingObstacleCoords.add(obstacle243coords);
+                mMovingObstacleCoords.add(obstacle244coords);
+                mMovingObstacleCoords.add(obstacle245coords);
 
                 mMovingObstaclePaths.add(path241);
                 mMovingObstaclePaths.add(path242);
                 mMovingObstaclePaths.add(path243);
+                mMovingObstaclePaths.add(path244);
+                mMovingObstaclePaths.add(path245);
 
                 //Targets
 
-                float[] target241coords = CommonFunctions.createCircleCoords(185, 260, 8f);
-                float[] target242coords = CommonFunctions.createCircleCoords(10,260,8f);
+                float[] target241coords = CommonFunctions.createCircleCoords(185, 283, 8f);
+                float[] target242coords = CommonFunctions.createCircleCoords(20,242,8f);
 
                 mTargetCoords.add(target241coords);
                 mTargetCoords.add(target242coords);
