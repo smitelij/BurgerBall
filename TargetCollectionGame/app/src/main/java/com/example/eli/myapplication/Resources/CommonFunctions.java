@@ -16,23 +16,21 @@ public class CommonFunctions {
     //  ballCenterX- xCoordinate where ball will be initialized
     //  ballCenterY- yCoordinate where ball will be initialized
     //  ballRadius- The radius of the ball
-    public static float[] getInitialBallCoords(){
+    public static float[] getDefaultBallCoords(){
         return createCircleCoords(GameState.FULL_WIDTH / 2, GameState.BORDER_WIDTH * 4, GameState.ballRadius);
     }
 
-    public static PointF getFiringZoneCenter() {
-        Ball newBall = new Ball(getInitialBallCoords(), new PointF(0f,0f), 10f, GameState.TEXTURE_BALL);
-        return newBall.getCenter();
+    public static PointF getFiringZoneCenter(float[] startingCoords) {
+        return calculateInitialBallCenter(startingCoords);
     }
 
-    public static float[] getSelectionCircleCoords(){
-
-        PointF adjustedResponseCenter = new PointF(GameState.mResponseCenter.x * GameState.xRatioAndroidToArena, (GameState.BORDER_WIDTH * 4));
+    public static float[] getSelectionCircleCoords(float[] startingCoords){
+        PointF responseCenter = calculateInitialBallCenter(startingCoords);
 
         //Radius is determined with the width, so use xRatio
         float adjustedRadius = GameState.mResponseRadius * GameState.xRatioAndroidToArena;
 
-        return createCircleCoords(adjustedResponseCenter.x, adjustedResponseCenter.y, adjustedRadius);
+        return createCircleCoords(responseCenter.x, responseCenter.y, adjustedRadius);
     }
 
     public static float[] getEndLevelSuccessImageCoords(int stage, float[] multipliers) {
@@ -106,17 +104,6 @@ public class CommonFunctions {
         };
     }
 
-
-
-    //Initialize as empty so we don't display anything until the user begins dragging
-    public static float[] getVelocityArrowCoords(){
-        return new float[]{
-                0f,  1f, 0.0f,   // top left
-                0f, 1f, 0.0f,   // bottom left
-                0f, 1f, 0.0f,   // bottom right
-                0f, 1f, 0.0f }; //top right
-    }
-
     //--------------------------
     //Helper function to create coordinates for a ball
     //PARAMS:
@@ -135,12 +122,6 @@ public class CommonFunctions {
     //Getter for the response range variable (controls the touch-sensitive firing radius of the user)
     public static float getResponseRange(){
         return GameState.mResponseRange;
-    }
-
-    //---------------------------
-    //Getter for the response center variable (controls the center point of the user's firing circle)
-    public static PointF getResponseCenter(){
-        return GameState.mResponseCenter;
     }
 
     //---------------------------
@@ -209,10 +190,12 @@ public class CommonFunctions {
         return ((vector1.x * vector2.x) + (vector1.y * vector2.y));
     }
 
-    public static float[] updateVelocityArrow(float angle, float height){
+    public static float[] updateVelocityArrow(float angle, float height, PointF responseCenter){
 
         float adjustedRadius = GameState.mResponseRadius * GameState.xRatioAndroidToArena;
-        PointF adjustedResponseCenter = new PointF(GameState.mResponseCenter.x * GameState.xRatioAndroidToArena, (GameState.BORDER_WIDTH * 4));
+        //PointF adjustedResponseCenter = new PointF(GameState.mResponseCenter.x * GameState.xRatioAndroidToArena, (GameState.BORDER_WIDTH * 4));
+        //PointF adjustedResponseCenter = new PointF(GameState.mResponseCenter.x * GameState.xRatioAndroidToArena, (GameState.BORDER_WIDTH * 4));
+        PointF adjustedResponseCenter = new PointF(responseCenter.x * GameState.xRatioAndroidToArena, responseCenter.y * GameState.yRatioAndroidToArena);
 
         double cosAngle = Math.cos((double) angle);
         double sinAngle = Math.sin((double) angle);
@@ -227,22 +210,20 @@ public class CommonFunctions {
         PointF rotatedBottomRight = new PointF( (float) ((baseBottomRight.x * cosAngle) - (baseBottomRight.y * sinAngle)), (float) ((baseBottomRight.y * cosAngle) + (baseBottomRight.x * sinAngle)));
         PointF rotatedTopRight = new PointF( (float) ((baseTopRight.x * cosAngle) - (baseTopRight.y * sinAngle)), (float) ((baseTopRight.y * cosAngle) + (baseTopRight.x * sinAngle)));
 
-        float[] finalCoords = { rotatedTopLeft.x + adjustedResponseCenter.x, rotatedTopLeft.y + adjustedResponseCenter.y, 0.0f,
-                                rotatedBottomLeft.x + adjustedResponseCenter.x, rotatedBottomLeft.y + adjustedResponseCenter.y, 0.0f,
-                                rotatedBottomRight.x + adjustedResponseCenter.x, rotatedBottomRight.y + adjustedResponseCenter.y, 0.0f,
-                                rotatedTopRight.x + adjustedResponseCenter.x, rotatedTopRight.y + adjustedResponseCenter.y, 0.0f,
+        float[] finalCoords = { rotatedTopLeft.x + responseCenter.x, rotatedTopLeft.y + responseCenter.y, 0.0f,
+                                rotatedBottomLeft.x + responseCenter.x, rotatedBottomLeft.y + responseCenter.y, 0.0f,
+                                rotatedBottomRight.x + responseCenter.x, rotatedBottomRight.y + responseCenter.y, 0.0f,
+                                rotatedTopRight.x + responseCenter.x, rotatedTopRight.y + responseCenter.y, 0.0f,
         };
 
         return finalCoords;
 
     }
 
-    public static float[] rotateBallCoords(float angle) {
+    public static float[] rotateBallCoords(float angle, float[] initialBallCoords) {
 
         float cosAngle = (float) Math.cos((double) angle);
         float sinAngle = (float) Math.sin((double) angle);
-
-        float[] baseCoords = getInitialBallCoords();
 
         float cosBallRadius = GameState.ballRadius * cosAngle;
         float sinBallRadius = GameState.ballRadius * sinAngle;
@@ -252,16 +233,22 @@ public class CommonFunctions {
         PointF rotatedBottomRight = new PointF( cosBallRadius + sinBallRadius,  -cosBallRadius + sinBallRadius);
         PointF rotatedTopRight = new PointF( cosBallRadius - sinBallRadius, cosBallRadius + sinBallRadius);
 
-        float initialBallCenterX = GameState.FULL_WIDTH / 2;
-        float initialBallCenterY = GameState.BORDER_WIDTH * 4;
+        PointF ballCenter = calculateInitialBallCenter(initialBallCoords);
 
-
-        float[] finalCoords = { rotatedTopLeft.x + initialBallCenterX, rotatedTopLeft.y + initialBallCenterY, 0.0f,
-                rotatedBottomLeft.x + initialBallCenterX, rotatedBottomLeft.y + initialBallCenterY, 0.0f,
-                rotatedBottomRight.x + initialBallCenterX, rotatedBottomRight.y + initialBallCenterY, 0.0f,
-                rotatedTopRight.x + initialBallCenterX, rotatedTopRight.y + initialBallCenterY, 0.0f,
+        float[] finalCoords = { rotatedTopLeft.x + ballCenter.x, rotatedTopLeft.y + ballCenter.y, 0.0f,
+                rotatedBottomLeft.x + ballCenter.x, rotatedBottomLeft.y + ballCenter.y, 0.0f,
+                rotatedBottomRight.x + ballCenter.x, rotatedBottomRight.y + ballCenter.y, 0.0f,
+                rotatedTopRight.x + ballCenter.x, rotatedTopRight.y + ballCenter.y, 0.0f,
         };
 
         return finalCoords;
+    }
+
+    public static PointF calculateInitialBallCenter(float[] initialBallCoords) {
+        return new PointF((initialBallCoords[0] + initialBallCoords[6]) / 2, (initialBallCoords[1] + initialBallCoords[4]) / 2);
+    }
+
+    public static PointF calculateAndroidBallCenter(PointF arenaBallCenter) {
+        return new PointF(arenaBallCenter.x / GameState.xRatioAndroidToArena, GameState.mHeight - (arenaBallCenter.y / GameState.yRatioAndroidToArena));
     }
 }

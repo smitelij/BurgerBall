@@ -8,7 +8,7 @@ import com.example.eli.myapplication.Resources.GameState;
  */
 public class VelocityArrow extends Circle {
     public VelocityArrow(int texture){
-        super(CommonFunctions.getInitialBallCoords(), texture);
+        super(CommonFunctions.getDefaultBallCoords(), texture);
         setType(GameState.DRAWABLE_VELOCITY_ARROW);
         setAlpha(GameState.GHOST_ALPHA);
     }

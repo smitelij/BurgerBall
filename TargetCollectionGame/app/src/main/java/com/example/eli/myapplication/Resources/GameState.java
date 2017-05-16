@@ -102,8 +102,6 @@ public class GameState {
     //The response radius is the radius of the circle that the player can fire the ball from.
     public static float mResponseRadius = mWidth * 0.4f;
     public static float mResponseRange = (float) Math.sqrt((mResponseRadius)*(mResponseRadius) + (mResponseRadius)*(mResponseRadius));
-    //The center of the response radius circle
-    public static PointF mResponseCenter = new PointF(mWidth / 2, mHeight - ((BORDER_WIDTH * 4) / yRatioAndroidToArena));
 
 
 
@@ -129,8 +127,12 @@ public class GameState {
 
     //Location of texture files
     public static final int TEXTURE_WALL = R.drawable.largebrick;
-    public static final int TEXTURE_WALL2 = R.drawable.electric;
-    public static final int TEXTURE_BALL = R.drawable.newball3;
+    public static final int TEXTURE_WALL2 = R.drawable.wall3small;
+    public static final int TEXTURE_WALL3 = R.drawable.electric;
+
+    public static final int TEXTURE_BALL1 = R.drawable.newball3;
+    public static final int TEXTURE_BALL2 = R.drawable.glareball;
+
     public static final int TEXTURE_TARGET = R.drawable.burger2;
     public static final int TEXTURE_SELECTION_CIRCLE = R.drawable.selectioncircle;
     public static final int TEXTURE_SELECTION_ARROW = R.drawable.selectionarrow;

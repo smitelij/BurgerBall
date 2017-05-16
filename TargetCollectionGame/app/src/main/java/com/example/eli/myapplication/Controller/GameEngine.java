@@ -50,13 +50,13 @@ public class GameEngine {
 
     //All active objects that only need to be drawn (not collision checked) are added to this collection
     private ArrayList<Drawable> allDrawableObjects;
-
     private ArrayList<MovingObstacle> allMovingObstacles;
 
     private ScoreDigits[] mScoreDigits = new ScoreDigits[5];
 
     private ArrayList<Ball> mAllBalls;     //Collection of all balls
     private int mTargetsHit = 0;
+    private float[] initialBallCoords;
 
     private float[] mVPMatrix = new float[16];  //View-Projection matrix to place objects into actual device coordinates
     private static Context mActivityContext;
@@ -135,9 +135,6 @@ public class GameEngine {
         //Initialize particle engine
         particleEngine = new ParticleEngine(mChapter);
 
-        //Initialize ball engine
-        ballEngine = new BallEngine();
-
         //Grab the level data (number of balls, coordinates of objects, etc)
         LevelData currentLevelData = new LevelData(mChapter,mLevel);
         mTotalBalls = currentLevelData.getNumOfBalls();
@@ -153,6 +150,10 @@ public class GameEngine {
         mAllBalls = levelInitialization.getAllBalls();
         mScoreDigits = levelInitialization.getScoreDigits();
         mVelocityArrow = levelInitialization.getVelocityArrow();
+        initialBallCoords = levelInitialization.getNewBallCoords();
+
+        //Initialize ball engine
+        ballEngine = new BallEngine(initialBallCoords);
 
         //End level images
         endLevelSuccessImage = levelInitialization.getEndLevelSuccessImage();
@@ -185,7 +186,7 @@ public class GameEngine {
 
             //To activate a ball, all we need to do is add it to the collections.
             //check if we can activate the ball right now
-            if (ActivateBallLogic.canActivateBall(mAllBalls)) {
+            if (ActivateBallLogic.canActivateBall(mAllBalls, initialBallCoords)) {
                 ball.activateBall();
                 mCurrentActiveBallID++;
                 currentLevelStatus = GameStatus.ACTIVE;
@@ -822,7 +823,7 @@ public class GameEngine {
 
     public void rotateBall(Ball currentBall) {
         float angle = currentBall.getCurrentRotation();
-        float[] newCoords = CommonFunctions.rotateBallCoords(angle);
+        float[] newCoords = CommonFunctions.rotateBallCoords(angle, initialBallCoords);
         currentBall.setCoords(newCoords);
     }
 
@@ -843,7 +844,7 @@ public class GameEngine {
             angle = (float) -(3.1415 / 2) + angle;
         }
 
-        float[] newCoords = CommonFunctions.updateVelocityArrow(angle, height);
+        float[] newCoords = CommonFunctions.updateVelocityArrow(angle, height, getInitialBallCenter());
 
         mVelocityArrow.setCoords(newCoords);
     }
@@ -981,6 +982,13 @@ public class GameEngine {
         for (int index = 0; index < 5; index++) {
             mScoreDigits[index].setRandomMultiplier(randomMultiplier);
         }
+    }
+
+    public PointF getInitialBallCenter() {
+        if (initialBallCoords == null) {
+            return null;
+        }
+        return CommonFunctions.calculateInitialBallCenter(initialBallCoords);
     }
 
 

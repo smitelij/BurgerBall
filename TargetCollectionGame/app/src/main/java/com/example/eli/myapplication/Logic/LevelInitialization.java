@@ -49,6 +49,7 @@ public class LevelInitialization {
     private int mCurrentBallTexture;
     private int[] mDigitTextures = new int[10];
 
+    private float[] newBallCoords;
     private int mTotalBalls;
 
     private int mCurrentWallTexture;
@@ -58,17 +59,23 @@ public class LevelInitialization {
 
         mActivityContext = activityContext;
         mTotalBalls = currentLevelData.getNumOfBalls();
+        newBallCoords = determineInitialBallCoords(currentLevelData);
 
         if(chapterNumber==1){
             mCurrentWallTexture = GameState.TEXTURE_WALL;
+            mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL1);
         } else if (chapterNumber==2){
             mCurrentWallTexture = GameState.TEXTURE_WALL2;
+            mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL2);
+        } else if (chapterNumber == 3) {
+            mCurrentWallTexture = GameState.TEXTURE_WALL3;
+            mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL2);
         }
 
         loadBoundaries();  //Load outer boundaries (don't need a reference to current level, because currently outer boundaries are always the same)
         loadObstacles(currentLevelData);  //Load level specific boundaries
         loadTargets(currentLevelData);  //Load level specific targets
-        initializeBalls();  //Initialize the balls
+        initializeBalls(currentLevelData);  //Initialize the balls
         initializeDrawables();  //Add all objects that need to be drawn but are not interactable
 
     }
@@ -78,13 +85,8 @@ public class LevelInitialization {
     // Although they are not drawn immediately (or activated), they need to be created
     // from the beginning so that OpenGL has a reference to them.
     //
-    private void initializeBalls(){
+    private void initializeBalls(LevelData currentLevelData){
         mAllBalls = new ArrayList<>();
-
-        mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL);
-
-        //Get initial ball coordinates
-        float[] newBallCoords = CommonFunctions.getInitialBallCoords();
 
         //create balls and add them to collection
         for(int index=0; index < mTotalBalls; index++) {
@@ -115,7 +117,6 @@ public class LevelInitialization {
     private void loadObstacles(LevelData levelData){
         ArrayList<float[]> obstacleCoords = levelData.getObstacleCoords();
         int obstacleTexture = LevelInitialization.loadGLTexture(mCurrentWallTexture);
-
 
         for (float[] currentObstacleCoords : obstacleCoords){
             Obstacle obstacle = new Obstacle(currentObstacleCoords, obstacleTexture);
@@ -154,11 +155,11 @@ public class LevelInitialization {
 
         //Selection circle
         int selectionCircleTexture = loadGLTexture(GameState.TEXTURE_SELECTION_CIRCLE);
-        SelectionCircle selectionCircle = new SelectionCircle(selectionCircleTexture);
+        SelectionCircle selectionCircle = new SelectionCircle(selectionCircleTexture, newBallCoords);
         mAllDrawableObjects.add(selectionCircle);
 
         //Ghost ball
-        GhostBall ghostBall = new GhostBall(mCurrentBallTexture);
+        GhostBall ghostBall = new GhostBall(mCurrentBallTexture, newBallCoords);
         mAllDrawableObjects.add(ghostBall);
 
         //Velocity arrow
@@ -267,6 +268,17 @@ public class LevelInitialization {
         return temp[0];
     }
 
+    private float[] determineInitialBallCoords(LevelData currentLevelData) {
+
+        //Get initial ball coordinates - first check for any level-specific
+        // start coords, otherwise use default.
+        if (currentLevelData.getBallInitialCoords() != null) {
+            return currentLevelData.getBallInitialCoords();
+        } else {
+            return CommonFunctions.getDefaultBallCoords();
+        }
+    }
+
     public ArrayList<Drawable> getAllDrawableObjects(){
         return mAllDrawableObjects;
     }
@@ -294,4 +306,6 @@ public class LevelInitialization {
     public EndLevelFailImage getEndLevelFailImage() { return endLevelFailImage; }
 
     public FinalScoreText getFinalScoreText() { return finalScoreText; }
+
+    public float[] getNewBallCoords() { return newBallCoords; }
 }

@@ -12,6 +12,11 @@ import com.example.eli.myapplication.Resources.GameState;
 public class BallStateMachine {
 
     boolean allBallsFired = false;
+    float[] initialBallCoords;
+
+    public BallStateMachine (float[] initialBallCoords) {
+        this.initialBallCoords = initialBallCoords;
+    }
 
     public void updateBallState(Ball currentBall, BallEngine ballEngine) {
 
@@ -101,7 +106,7 @@ public class BallStateMachine {
 
         if (ballEngine.getVelocity(currentBall,0).length() < GameState.DEACTIVATE_BALL_VELOCITY ) {
             System.out.println("Stopping rolling ball.");
-            if (ActivateBallLogic.isBallInFiringZone(null, currentBall) && !allBallsFired) {
+            if (ActivateBallLogic.isBallInFiringZone(null, currentBall, initialBallCoords) && !allBallsFired) {
                 currentBall.deactivateBall();
             } else {
                 ballEngine.stopBall(currentBall);

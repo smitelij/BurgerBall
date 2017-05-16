@@ -427,6 +427,14 @@ public class ParticleEngine {
                 particleFastColor = new float[]{0.82f,1f,0.90f,1f}; //white green-blue
                 particleDispersionColor = new float[]{1f,0.33f,0.71f,1f}; //pink-red
                 break;
+
+            case 3:
+                particleBaseColor = new float[]{0.44f,0.13f,0.52f,1f}; //purple
+                particleSlowColor = new float[]{0.13f,0.13f,0.647f,1f}; //blue
+                particleMediumColor = new float[]{0.09f,0.70f,0.37f,1f}; //green (with hint of blue)
+                particleFastColor = new float[]{0.82f,1f,0.90f,1f}; //white green-blue
+                particleDispersionColor = new float[]{1f,0.33f,0.71f,1f}; //pink-red
+                break;
         }
     }
 
@@ -445,12 +453,6 @@ public class ParticleEngine {
             particleGenerationConstant = particleGenerationConstant + amount;
         }
     }
-
-
-
-
-
-
 
     private PointF calculateParticleAxisOpposite(Ball ball) {
         PointF ballCenter = ball.getCenter();

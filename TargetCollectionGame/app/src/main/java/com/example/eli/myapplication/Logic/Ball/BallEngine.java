@@ -30,7 +30,11 @@ public class BallEngine {
     private HashMap<Ball, Integer> sameBoundaryCollisionsThisFrame = new HashMap<>();
     private HashMap<Ball, Collision> lastCollisionMap = new HashMap<>();
 
-    private BallStateMachine ballStateMachine = new BallStateMachine();
+    private BallStateMachine ballStateMachine;
+
+    public BallEngine(float[] initialBallCoords) {
+        ballStateMachine = new BallStateMachine(initialBallCoords);
+    }
 
     public void updateBallState(Ball currentBall) {
         ballStateMachine.updateBallState(currentBall, this);

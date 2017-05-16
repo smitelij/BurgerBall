@@ -67,11 +67,15 @@ public class MyGLSurfaceView extends GLSurfaceView {
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
 
-                PointF responseCenter = CommonFunctions.getResponseCenter();
+                PointF responseCenter = mGame.getInitialBallCenter();
+                if (responseCenter == null) {
+                    return false;
+                }
+                PointF androidCenter = CommonFunctions.calculateAndroidBallCenter(responseCenter);
                 float responseRange = CommonFunctions.getResponseRange();
 
-                float xDistance = x - responseCenter.x;
-                float yDistance = y - responseCenter.y;
+                float xDistance = x - androidCenter.x;
+                float yDistance = y - androidCenter.y;
 
                 float distance = (float) Math.sqrt((xDistance*xDistance) + (yDistance*yDistance));
 

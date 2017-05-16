@@ -20,20 +20,20 @@ public class ActivateBallLogic {
     //RETURNS:
     // True if we can activate the ball, false if we can't.
     //
-    public static boolean canActivateBall(ArrayList<Ball> allBalls){
+    public static boolean canActivateBall(ArrayList<Ball> allBalls, float[] startingCoords){
         //Checks before we can activate a ball:
         //1: The firing zone must be clear
 
-        return (isFiringZoneClear(allBalls));
+        return (isFiringZoneClear(allBalls, startingCoords));
     }
 
     //-------------------------
     //This function checks if any other balls are currently in the firing zone.
     //By firing zone, we just mean the starting location of the new ball.
     //Used for a check in canActivateBall.
-    private static boolean isFiringZoneClear(ArrayList<Ball> allBalls){
+    private static boolean isFiringZoneClear(ArrayList<Ball> allBalls, float[] startingCoords){
 
-        PointF firingZoneCenter = CommonFunctions.getFiringZoneCenter();
+        PointF firingZoneCenter = CommonFunctions.getFiringZoneCenter(startingCoords);
 
         for (Ball currentBall : allBalls){
 
@@ -42,7 +42,7 @@ public class ActivateBallLogic {
             }
 
             //If a ball is in the firing zone, it is NOT clear
-            if (isBallInFiringZone(firingZoneCenter, currentBall)) {
+            if (isBallInFiringZone(firingZoneCenter, currentBall, startingCoords)) {
                 return false;
             }
 
@@ -52,9 +52,9 @@ public class ActivateBallLogic {
         return true;
     }
 
-    public static boolean isBallInFiringZone(PointF firingZoneCenter, Ball ball) {
+    public static boolean isBallInFiringZone(PointF firingZoneCenter, Ball ball, float[] startingCoords) {
         if (firingZoneCenter == null) {
-            firingZoneCenter = CommonFunctions.getFiringZoneCenter();
+            firingZoneCenter = CommonFunctions.getFiringZoneCenter(startingCoords);
         }
 
         PointF currentBallCenter = ball.getCenter();

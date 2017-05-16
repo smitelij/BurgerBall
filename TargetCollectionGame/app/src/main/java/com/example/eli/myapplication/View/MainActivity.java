@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
             chapterImage.setImageResource(R.drawable.chapter1small);
         } else if (currentSet.compareTo("2")==0){
             chapterImage.setImageResource(R.drawable.chapter2edit);
+        } else if (currentSet.compareTo("3")==0){
+            chapterImage.setImageResource(R.drawable.chapter2edit);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

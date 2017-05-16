@@ -8,8 +8,8 @@ import com.example.eli.myapplication.Resources.GameState;
  */
 public class GhostBall extends Circle {
 
-    public GhostBall(int texturePointer){
-        super(CommonFunctions.getInitialBallCoords(), texturePointer);
+    public GhostBall(int texturePointer, float[] startingCoords){
+        super(startingCoords, texturePointer);
         setType(GameState.DRAWABLE_GHOST_CIRCLES);
         setAlpha(GameState.GHOST_ALPHA);
     }
