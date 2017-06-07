@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -44,15 +45,21 @@ public class SetSelect extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.set_select);
 
-        ImageView mainLogo = (ImageView) findViewById(R.id.mainLogo);
-        mainLogo.setImageResource(R.drawable.chapterselect);
-
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(Color.LTGRAY);
         toolbar.setLogo(R.drawable.burgericon);
 
+        loadScoresAndUpdateDisplays();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadScoresAndUpdateDisplays();
+    }
+
+    private void loadScoresAndUpdateDisplays() {
         context = getApplicationContext();
         highScoreController = new HighScoreController(context,STORAGE_LOCATION);
         currentUserScores = highScoreController.getUserScores(currentUser);
@@ -64,35 +71,94 @@ public class SetSelect extends AppCompatActivity{
         TextView totalStarsChapter2text = (TextView) findViewById(R.id.totalStars2Text);
         TextView totalStarsChapter3text = (TextView) findViewById(R.id.totalStars3Text);
 
+        TextView set2locked = (TextView) findViewById(R.id.set2locked);
+        TextView set3locked = (TextView) findViewById(R.id.set3locked);
 
+        ImageView blueStarImage = (ImageView) findViewById(R.id.bluestarimage);
+        ImageView redStarImage = (ImageView) findViewById(R.id.redstarimage);
+        ImageView greenStarImage = (ImageView) findViewById(R.id.greenstarimage);
+
+        Button set2button = (Button) findViewById(R.id.set2button);
+        Button set3button = (Button) findViewById(R.id.set3button);
+
+        int unlockedSetBackground = Color.parseColor("#2E202A");
+        int lockedSetBackground = Color.parseColor("#21181d");
+        int lockedSetText = Color.parseColor("#5B5B5B");
+
+        //---------------------------
+        // SET 1
+        //
         if (totalStarsChapter1 > 0){
-            totalStarsChapter1text.setText("Total stars: x" + totalStarsChapter1);
+            redStarImage.setVisibility(View.VISIBLE);
+            totalStarsChapter1text.setVisibility(View.VISIBLE);
+            totalStarsChapter1text.setText("= " + totalStarsChapter1);
         } else {
+            redStarImage.setVisibility(View.INVISIBLE);
             totalStarsChapter1text.setVisibility(View.INVISIBLE);
         }
 
-        if (totalStarsChapter2 > 0){
-            totalStarsChapter2text.setText("Total stars: x" + totalStarsChapter2);
-        } else {
-            if (totalStarsChapter1 < 12) {
-                totalStarsChapter2text.setText("12 stars needed in chapter 1 to unlock");
+        //------------------------
+        // SET 2
+        //
+        //If set 2 is UNLOCKED
+        if (totalStarsChapter1 >= 12) {
+            set2button.setTextColor(Color.WHITE);
+            set2button.setBackgroundColor(unlockedSetBackground);
+            set2button.setClickable(true);
+            set2locked.setVisibility(View.INVISIBLE);
+
+            //If stars have been earned
+            if (totalStarsChapter2 > 0) {
+                greenStarImage.setVisibility(View.VISIBLE);
+                totalStarsChapter2text.setVisibility(View.VISIBLE);
+                totalStarsChapter2text.setText("= " + totalStarsChapter2);
             } else {
+                greenStarImage.setVisibility(View.INVISIBLE);
                 totalStarsChapter2text.setVisibility(View.INVISIBLE);
             }
-        }
 
-        if (totalStarsChapter3 > 0){
-            totalStarsChapter3text.setText("Total stars: x" + totalStarsChapter3);
-        } else if ((totalStarsChapter2 > 0) && (totalStarsChapter2 < 12)){
-            totalStarsChapter3text.setText("12 stars needed in chapter 2 to unlock");
+            //If set 2 is LOCKED
         } else {
-            totalStarsChapter3text.setVisibility(View.INVISIBLE);
+            greenStarImage.setVisibility(View.GONE);
+            totalStarsChapter2text.setVisibility(View.GONE);
+            set2locked.setVisibility(View.VISIBLE);
+            set2button.setTextColor(lockedSetText);
+            set2button.setBackgroundColor(lockedSetBackground);
+            set2button.setClickable(false);
         }
 
+        //----------------------
+        // SET 3
+        //
+        //If set 3 is UNLOCKED
+        if (totalStarsChapter2 >= 12) {
+            set3button.setTextColor(Color.WHITE);
+            set3button.setBackgroundColor(unlockedSetBackground);
+            set3button.setClickable(true);
+            set3locked.setVisibility(View.INVISIBLE);
+
+            //If stars have been earned
+            if (totalStarsChapter3 > 0) {
+                blueStarImage.setVisibility(View.VISIBLE);
+                totalStarsChapter3text.setVisibility(View.VISIBLE);
+                totalStarsChapter3text.setText("= " + totalStarsChapter2);
+            } else {
+                blueStarImage.setVisibility(View.INVISIBLE);
+                totalStarsChapter3text.setVisibility(View.INVISIBLE);
+            }
+
+            //If set 3 is LOCKED
+        } else {
+            set3locked.setVisibility(View.VISIBLE);
+            totalStarsChapter3text.setVisibility(View.GONE);
+            blueStarImage.setVisibility(View.GONE);
+            set3button.setBackgroundColor(lockedSetBackground);
+            set3button.setTextColor(lockedSetText);
+            set3button.setClickable(false);
+        }
 
 
         context = getApplicationContext();
-
     }
 
     @Override
@@ -107,7 +173,7 @@ public class SetSelect extends AppCompatActivity{
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
+        // automatically handle clicks on the Home/Up button1, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 

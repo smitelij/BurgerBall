@@ -130,8 +130,9 @@ public class GameState {
     public static final int TEXTURE_WALL2 = R.drawable.wall3small;
     public static final int TEXTURE_WALL3 = R.drawable.electric;
 
-    public static final int TEXTURE_BALL1 = R.drawable.newball3;
-    public static final int TEXTURE_BALL2 = R.drawable.glareball;
+    public static final int TEXTURE_BALL1 = R.drawable.metalball;
+    public static final int TEXTURE_BALL2 = R.drawable.watermelonball;
+    public static final int TEXTURE_BALL3 = R.drawable.glareball;
 
     public static final int TEXTURE_TARGET = R.drawable.burger2;
     public static final int TEXTURE_SELECTION_CIRCLE = R.drawable.selectioncircle;

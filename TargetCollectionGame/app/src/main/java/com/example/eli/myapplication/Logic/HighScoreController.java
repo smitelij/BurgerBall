@@ -61,6 +61,7 @@ public class HighScoreController {
                     for (String currentLevel : allLevelScores){
                         System.out.println("setSelection: " + currentLevel);
 
+                        // set 1
                         if (currentLevel.startsWith("1.1")){
                             highScores.put("1.1",currentLevel.substring(4));
                         } else if (currentLevel.startsWith("1.2")) {
@@ -70,7 +71,33 @@ public class HighScoreController {
                         } else if (currentLevel.startsWith("1.4")) {
                             highScores.put("1.4",currentLevel.substring(4));
                         } else if (currentLevel.startsWith("1.5")) {
-                            highScores.put("1.5",currentLevel.substring(4));
+                            highScores.put("1.5", currentLevel.substring(4));
+                        }
+
+                        // set 2
+                          else if (currentLevel.startsWith("2.1")) {
+                            highScores.put("2.1", currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("2.2")) {
+                            highScores.put("2.2",currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("2.3")) {
+                            highScores.put("2.3",currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("2.4")) {
+                            highScores.put("2.4",currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("2.5")) {
+                            highScores.put("2.5",currentLevel.substring(4));
+                        }
+
+                        // set 3
+                        else if (currentLevel.startsWith("3.1")) {
+                            highScores.put("3.1", currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("3.2")) {
+                            highScores.put("3.2",currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("3.3")) {
+                            highScores.put("3.3",currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("3.4")) {
+                            highScores.put("3.4",currentLevel.substring(4));
+                        } else if (currentLevel.startsWith("3.5")) {
+                            highScores.put("3.5",currentLevel.substring(4));
                         }
                     }
                 }
@@ -88,22 +115,45 @@ public class HighScoreController {
 
         //TODO change this name to be dynamic
         String string = "*Eli";
-        String string1 = "&1.1:" + currentUserScores.get("1.1");
-        String string2 = "&1.2:" + currentUserScores.get("1.2");
-        String string3 = "&1.3:" + currentUserScores.get("1.3");
-        String string4 = "&1.4:" + currentUserScores.get("1.4");
-        String string5 = "&1.5:" + currentUserScores.get("1.5");
+
+        String string11 = "&1.1:" + currentUserScores.get("1.1");
+        String string12 = "&1.2:" + currentUserScores.get("1.2");
+        String string13 = "&1.3:" + currentUserScores.get("1.3");
+        String string14 = "&1.4:" + currentUserScores.get("1.4");
+        String string15 = "&1.5:" + currentUserScores.get("1.5");
+
+        String string21 = "&2.1:" + currentUserScores.get("2.1");
+        String string22 = "&2.2:" + currentUserScores.get("2.2");
+        String string23 = "&2.3:" + currentUserScores.get("2.3");
+        String string24 = "&2.4:" + currentUserScores.get("2.4");
+        String string25 = "&2.5:" + currentUserScores.get("2.5");
+
+        String string31 = "&3.1:" + currentUserScores.get("3.1");
+        String string32 = "&3.2:" + currentUserScores.get("3.2");
+        String string33 = "&3.3:" + currentUserScores.get("3.3");
+        String string34 = "&3.4:" + currentUserScores.get("3.4");
+        String string35 = "&3.5:" + currentUserScores.get("3.5");
 
         FileOutputStream outputStream;
 
         try {
             outputStream = context.openFileOutput(storageLocation, Context.MODE_PRIVATE);
             outputStream.write(string.getBytes());
-            outputStream.write(string1.getBytes());
-            outputStream.write(string2.getBytes());
-            outputStream.write(string3.getBytes());
-            outputStream.write(string4.getBytes());
-            outputStream.write(string5.getBytes());
+            outputStream.write(string11.getBytes());
+            outputStream.write(string12.getBytes());
+            outputStream.write(string13.getBytes());
+            outputStream.write(string14.getBytes());
+            outputStream.write(string15.getBytes());
+            outputStream.write(string21.getBytes());
+            outputStream.write(string22.getBytes());
+            outputStream.write(string23.getBytes());
+            outputStream.write(string24.getBytes());
+            outputStream.write(string25.getBytes());
+            outputStream.write(string31.getBytes());
+            outputStream.write(string32.getBytes());
+            outputStream.write(string33.getBytes());
+            outputStream.write(string34.getBytes());
+            outputStream.write(string35.getBytes());
 
             outputStream.close();
         } catch (Exception e) {
@@ -116,22 +166,44 @@ public class HighScoreController {
 
         String string = "*Eli";
 
-        String string1 = "&1.1:" + "0";
-        String string2 = "&1.2:" + "0";
-        String string3 = "&1.3:" + "0";
-        String string4 = "&1.4:" + "0";
-        String string5 = "&1.5:" + "0";
+        String string11 = "&1.1:" + "0";
+        String string12 = "&1.2:" + "0";
+        String string13 = "&1.3:" + "0";
+        String string14 = "&1.4:" + "0";
+        String string15 = "&1.5:" + "0";
+
+        String string21 = "&2.1:" + "0";
+        String string22 = "&2.2:" + "0";
+        String string23 = "&2.3:" + "0";
+        String string24 = "&2.4:" + "0";
+        String string25 = "&2.5:" + "0";
+
+        String string31 = "&3.1:" + "0";
+        String string32 = "&3.2:" + "0";
+        String string33 = "&3.3:" + "0";
+        String string34 = "&3.4:" + "0";
+        String string35 = "&3.5:" + "0";
 
         FileOutputStream outputStream;
 
         try {
             outputStream = context.openFileOutput(storageLocation, Context.MODE_PRIVATE);
             outputStream.write(string.getBytes());
-            outputStream.write(string1.getBytes());
-            outputStream.write(string2.getBytes());
-            outputStream.write(string3.getBytes());
-            outputStream.write(string4.getBytes());
-            outputStream.write(string5.getBytes());
+            outputStream.write(string11.getBytes());
+            outputStream.write(string12.getBytes());
+            outputStream.write(string13.getBytes());
+            outputStream.write(string14.getBytes());
+            outputStream.write(string15.getBytes());
+            outputStream.write(string21.getBytes());
+            outputStream.write(string22.getBytes());
+            outputStream.write(string23.getBytes());
+            outputStream.write(string24.getBytes());
+            outputStream.write(string25.getBytes());
+            outputStream.write(string31.getBytes());
+            outputStream.write(string32.getBytes());
+            outputStream.write(string33.getBytes());
+            outputStream.write(string34.getBytes());
+            outputStream.write(string35.getBytes());
 
             outputStream.close();
         } catch (Exception e) {

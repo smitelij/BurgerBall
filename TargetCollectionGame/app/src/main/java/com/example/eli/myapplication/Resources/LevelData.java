@@ -167,8 +167,8 @@ public class LevelData {
             case 4:
                 //Obstacles
                 float obstacle141coords[] = {
-                        20f, 180f, 0.0f,   // top left
-                        20f, 120f, 0.0f,   // bottom left
+                        6f, 180f, 0.0f,   // top left
+                        6f, 90f, 0.0f,   // bottom left
                         40f, 120f, 0.0f,   // bottom right
                         40f, 180f, 0.0f }; // top right
 
@@ -176,19 +176,19 @@ public class LevelData {
                 float obstacle142coords[] = {
                         100f,  130f, 0.0f,   // top left
                         100f, 120f, 0.0f,   // bottom left
-                        200f, 120f, 0.0f,   // bottom right
+                        200f, 100f, 0.0f,   // bottom right
                         200f, 140f, 0.0f }; // top right
 
                 float obstacle143coords[] = {
-                        20f,  270f, 0.0f,   // top left
-                        20f, 210f, 0.0f,   // bottom left
+                        6f,  300f, 0.0f,   // top left
+                        6f, 210f, 0.0f,   // bottom left
                         40f, 210f, 0.0f,   // bottom right
                         40f, 270f, 0.0f }; // top right
 
                 float obstacle144coords[] = {
                         175f,  230f, 0.0f,   // top left
                         185f, 210f, 0.0f,   // bottom left
-                        195f, 210f, 0.0f,   // bottom right
+                        195f, 200f, 0.0f,   // bottom right
                         195f, 230f, 0.0f }; // top right
 
                 mObstacleCoords.add(obstacle141coords);
@@ -215,8 +215,8 @@ public class LevelData {
                 //Obstacles
                 float obstacle151coords[] = {
                         6f, 80f, 0.0f,   // top left
-                        6f, 70f, 0.0f,   // bottom left
-                        50f, 70f, 0.0f,   // bottom right
+                        6f, 60f, 0.0f,   // bottom left
+                        50f, 60f, 0.0f,   // bottom right
                         50f, 80f, 0.0f }; // top right
 
 
@@ -228,15 +228,15 @@ public class LevelData {
 
                 float obstacle153coords[] = {
                         40f, 250f, 0.0f,   // top left
-                        40f, 240f, 0.0f,   // bottom left
-                        90f, 240f, 0.0f,   // bottom right
+                        50f, 220f, 0.0f,   // bottom left
+                        80f, 220f, 0.0f,   // bottom right
                         90f, 250f, 0.0f }; // top right
 
                 float obstacle154coords[] = {
-                        6f, 140f, 0.0f,   // top left
+                        6f, 150f, 0.0f,   // top left
                         6f, 130f, 0.0f,   // bottom left
                         75f, 130f, 0.0f,   // bottom right
-                        75f, 140f, 0.0f }; // top right
+                        75f, 150f, 0.0f }; // top right
 
                 float obstacle155coords[] = {
                         130f, 85f, 0.0f,   // top left
@@ -654,14 +654,8 @@ public class LevelData {
     private void loadSet3Level(int levelIndex) {
         switch (levelIndex) {
             case 1:
-                //Obstacles
-                /*
-                float obstacle311coords[] = {
-                        6f, 12f, 0.0f,   // top left
-                        6f, 6f, 0.0f,   // bottom left
-                        50f, 6f, 0.0f,   // bottom right
-                        45f, 12f, 0.0f }; // top right
-*/
+
+                //bottom star
                 float obstacle311coords[] = {
                         6f, 28f, 0.0f,   // top left
                         6f, 20f, 0.0f,   // bottom left
@@ -687,20 +681,50 @@ public class LevelData {
                         32f, 91.3f, 0.0f,   // bottom right
                         30f, 92.4f, 0.0f }; // top right
 
+                //top star
+                float obstacle315coords[] = {
+                        111f, 230f, 0.0f,   // top left
+                        110f, 228f, 0.0f,   // bottom left
+                        194f, 222f, 0.0f,   // bottom right
+                        194f, 230f, 0.0f }; // top right
+
+                float obstacle316coords[] = {
+                        100f, 200f, 0.0f,   // top left
+                        101f, 198f, 0.0f,   // bottom left
+                        194f, 223f, 0.0f,   // bottom right
+                        194f, 231f, 0.0f }; // top right
+
+                float obstacle317coords[] = {
+                        120f, 178f, 0.0f,   // top left
+                        123f, 177f, 0.0f,   // bottom left
+                        194f, 223f, 0.0f,   // bottom right
+                        194f, 231f, 0.0f }; // top right
+
+                float obstacle318coords[] = {
+                        154f, 166f, 0.0f,   // top left
+                        157f, 165f, 0.0f,   // bottom left
+                        194f, 220f, 0.0f,   // bottom right
+                        194f, 231f, 0.0f }; // top right
+
 
                 mObstacleCoords.add(obstacle311coords);
                 mObstacleCoords.add(obstacle312coords);
                 mObstacleCoords.add(obstacle313coords);
                 mObstacleCoords.add(obstacle314coords);
+                mObstacleCoords.add(obstacle315coords);
+                mObstacleCoords.add(obstacle316coords);
+                mObstacleCoords.add(obstacle317coords);
+                mObstacleCoords.add(obstacle318coords);
 
                 //Targets
 
-                float[] target311coords = CommonFunctions.createCircleCoords(20,135,8f);
+                float[] target311coords = CommonFunctions.createCircleCoords(180,240,8f);
                 float[] target312coords = CommonFunctions.createCircleCoords(180,135,8f);
+                float[] target313coords = CommonFunctions.createCircleCoords(30,60,8f);
 
                 mTargetCoords.add(target311coords);
                 mTargetCoords.add(target312coords);
-                //mTargetCoords.add(target133coords);
+                mTargetCoords.add(target313coords);
 
                 ballInitialCoords = CommonFunctions.createCircleCoords(170, 24, GameState.ballRadius);
 
@@ -709,6 +733,62 @@ public class LevelData {
                 break;
 
             case 2:
+
+                //bottom star
+                float obstacle321coords[] = {
+                        6f, 130f, 0.0f,   // top left
+                        0f, 0f, 0.0f,   // bottom left
+                        70f, 12f, 0.0f,   // bottom right
+                        50f, 100f, 0.0f }; // top right
+
+
+                float obstacle322coords[] = {
+                        130f, 294f, 0.0f,   // top left
+                        150f, 206f, 0.0f,   // bottom left
+                        194f, 176f, 0.0f,   // bottom right
+                        200f, 300f, 0.0f }; // top right
+
+                float obstacle323coords[] = {
+                        6f, 27f, 0.0f,   // top left
+                        6f, 19f, 0.0f,   // bottom left
+                        61f, 79f, 0.0f,   // bottom right
+                        60f, 80f, 0.0f }; // top right
+
+                float obstacle324coords[] = {
+                        6f, 30f, 0.0f,   // top left
+                        6f, 19f, 0.0f,   // bottom left
+                        32f, 91.3f, 0.0f,   // bottom right
+                        30f, 92.4f, 0.0f }; // top right
+
+
+                MovePath path321 = new MovePath();
+                path321.addMovement(new SingleMovement(new PointF(0.15f,0f), 100));
+                path321.addMovement(new SingleMovement(new PointF(-0.15f,0f), 100));
+
+                //mMovingObstacleCoords.add(obstacle321coords);
+               // mMovingObstaclePaths.add(path321);
+
+                mObstacleCoords.add(obstacle321coords);
+                mObstacleCoords.add(obstacle322coords);
+               // mObstacleCoords.add(obstacle322coords);
+               // mObstacleCoords.add(obstacle323coords);
+                //mObstacleCoords.add(obstacle324coords);
+
+                //Targets
+
+                float[] target321coords = CommonFunctions.createCircleCoords(180,240,8f);
+                float[] target322coords = CommonFunctions.createCircleCoords(180,135,8f);
+                float[] target323coords = CommonFunctions.createCircleCoords(30,60,8f);
+
+                mTargetCoords.add(target321coords);
+                mTargetCoords.add(target322coords);
+                mTargetCoords.add(target323coords);
+
+                ballInitialCoords = CommonFunctions.createCircleCoords(170, 24, GameState.ballRadius);
+
+                //num of balls
+                mNumOfBalls = 3;
+
                 break;
 
             case 3:

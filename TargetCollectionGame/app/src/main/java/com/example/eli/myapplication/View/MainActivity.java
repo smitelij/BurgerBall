@@ -1,9 +1,12 @@
 package com.example.eli.myapplication.View;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -38,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        context = getApplicationContext();
+
         Intent intent = getIntent();
         currentSet = intent.getStringExtra(SetSelect.SET_SELECT_MESSAGE);
         //loadSet(levelString);
@@ -45,18 +50,28 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
         setContentView(R.layout.activity_main);
 
         //Load image
-        ImageView mainLogo = (ImageView) findViewById(R.id.mainLogo);
-        mainLogo.setImageResource(R.drawable.burgerball6);
+        //ImageView mainLogo = (ImageView) findViewById(R.id.mainLogo);
+        //mainLogo.setImageResource(R.drawable.burgerball6);
 
-        //Load image
+        //Load chapter images
         ImageView chapterImage = (ImageView) findViewById(R.id.chapterImage);
+        ImageView chapterTextureImage = (ImageView) findViewById(R.id.chapterTextureImage);
 
         if (currentSet.compareTo("1")==0){
-            chapterImage.setImageResource(R.drawable.chapter1small);
+            chapterImage.setImageResource(R.drawable.chapter1new);
+            chapterTextureImage.setImageResource(R.drawable.chapter1previewtexture);
+            setButtons(1);
+            updateStarColors(1);
         } else if (currentSet.compareTo("2")==0){
-            chapterImage.setImageResource(R.drawable.chapter2edit);
+            chapterImage.setImageResource(R.drawable.chapter2new);
+            chapterTextureImage.setImageResource(R.drawable.chapter2previewtexture);
+            setButtons(2);
+            updateStarColors(2);
         } else if (currentSet.compareTo("3")==0){
-            chapterImage.setImageResource(R.drawable.chapter2edit);
+            chapterImage.setImageResource(R.drawable.chapter3new);
+            chapterTextureImage.setImageResource(R.drawable.chapter3previewtexture);
+            setButtons(3);
+            updateStarColors(3);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -66,11 +81,66 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
 
         initializeButtons();
 
-        context = getApplicationContext();
         highScoreController = new HighScoreController(context,STORAGE_LOCATION);
         currentUserScores = highScoreController.getUserScores(currentUser);
         updateScoreDisplays();
         updateStarsEarned();
+
+    }
+
+    @TargetApi(16)
+    private void setButtons(int chapter) {
+        Button level1button = (Button) findViewById(R.id.level1button);
+        Button level2button = (Button) findViewById(R.id.level2button);
+        Button level3button = (Button) findViewById(R.id.level3button);
+        Button level4button = (Button) findViewById(R.id.level4button);
+        Button level5button = (Button) findViewById(R.id.level5button);
+
+        Drawable button1 = null;
+        Drawable button2 = null;
+        Drawable button3 = null;
+        Drawable button4 = null;
+        Drawable button5 = null;
+
+        switch (chapter) {
+            case 1:
+                button1 = ContextCompat.getDrawable(context,R.drawable.button1);
+                button2 = ContextCompat.getDrawable(context,R.drawable.button1);
+                button3 = ContextCompat.getDrawable(context,R.drawable.button1);
+                button4 = ContextCompat.getDrawable(context,R.drawable.button1);
+                button5 = ContextCompat.getDrawable(context,R.drawable.button1);
+                break;
+
+            case 2:
+                button1 = ContextCompat.getDrawable(context,R.drawable.button2);
+                button2 = ContextCompat.getDrawable(context,R.drawable.button2);
+                button3 = ContextCompat.getDrawable(context,R.drawable.button2);
+                button4 = ContextCompat.getDrawable(context,R.drawable.button2);
+                button5 = ContextCompat.getDrawable(context,R.drawable.button2);
+                break;
+
+            case 3:
+                button1 = ContextCompat.getDrawable(context,R.drawable.button3);
+                button2 = ContextCompat.getDrawable(context,R.drawable.button3);
+                button3 = ContextCompat.getDrawable(context,R.drawable.button3);
+                button4 = ContextCompat.getDrawable(context,R.drawable.button3);
+                button5 = ContextCompat.getDrawable(context,R.drawable.button3);
+                break;
+        }
+
+        level1button.setBackground(button1);
+        level2button.setBackground(button2);
+        level3button.setBackground(button3);
+        level4button.setBackground(button4);
+        level5button.setBackground(button5);
+    }
+
+    private void updateStarColors(int chapter) {
+        RatingBar ratingBar1 = (RatingBar) findViewById(R.id.ratingBar1);
+        RatingBar ratingBar2 = (RatingBar) findViewById(R.id.ratingBar2);
+        RatingBar ratingBar3 = (RatingBar) findViewById(R.id.ratingBar3);
+        RatingBar ratingBar4 = (RatingBar) findViewById(R.id.ratingBar4);
+        RatingBar ratingBar5 = (RatingBar) findViewById(R.id.ratingBar5);
 
     }
 
@@ -86,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
+        // automatically handle clicks on the Home/Up button1, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
@@ -229,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
         scoreString = (String) currentUserScores.get(currentSet + ".5");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
-        ratingBar.setRating(rating);
+        ratingBar.setRating(rating); // ?? wtf?
 
     }
 

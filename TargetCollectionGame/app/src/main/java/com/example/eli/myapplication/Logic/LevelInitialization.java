@@ -69,7 +69,7 @@ public class LevelInitialization {
             mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL2);
         } else if (chapterNumber == 3) {
             mCurrentWallTexture = GameState.TEXTURE_WALL3;
-            mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL2);
+            mCurrentBallTexture = loadGLTexture(GameState.TEXTURE_BALL3);
         }
 
         loadBoundaries();  //Load outer boundaries (don't need a reference to current level, because currently outer boundaries are always the same)

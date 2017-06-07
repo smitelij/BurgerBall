@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.media.MediaPlayer;
 import android.opengl.GLES30;
 import android.opengl.Matrix;
 
@@ -15,6 +16,7 @@ import com.example.eli.myapplication.Model.EndLevelFailImage;
 import com.example.eli.myapplication.Model.EndLevelSuccessImage;
 import com.example.eli.myapplication.Model.FinalScoreText;
 import com.example.eli.myapplication.Model.InvalidBallPositionException;
+import com.example.eli.myapplication.R;
 import com.example.eli.myapplication.Resources.CommonFunctions;
 import com.example.eli.myapplication.Resources.GameState;
 import com.example.eli.myapplication.Resources.GameState.GameStatus;
@@ -112,6 +114,8 @@ public class GameEngine {
     private EndLevelFailImage endLevelFailImage;
     private FinalScoreText finalScoreText;
 
+    private MediaPlayer mpBallFire;
+
 
     //--------------------
     //Initialize the GameEngine class
@@ -160,6 +164,9 @@ public class GameEngine {
         endLevelFailImage = levelInitialization.getEndLevelFailImage();
         finalScoreText = levelInitialization.getFinalScoreText();
 
+        //Sounds
+        mpBallFire = MediaPlayer.create(mActivityContext, R.raw.ballfirefinal);
+
     }
 
     //----------------------
@@ -191,6 +198,12 @@ public class GameEngine {
                 mCurrentActiveBallID++;
                 currentLevelStatus = GameStatus.ACTIVE;
                 mBallWaiting = false; //clear the flag in case it got activated
+
+                mpBallFire.stop();
+                try {
+                    mpBallFire.prepare();
+                } catch (Exception e) { }
+                mpBallFire.start();
 
                 if (areAllBallsFired()) {
                     ballEngine.setAllBallsFired();
@@ -989,6 +1002,10 @@ public class GameEngine {
             return null;
         }
         return CommonFunctions.calculateInitialBallCenter(initialBallCoords);
+    }
+
+    public boolean areBallsAvailable() {
+        return (mCurrentActiveBallID < mTotalBalls);
     }
 
 

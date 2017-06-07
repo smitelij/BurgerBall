@@ -27,12 +27,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/mainLogo"
+            android:src="@drawable/chapterselect"
             android:layout_column="0"
-            android:minWidth="200dp"
-            android:minHeight="100dp"
-            android:maxWidth="300dp"
+            android:minWidth="120dp"
+            android:minHeight="60dp"
+            android:maxWidth="120dp"
+            android:maxHeight="60dp"
+            android:layout_marginBottom="50dp"
+            android:layout_marginTop="50dp"
+            android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:paddingTop="50dp" />
+            android:cropToPadding="false"
+            android:layout_marginLeft="-20dp" />
     </TableRow>
 
     <TableRow
@@ -56,25 +62,43 @@
                     android:enabled="true"
                     android:onClick="sendMessage"
                     android:background="#2e202a"
-                    android:layout_marginTop="30dp"
                     android:maxWidth="500dp"
-                    android:textColor="#ffffff" />
+                    android:textColor="#ffffff"
+                    android:layout_marginTop="10dp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/smallstarred"
+                    android:id="@+id/redstarimage"
+                    android:scaleType="fitCenter"
+                    android:maxWidth="30dp"
+                    android:maxHeight="30dp"
+                    android:minHeight="30dp"
+                    android:minWidth="30dp"
+                    android:adjustViewBounds="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="20dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Total Stars: x"
+                    android:text="="
                     android:id="@+id/totalStars1Text"
                     android:layout_column="9"
                     android:textColor="#c5c5c5"
-                    android:textSize="18dp"
-                    android:textStyle="italic"
                     android:textAlignment="textStart"
                     android:paddingLeft="5dp"
-                    android:layout_marginTop="20dp" />
+                    android:layout_marginTop="15dp"
+                    android:textStyle="bold"
+                    android:textSize="22dp" />
 
             </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"></TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
@@ -90,36 +114,59 @@
                     android:text="set 2"
                     android:id="@+id/set2button"
                     android:layout_column="8"
-                    android:enabled="true"
-                    android:capitalize="none"
                     android:onClick="sendMessage"
-                    android:background="#2e202a"
+                    android:background="#161014"
                     android:layout_marginTop="10dp"
-                    android:maxWidth="100dp"
-                    android:textColor="#787878" />
+                    android:maxWidth="500dp"
+                    android:textColor="#5b5b5b"
+                    android:enabled="true" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/smallstargreen"
+                    android:id="@+id/greenstarimage"
+                    android:scaleType="fitCenter"
+                    android:maxWidth="30dp"
+                    android:maxHeight="30dp"
+                    android:minHeight="30dp"
+                    android:minWidth="30dp"
+                    android:adjustViewBounds="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="20dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Total Stars: x"
+                    android:text="="
                     android:id="@+id/totalStars2Text"
                     android:layout_column="9"
                     android:textColor="#c5c5c5"
-                    android:textSize="15dp"
-                    android:textStyle="italic"
                     android:textAlignment="textStart"
                     android:paddingLeft="5dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="15dp"
                     android:maxWidth="300dp"
                     android:maxHeight="75dp"
-                    android:longClickable="true" />
+                    android:longClickable="true"
+                    android:textStyle="bold"
+                    android:textSize="22dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="12 stars needed in set 1 to unlock"
+                    android:id="@+id/set2locked"
+                    android:layout_column="9"
+                    android:textColor="#c5c5c5"
+                    android:textAlignment="textStart"
+                    android:paddingLeft="25dp"
+                    android:layout_marginTop="15dp"
+                    android:textStyle="bold"
+                    android:textSize="10dp" />
 
             </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"></TableRow>
 
             <TableRow
                 android:layout_width="match_parent"
@@ -132,25 +179,53 @@
                     android:id="@+id/set3button"
                     android:layout_column="8"
                     android:onClick="sendMessage"
-                    android:background="#2e202a"
+                    android:background="#161014"
                     android:layout_marginTop="10dp"
                     android:maxWidth="500dp"
-                    android:textColor="#787878"
+                    android:textColor="#5b5b5b"
                     android:enabled="true" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/smallstarblue"
+                    android:id="@+id/bluestarimage"
+                    android:scaleType="fitCenter"
+                    android:maxWidth="30dp"
+                    android:maxHeight="30dp"
+                    android:minHeight="30dp"
+                    android:minWidth="30dp"
+                    android:adjustViewBounds="true"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="20dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:text="Total Stars: x"
+                    android:text="="
                     android:id="@+id/totalStars3Text"
                     android:layout_column="9"
                     android:textColor="#c5c5c5"
-                    android:textSize="18dp"
-                    android:textStyle="italic"
+                    android:textStyle="bold"
                     android:textAlignment="textStart"
                     android:paddingLeft="5dp"
-                    android:layout_marginTop="20dp" />
+                    android:layout_marginTop="15dp"
+                    android:textSize="22dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="12 stars needed in set 2 to unlock"
+                    android:id="@+id/set3locked"
+                    android:layout_column="9"
+                    android:textColor="#c5c5c5"
+                    android:textAlignment="textStart"
+                    android:paddingLeft="25dp"
+                    android:layout_marginTop="15dp"
+                    android:textStyle="bold"
+                    android:textSize="10dp" />
             </TableRow>
 
             <TableRow

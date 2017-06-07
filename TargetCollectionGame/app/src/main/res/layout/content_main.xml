@@ -21,12 +21,17 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/mainLogo"
             android:layout_column="0"
-            android:minWidth="100dp"
-            android:minHeight="50dp"
+            android:minWidth="150dp"
+            android:minHeight="60dp"
+            android:maxWidth="150dp"
+            android:id="@+id/chapterImage"
             android:adjustViewBounds="true"
-            android:maxWidth="330dp" />
+            android:maxHeight="60dp"
+            android:baselineAlignBottom="false"
+            android:paddingRight="300px"
+            android:paddingTop="20px"
+            android:paddingBottom="10px" />
 
     </TableRow>
 
@@ -37,10 +42,14 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/chapterImage"
+            android:id="@+id/chapterTextureImage"
             android:layout_column="0"
-            android:paddingBottom="10dp"
-            android:paddingRight="100dp" />
+            android:adjustViewBounds="true"
+            android:maxWidth="761dp"
+            android:minHeight="51dp"
+            android:minWidth="761dp"
+            android:maxHeight="51dp"
+            android:layout_marginBottom="150px" />
     </TableRow>
 
     <TableLayout
@@ -117,13 +126,15 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="     Level 1     "
+                android:text="         level 1         "
                 android:id="@+id/level1button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="@drawable/button"
+                android:background="@drawable/button1"
                 android:textColor="#cae4c3"
-                android:focusableInTouchMode="true" />
+                android:focusableInTouchMode="true"
+                android:capitalize="none"
+                android:textAllCaps="false" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -131,17 +142,19 @@
                 android:id="@+id/ratingBar1"
                 android:layout_column="18"
                 android:numStars="4"
-                android:scaleX=".7"
-                android:scaleY=".7"
+                android:scaleX=".5"
+                android:scaleY=".5"
                 android:longClickable="false"
                 android:isIndicator="true"
-                android:progressTint="#4700aa"
+                android:progressTint="#ffffff"
                 android:rating="3"
                 android:secondaryProgressTint="#000000"
-                android:layout_marginLeft="-10dp"
                 android:layout_marginRight="6dp"
                 android:background="#000000"
-                android:progressBackgroundTint="#2f0a47" />
+                android:progressBackgroundTint="#1c1c1c"
+                android:layout_marginBottom="-30dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="-45dp" />
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -171,13 +184,14 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Level 2"
+                android:text=" level 2 "
                 android:id="@+id/level2button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
                 android:textColor="#cae4c3"
-                android:background="@drawable/button"
-                android:focusableInTouchMode="true" />
+                android:background="@drawable/button1"
+                android:focusableInTouchMode="true"
+                android:textAllCaps="false" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -185,16 +199,18 @@
                 android:id="@+id/ratingBar2"
                 android:layout_column="18"
                 android:numStars="4"
-                android:scaleX=".7"
-                android:scaleY=".7"
+                android:scaleX=".5"
+                android:scaleY=".5"
                 android:longClickable="false"
                 android:isIndicator="true"
-                android:progressTint="#4700aa"
+                android:progressTint="#ffffff"
                 android:rating="3"
                 android:secondaryProgressTint="#000000"
                 android:layout_marginRight="6dp"
-                android:layout_marginLeft="-10dp"
-                android:progressBackgroundTint="#2f0a47" />
+                android:progressBackgroundTint="#1c1c1c"
+                android:layout_marginBottom="-30dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="-45dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -207,6 +223,7 @@
                 android:visibility="invisible"
                 android:layout_marginTop="12dp"
                 android:textSize="14sp" />
+
         </TableRow>
 
         <TableRow
@@ -217,13 +234,14 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Level 3"
+                android:text=" level 3 "
                 android:id="@+id/level3button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="@drawable/button"
+                android:background="@drawable/button1"
                 android:textColor="#cae4c3"
-                android:focusableInTouchMode="true" />
+                android:focusableInTouchMode="true"
+                android:textAllCaps="false" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -231,16 +249,18 @@
                 android:id="@+id/ratingBar3"
                 android:layout_column="18"
                 android:numStars="4"
-                android:scaleX=".7"
-                android:scaleY=".7"
+                android:scaleX=".5"
+                android:scaleY=".5"
                 android:longClickable="false"
                 android:isIndicator="true"
-                android:progressTint="#4700aa"
+                android:progressTint="#ffffff"
                 android:rating="2"
                 android:secondaryProgressTint="#000000"
-                android:layout_marginLeft="-10dp"
                 android:layout_marginRight="6dp"
-                android:progressBackgroundTint="#2f0a47" />
+                android:progressBackgroundTint="#1c1c1c"
+                android:layout_marginBottom="-30dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="-45dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -263,13 +283,14 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Level 4"
+                android:text=" level 4 "
                 android:id="@+id/level4button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="@drawable/button"
+                android:background="@drawable/button1"
                 android:textColor="#cae4c3"
-                android:focusableInTouchMode="true" />
+                android:focusableInTouchMode="true"
+                android:textAllCaps="false" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -277,16 +298,18 @@
                 android:id="@+id/ratingBar4"
                 android:layout_column="18"
                 android:numStars="4"
-                android:scaleX=".7"
-                android:scaleY=".7"
+                android:scaleX=".5"
+                android:scaleY=".5"
                 android:longClickable="false"
                 android:isIndicator="true"
-                android:progressTint="#4700aa"
-                android:rating="0"
+                android:progressTint="#ffffff"
+                android:rating="2"
                 android:secondaryProgressTint="#000000"
-                android:layout_marginLeft="-10dp"
                 android:layout_marginRight="6dp"
-                android:progressBackgroundTint="#2f0a47" />
+                android:progressBackgroundTint="#1c1c1c"
+                android:layout_marginBottom="-30dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="-45dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -309,13 +332,14 @@
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Level 5"
+                android:text=" level 5 "
                 android:id="@+id/level5button"
                 android:layout_column="0"
                 android:onClick="sendMessage"
-                android:background="@drawable/button"
+                android:background="@drawable/button1"
                 android:textColor="#cae4c3"
-                android:focusableInTouchMode="true" />
+                android:focusableInTouchMode="true"
+                android:textAllCaps="false" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -323,16 +347,18 @@
                 android:id="@+id/ratingBar5"
                 android:layout_column="18"
                 android:numStars="2"
-                android:scaleX=".7"
-                android:scaleY=".7"
+                android:scaleX=".5"
+                android:scaleY=".5"
                 android:longClickable="false"
                 android:isIndicator="true"
-                android:progressTint="#4700aa"
+                android:progressTint="#ffffff"
                 android:rating="0"
                 android:layout_marginRight="6dp"
-                android:layout_marginLeft="-10dp"
-                android:progressBackgroundTint="#2f0a47"
-                android:backgroundTintMode="multiply" />
+                android:progressBackgroundTint="#1c1c1c"
+                android:backgroundTintMode="multiply"
+                android:layout_marginBottom="-30dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="-45dp" />
 
             <TextView
                 android:layout_width="wrap_content"
