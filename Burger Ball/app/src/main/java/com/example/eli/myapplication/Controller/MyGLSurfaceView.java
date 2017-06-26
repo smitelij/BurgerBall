@@ -32,18 +32,14 @@ import com.example.eli.myapplication.Resources.CommonFunctions;
 public class MyGLSurfaceView extends GLSurfaceView {
 
     private final MyGLRenderer mRenderer;
-    private Context context;
 
     private boolean mFiringBall;
     private boolean firstBall = true;
     private GameEngine mGame;
 
-    private MediaPlayer mediaPlayer;
-
     public MyGLSurfaceView(Context context, GameEngine game) {
         super(context);
 
-        this.context = context;
         // Create an OpenGL ES 2.0 context.
         setEGLContextClientVersion(3);
 
@@ -77,8 +73,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
                     return false;
                 }
 
-                mediaPlayer = MediaPlayer.create(context, R.raw.ballpullbackfinal);
-                mediaPlayer.start();
+                mGame.playBallPullBack();
 
                 PointF responseCenter = mGame.getInitialBallCenter();
                 if (responseCenter == null) {
@@ -111,7 +106,6 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
                     PointF initialVelocity = CommonFunctions.calculateInitialVelocity(xChange,yChange);
 
-                    mediaPlayer.stop();
                     mGame.activateBall(initialVelocity);
                     if (firstBall) {
                         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);

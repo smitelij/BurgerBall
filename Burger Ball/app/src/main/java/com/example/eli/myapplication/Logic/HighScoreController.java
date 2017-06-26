@@ -23,8 +23,6 @@ public class HighScoreController {
 
     public HashMap<String, String> getUserScores(String currentUser){
 
-        System.out.println("high score file parse.");
-
         HashMap highScores = new HashMap();
 
         //defaults
@@ -47,20 +45,14 @@ public class HighScoreController {
 
             String result = sb.toString();
 
-            System.out.println("RESULT: " + result);
-
             String[] allUserScores = result.split("\\*");
 
             for (String currentUserScore : allUserScores){
-
-                System.out.println("currentUserScore: " + currentUserScore);
 
                 if (currentUserScore.startsWith(currentUser)){
                     String[] allLevelScores = currentUserScore.split("\\&");
 
                     for (String currentLevel : allLevelScores){
-                        System.out.println("setSelection: " + currentLevel);
-
                         // set 1
                         if (currentLevel.startsWith("1.1")){
                             highScores.put("1.1",currentLevel.substring(4));

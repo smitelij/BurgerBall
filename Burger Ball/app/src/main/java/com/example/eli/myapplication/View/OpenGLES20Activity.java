@@ -22,6 +22,7 @@ import android.os.Bundle;
 
 import com.example.eli.myapplication.Controller.GameEngine;
 import com.example.eli.myapplication.Controller.MyGLSurfaceView;
+import com.example.eli.myapplication.Logic.MediaPlayerService;
 import com.example.eli.myapplication.View.MainActivity;
 
 public class OpenGLES20Activity extends Activity {
@@ -61,6 +62,12 @@ public class OpenGLES20Activity extends Activity {
         // If you de-allocated graphic objects for onPause()
         // this is a good place to re-allocate them.
         mGLView.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mGame.releaseSounds();
     }
 
 

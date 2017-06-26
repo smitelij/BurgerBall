@@ -251,4 +251,53 @@ public class CommonFunctions {
     public static PointF calculateAndroidBallCenter(PointF arenaBallCenter) {
         return new PointF(arenaBallCenter.x / GameState.xRatioAndroidToArena, GameState.mHeight - (arenaBallCenter.y / GameState.yRatioAndroidToArena));
     }
+
+    public static float getFreqOfBoundary(float area) {
+        float min = 20f;
+        float max = 10000f;
+
+        float freqMax = 2.0f;
+        float freqMin = 0.5f;
+
+        if (area < min) {
+            return 2.0f;
+        }
+        if (area > max) {
+            return 0.5f;
+        }
+
+        float freqAdjustRate = (freqMax - freqMin);
+        float maxAdjusted = max - min;
+        float rate = (max- area) / maxAdjusted;
+        float areaToFreq = freqAdjustRate / maxAdjusted;
+        float areaRate = rate * maxAdjusted;
+
+        return (areaRate * areaToFreq) + (freqMin);
+    }
+
+    public static float getIntensityOfWallSound(float surfaceVelocity) {
+        float min = 0.3f;
+        float max = 20f;
+
+        if (surfaceVelocity < min) {
+            return 0f;
+        }
+        if (surfaceVelocity > max) {
+            return 1f;
+        }
+        return surfaceVelocity / (max - min);
+    }
+
+    public static float getIntensityOfBallSound(float ballVelocityChange) {
+        float min = 0.3f;
+        float max = 6f;
+
+        if (ballVelocityChange < min) {
+            return 0f;
+        }
+        if (ballVelocityChange > max) {
+            return 1f;
+        }
+        return ballVelocityChange / (max - min);
+    }
 }

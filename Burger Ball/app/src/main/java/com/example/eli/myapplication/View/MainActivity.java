@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +25,7 @@ import com.example.eli.myapplication.Resources.StarRanges;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements View.OnFocusChangeListener{
+public class MainActivity extends BackgroundMusicActivity implements View.OnFocusChangeListener{
 
     private Context context;
     public final static String LEVEL_MESSAGE = "com.example.eli.myapplication.LEVEL_MESSAGE";
@@ -85,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
         currentUserScores = highScoreController.getUserScores(currentUser);
         updateScoreDisplays();
         updateStarsEarned();
-
     }
 
     @TargetApi(16)
@@ -226,6 +226,8 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
                 }
             }
         }
+
+        //bindMPservice();
 
     }
 
@@ -372,7 +374,6 @@ public class MainActivity extends AppCompatActivity implements View.OnFocusChang
 
         startActivityForResult(intent, START_LEVEL);
     }
-
 
 }
 

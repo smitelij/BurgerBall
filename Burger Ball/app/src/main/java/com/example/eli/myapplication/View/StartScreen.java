@@ -4,10 +4,13 @@ package com.example.eli.myapplication.View;
  * Created by Eli on 9/5/2016.
  */
 
-import android.content.Context;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -15,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.eli.myapplication.Logic.Ball.MusicPlayerServiceConnection;
+import com.example.eli.myapplication.Logic.MediaPlayerService;
 import com.example.eli.myapplication.Resources.StarRanges;
 import com.example.eli.myapplication.R;
 
@@ -23,16 +28,16 @@ import java.util.HashMap;
 
 
 
-public class StartScreen extends AppCompatActivity {
+public class StartScreen extends BackgroundMusicActivity {
 
-    private Context context;
+    /*
     public final static String START_SCREEN_MESSAGE = "com.example.eli.myapplication.START_SCREEN_MESSAGE";
     public final static String STORAGE_LOCATION = "target.txt";
     public final String currentUser = "Eli";
     public String currentLevel;
     private HashMap currentUserScores;
     private StarRanges starRangeData = new StarRanges();
-
+*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,9 +57,6 @@ public class StartScreen extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(Color.LTGRAY);
         toolbar.setTitle("");
-
-        context = getApplicationContext();
-
     }
 
     @Override
@@ -93,8 +95,8 @@ public class StartScreen extends AppCompatActivity {
                 break;
 
             case (R.id.optionsButton):
-                //Intent intent = new Intent(this, SetSelect.class);
-                //startActivity(intent);
+                Intent optionIntent = new Intent(this, OptionsScreen.class);
+                startActivity(optionIntent);
                 break;
         }
 

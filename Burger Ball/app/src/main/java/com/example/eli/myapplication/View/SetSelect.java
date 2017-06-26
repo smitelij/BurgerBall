@@ -13,7 +13,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.eli.myapplication.Logic.Ball.MusicPlayerServiceConnection;
 import com.example.eli.myapplication.Logic.HighScoreController;
+import com.example.eli.myapplication.Logic.MediaPlayerService;
+import com.example.eli.myapplication.Logic.OptionsController;
 import com.example.eli.myapplication.R;
 import com.example.eli.myapplication.Resources.StarRanges;
 
@@ -22,7 +25,7 @@ import java.util.HashMap;
 /**
  * Created by Eli on 9/5/2016.
  */
-public class SetSelect extends AppCompatActivity{
+public class SetSelect extends BackgroundMusicActivity {
 
 
 /**
@@ -33,12 +36,14 @@ public class SetSelect extends AppCompatActivity{
 
     private Context context;
     public final static String SET_SELECT_MESSAGE = "com.example.eli.myapplication.SET_SELECT_MESSAGE";
-    public final static String STORAGE_LOCATION = "target.txt";
+    public final static String HISCORE_STORAGE_LOCATION = "target.txt";
+    public final static String OPTIONS_STORAGE_LOCATION = "options.txt";
     public final String currentUser = "Eli";
     public String setSelection;
     private HashMap currentUserScores;
     private StarRanges starRangeData = new StarRanges();
     private HighScoreController highScoreController;
+    private OptionsController optionsController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,15 +59,19 @@ public class SetSelect extends AppCompatActivity{
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         loadScoresAndUpdateDisplays();
     }
 
     private void loadScoresAndUpdateDisplays() {
         context = getApplicationContext();
-        highScoreController = new HighScoreController(context,STORAGE_LOCATION);
+        highScoreController = new HighScoreController(context, HISCORE_STORAGE_LOCATION);
         currentUserScores = highScoreController.getUserScores(currentUser);
+
+        optionsController = new OptionsController(context, OPTIONS_STORAGE_LOCATION);
+        boolean isSetOverrideEnabled = optionsController.getOption("override_set_filter");
+
         int totalStarsChapter1 = countTotalStars(1);
         int totalStarsChapter2 = countTotalStars(2);
         int totalStarsChapter3 = countTotalStars(3);
@@ -101,7 +110,7 @@ public class SetSelect extends AppCompatActivity{
         // SET 2
         //
         //If set 2 is UNLOCKED
-        if (totalStarsChapter1 >= 12) {
+        if (totalStarsChapter1 >= 12 || isSetOverrideEnabled) {
             set2button.setTextColor(Color.WHITE);
             set2button.setBackgroundColor(unlockedSetBackground);
             set2button.setClickable(true);
@@ -131,7 +140,7 @@ public class SetSelect extends AppCompatActivity{
         // SET 3
         //
         //If set 3 is UNLOCKED
-        if (totalStarsChapter2 >= 12) {
+        if (totalStarsChapter2 >= 12 || isSetOverrideEnabled) {
             set3button.setTextColor(Color.WHITE);
             set3button.setBackgroundColor(unlockedSetBackground);
             set3button.setClickable(true);
@@ -290,8 +299,6 @@ public class SetSelect extends AppCompatActivity{
 
         return rating;
     }
-
-
 
 
 }

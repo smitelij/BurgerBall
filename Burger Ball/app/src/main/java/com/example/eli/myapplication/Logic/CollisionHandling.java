@@ -3,6 +3,7 @@ package com.example.eli.myapplication.Logic;
 import android.graphics.PointF;
 
 import com.example.eli.myapplication.Logic.Ball.BallEngine;
+import com.example.eli.myapplication.Model.Obstacle;
 import com.example.eli.myapplication.Resources.CommonFunctions;
 import com.example.eli.myapplication.Resources.GameState;
 import com.example.eli.myapplication.Model.Ball;
@@ -81,7 +82,7 @@ public class CollisionHandling {
     // ...
     // In order to better handle an edge case involving a ball simultaneously colliding with
     // a boundary and another ball, it makes more sense to handle boundary collisions first
-    public void handleBoundaryCollisions(BallEngine ballEngine){
+    public void handleBoundaryCollisions(BallEngine ballEngine, SoundEngine soundEngine){
         for (Collision currentCollision : mBoundaryCollisions){
             if (currentCollision.getObstacle().getType() == GameState.INTERACTABLE_MOVING_OBSTACLE){
                 calculateSpinChangeMovingBorder(ballEngine, currentCollision);
@@ -90,13 +91,29 @@ public class CollisionHandling {
                 calculateSpinChangeStationaryBorder(ballEngine, currentCollision);
                 calculateVelocityStationaryBorderCollision(ballEngine, currentCollision);
             }
+            float boundaryArea = ((Obstacle)currentCollision.getObstacle()).getArea();
+            System.out.println("bounday area: " + boundaryArea);
+            float boundaryFreq = CommonFunctions.getFreqOfBoundary(boundaryArea);
+
+            float surfaceVelocity = Math.abs(getCollisionVelocity(ballEngine, currentCollision));
+            float volume = CommonFunctions.getIntensityOfWallSound(surfaceVelocity);
+            if (volume != 0) {
+                soundEngine.playBallWallCollide(volume, boundaryFreq);
+            }
         }
     }
 
-    public void handleBallCollisions(BallEngine ballEngine){
+    public void handleBallCollisions(BallEngine ballEngine, SoundEngine soundEngine){
         for (Collision currentCollision : mBallCollisions){
             calculateSpinChangeBallCollision(currentCollision, ballEngine);
             calculateVelocityBallCollision(currentCollision, ballEngine);
+
+            Ball ball = currentCollision.getBall();
+            PointF prevVelocity = ballEngine.getAvgVelocity(ball,0);
+            PointF newVelocity = ball.getNewVelocity();
+            float change = new PointF(prevVelocity.x - newVelocity.x, prevVelocity.y - newVelocity.y).length();
+            float volume = CommonFunctions.getIntensityOfBallSound(change);
+            soundEngine.playBallBallCollide(volume,0.5f);
         }
     }
 
@@ -303,15 +320,18 @@ public class CollisionHandling {
         calculateSpinChange(ball2, ball2vel, collisionAxis1);
     }
 
-    private void calculateSpinChange(Ball ball, PointF oldVelocity, PointF boundaryAxis) {
+    private float getCollisionVelocity(BallEngine ballEngine, Collision collision) {
+        Ball ball = collision.getBall();
+        PointF boundaryAxis = collision.getBoundaryAxis();
+        PointF oldVelocity = ballEngine.getVelocity(ball, collision.getTime());
 
-        System.out.println("calculate spin change: boundary axis - " + boundaryAxis);
-        System.out.println("calculate spin change: old velocity - " + oldVelocity);
+        return CommonFunctions.dotProduct(oldVelocity, boundaryAxis);
+    }
+
+    private void calculateSpinChange(Ball ball, PointF oldVelocity, PointF boundaryAxis) {
 
         PointF surfaceVector = new PointF(-boundaryAxis.y, boundaryAxis.x);
         float surfaceVelocity = CommonFunctions.dotProduct(oldVelocity, surfaceVector);
-
-        System.out.println("surface velocity: " + surfaceVelocity);
 
         if (Math.abs(oldVelocity.length()) < 1.2) {
             System.out.println("less than 1- using normal spin");

@@ -217,6 +217,10 @@ public class Ball extends Interactable implements Movable {
         mNewVelocity = new PointF(0f,0f);
     }
 
+    public PointF getNewVelocity() {
+        return mNewVelocity;
+    }
+
     public float getCurrentRotation() {
         return currentRotation;
     }

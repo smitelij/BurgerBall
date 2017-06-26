@@ -29,6 +29,8 @@ public class Obstacle extends Interactable {
     ArrayList<PointF> boundaryAxisCollection = new ArrayList<>();
     boolean isBottomBoundary = false;
 
+    float area;
+
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
      */
@@ -38,6 +40,7 @@ public class Obstacle extends Interactable {
         setType(GameState.INTERACTABLE_OBSTACLE);
         calculateBoundaryAxes();
 
+        calculateArea();
     }
 
     /**
@@ -106,6 +109,24 @@ public class Obstacle extends Interactable {
 
     public boolean isBottomBoundary() {
         return isBottomBoundary;
+    }
+
+    public void calculateArea() {
+        PointF[] obstacleCoords = get2dCoordArray();
+
+        float dist1 = new PointF(obstacleCoords[0].x - obstacleCoords[1].x, obstacleCoords[0].y - obstacleCoords[1].y).length();
+        float dist2 = new PointF(obstacleCoords[1].x - obstacleCoords[2].x, obstacleCoords[1].y - obstacleCoords[1].y).length();
+        float dist3 = new PointF(obstacleCoords[2].x - obstacleCoords[3].x, obstacleCoords[2].y - obstacleCoords[3].y).length();
+        float dist4 = new PointF(obstacleCoords[3].x - obstacleCoords[0].x, obstacleCoords[3].y - obstacleCoords[0].y).length();
+
+        float area1 = (dist1 * dist2) / 2;
+        float area2 = (dist3 * dist4) / 2;
+
+        area = area1+area2;
+    }
+
+    public float getArea() {
+        return area;
     }
 
 }

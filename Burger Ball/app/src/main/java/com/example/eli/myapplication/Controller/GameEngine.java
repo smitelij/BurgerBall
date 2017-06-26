@@ -12,6 +12,7 @@ import com.example.eli.myapplication.Logic.Ball.ActivateBallLogic;
 import com.example.eli.myapplication.Logic.Ball.BallEngine;
 import com.example.eli.myapplication.Logic.CollisionDetection;
 import com.example.eli.myapplication.Logic.CollisionHandling;
+import com.example.eli.myapplication.Logic.SoundEngine;
 import com.example.eli.myapplication.Model.EndLevelFailImage;
 import com.example.eli.myapplication.Model.EndLevelSuccessImage;
 import com.example.eli.myapplication.Model.FinalScoreText;
@@ -115,6 +116,7 @@ public class GameEngine {
     private FinalScoreText finalScoreText;
 
     private MediaPlayer mpBallFire;
+    private SoundEngine soundEngine;
 
 
     //--------------------
@@ -165,7 +167,8 @@ public class GameEngine {
         finalScoreText = levelInitialization.getFinalScoreText();
 
         //Sounds
-        mpBallFire = MediaPlayer.create(mActivityContext, R.raw.ballfirefinal);
+        soundEngine = new SoundEngine(mActivityContext);
+        soundEngine.playMusic();
 
     }
 
@@ -199,11 +202,7 @@ public class GameEngine {
                 currentLevelStatus = GameStatus.ACTIVE;
                 mBallWaiting = false; //clear the flag in case it got activated
 
-                mpBallFire.stop();
-                try {
-                    mpBallFire.prepare();
-                } catch (Exception e) { }
-                mpBallFire.start();
+                soundEngine.playBallFire(0.6f,1);
 
                 if (areAllBallsFired()) {
                     ballEngine.setAllBallsFired();
@@ -499,8 +498,8 @@ public class GameEngine {
         CH.updateCollisionCollections(ballEngine, firstCollisions);
 
         //Calculate new velocity for balls that have collided
-        CH.handleBoundaryCollisions(ballEngine);  //Do boundary collisions first... more info in method header
-        CH.handleBallCollisions(ballEngine);
+        CH.handleBoundaryCollisions(ballEngine,soundEngine);  //Do boundary collisions first... more info in method header
+        CH.handleBallCollisions(ballEngine,soundEngine);
 
         //Update velocities (not done above, for cases that one ball collides with multiple things...
         //then we don't want to update the calculated velocity until after going through all collisions)
@@ -953,6 +952,7 @@ public class GameEngine {
         levelEndFrameCount++;
 
         if(levelEndFrameCount == 240) {
+            releaseSounds();
             returnToSelectScreen();
         }
 
@@ -1008,6 +1008,12 @@ public class GameEngine {
         return (mCurrentActiveBallID < mTotalBalls);
     }
 
+    public void playBallPullBack() {
+        soundEngine.playBallPullBack(0.6f,1);
+    }
 
+    public void releaseSounds() {
+        soundEngine.release();
+    }
 
 }
