@@ -37,7 +37,6 @@ public class SetSelect extends BackgroundMusicActivity {
     private Context context;
     public final static String SET_SELECT_MESSAGE = "com.example.eli.myapplication.SET_SELECT_MESSAGE";
     public final static String HISCORE_STORAGE_LOCATION = "target.txt";
-    public final static String OPTIONS_STORAGE_LOCATION = "options.txt";
     public final String currentUser = "Eli";
     public String setSelection;
     private HashMap currentUserScores;

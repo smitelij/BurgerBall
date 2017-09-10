@@ -117,12 +117,13 @@ public class GameEngine {
 
     private MediaPlayer mpBallFire;
     private SoundEngine soundEngine;
+    private boolean muteSound;
 
 
     //--------------------
     //Initialize the GameEngine class
     //
-    public GameEngine(String levelString, Activity parentActivity){
+    public GameEngine(String levelString, boolean muteSound, Activity parentActivity){
 
         System.out.println(levelString);
         String[] parts = levelString.split("\\.");
@@ -131,6 +132,7 @@ public class GameEngine {
         mChapter = Integer.parseInt(chapterPart);
         mLevel = Integer.parseInt(levelPart);
         mParentActivity = parentActivity;
+        this.muteSound = muteSound;
     }
 
     //--------------------
@@ -167,8 +169,8 @@ public class GameEngine {
         finalScoreText = levelInitialization.getFinalScoreText();
 
         //Sounds
-        soundEngine = new SoundEngine(mActivityContext);
-        soundEngine.playMusic();
+        soundEngine = new SoundEngine(mActivityContext,muteSound);
+        soundEngine.start();
 
     }
 
@@ -202,7 +204,7 @@ public class GameEngine {
                 currentLevelStatus = GameStatus.ACTIVE;
                 mBallWaiting = false; //clear the flag in case it got activated
 
-                soundEngine.playBallFire(0.6f,1);
+                soundEngine.playBallFire(0.4f,1);
 
                 if (areAllBallsFired()) {
                     ballEngine.setAllBallsFired();
@@ -1009,7 +1011,7 @@ public class GameEngine {
     }
 
     public void playBallPullBack() {
-        soundEngine.playBallPullBack(0.6f,1);
+        soundEngine.playBallPullBack(0.5f,1);
     }
 
     public void releaseSounds() {

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class SoundEngine {
 
     boolean active = false;
+    boolean muteSound = false;
 
     private Context context;
     public enum SoundType {BALL_FIRE, BALL_WALL_COLLIDE, BALL_BALL_COLLIDE}
@@ -34,7 +35,7 @@ public class SoundEngine {
     private MediaPlayer musicPlayer;
 
     @TargetApi(21)
-    public SoundEngine(Context context) {
+    public SoundEngine(Context context, boolean muteSound) {
         this.context = context;
 
         SoundPool.Builder builder = new SoundPool.Builder();
@@ -44,35 +45,47 @@ public class SoundEngine {
         ballFireHandle = soundPool.load(context, R.raw.ballfirefinal, 1);
         ballBallCollideHandle = soundPool.load(context, R.raw.ballballcollidefinal, 1);
         ballWallCollideHandle = soundPool.load(context, R.raw.ballwallcollidefinal, 1);
-        musicPlayer = MediaPlayer.create(context,R.raw.fbc2final);
+        musicPlayer = MediaPlayer.create(context,R.raw.fbcfull);
         active = true;
+        this.muteSound = muteSound;
     }
 
     public void playBallFire(float volume, float freq) {
+        if (muteSound) {
+            return;
+        }
         soundPool.play(ballFireHandle,volume, volume, 1, 0, freq);
     }
 
     public void playBallBallCollide(float volume, float freq) {
+        if (muteSound) {
+            return;
+        }
         soundPool.play(ballBallCollideHandle,volume, volume, 1, 0, freq);
     }
 
     public void playBallWallCollide(float volume, float freq) {
-        System.out.println("FREQUENCY: " + freq);
+        if (muteSound) {
+            return;
+        }
         soundPool.play(ballWallCollideHandle,volume,volume,1,0,freq);
     }
 
     public void playBallPullBack(float volume, float freq) {
+        if (muteSound) {
+            return;
+        }
         soundPool.play(ballPullHandle, volume, volume, 1,0,freq);
     }
 
-    public void playMusic() {
-        musicPlayer.start();
+    public void start() {
+        //musicPlayer.start();
     }
 
     public void release() {
         if (active) {
             soundPool.release();
-            musicPlayer.release();
+            //musicPlayer.release();
             active = false;
         }
     }

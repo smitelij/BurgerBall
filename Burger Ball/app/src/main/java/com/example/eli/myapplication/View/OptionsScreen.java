@@ -40,10 +40,22 @@ public class OptionsScreen extends BackgroundMusicActivity {
             optionsMap = optionsController.getOptions();
         }
 
+        //Override set filter
         CheckBox overrideSetFilterCB = (CheckBox) findViewById(R.id.overridesetfilter);
-
         String overrideSetFilter = optionsMap.get("override_set_filter");
         overrideSetFilterCB.setChecked(overrideSetFilter.equals("1"));
+
+        //mute music
+        CheckBox muteMusicCB = (CheckBox) findViewById(R.id.mutemusic);
+        String muteMusic = optionsMap.get("muteMusic");
+        muteMusicCB.setChecked(muteMusic.equals("1"));
+
+        //mute sound
+        CheckBox muteSoundCB = (CheckBox) findViewById(R.id.mutesound);
+        String muteSound = optionsMap.get("muteSound");
+        muteSoundCB.setChecked(muteSound.equals("1"));
+
+
     }
 
     public void sendMessage(View view) {
@@ -66,11 +78,34 @@ public class OptionsScreen extends BackgroundMusicActivity {
     }
 
     private void updateOptionsMap() {
+
+        //Override set filter
         CheckBox overrideSetFilterCB = (CheckBox) findViewById(R.id.overridesetfilter);
         if (overrideSetFilterCB.isChecked()) {
             optionsMap.put("override_set_filter","1");
         } else {
             optionsMap.put("override_set_filter","0");
+        }
+
+        CheckBox muteMusicCB = (CheckBox) findViewById(R.id.mutemusic);
+        String muteMusicPrevious = optionsMap.get("muteMusic");
+        if (muteMusicCB.isChecked()) {
+            if (muteMusicPrevious.equals("0")) {
+                stopMusic();
+            }
+            optionsMap.put("muteMusic","1");
+        } else {
+            if (muteMusicPrevious.equals("1")) {
+                restartMusic();
+            }
+            optionsMap.put("muteMusic","0");
+        }
+
+        CheckBox muteSoundCB = (CheckBox) findViewById(R.id.mutesound);
+        if (muteSoundCB.isChecked()) {
+            optionsMap.put("muteSound","1");
+        } else {
+            optionsMap.put("muteSound","0");
         }
     }
 }

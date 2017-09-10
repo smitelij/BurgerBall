@@ -29,15 +29,18 @@ public class MediaPlayerService extends Service {
     public void onDestroy() {
         System.out.println("destroy music service.");
         started = false;
-        player.release();
+        if (player != null) {
+            player.release();
+        }
     }
 
 
     @Override
     public IBinder onBind(Intent intent) {
-        if (! started) {
+        boolean muteMusic = intent.getBooleanExtra("muteMusic", false);
+        if ((! started) && (! muteMusic)){
             System.out.println("create music service");
-            player = MediaPlayer.create(getBaseContext(), R.raw.fbc1final);
+            player = MediaPlayer.create(getBaseContext(), R.raw.fbcfull);
             player.setLooping(true);
             player.start();
             started = true;
@@ -59,10 +62,15 @@ public class MediaPlayerService extends Service {
     }
 
     public void restartMusic() {
-        player = MediaPlayer.create(getBaseContext(), R.raw.fbc1final);
+        player = MediaPlayer.create(getBaseContext(), R.raw.fbcfull);
         player.setLooping(true);
         player.start();
         started = true;
+    }
+
+    public void stopMusic() {
+        player.stop();
+        player.release();
     }
 
 }

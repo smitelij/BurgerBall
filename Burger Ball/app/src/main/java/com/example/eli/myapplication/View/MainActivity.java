@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.example.eli.myapplication.Controller.GameEngine;
 import com.example.eli.myapplication.Logic.HighScoreController;
+import com.example.eli.myapplication.Logic.OptionsController;
 import com.example.eli.myapplication.R;
 import com.example.eli.myapplication.Resources.StarRanges;
 
@@ -169,39 +170,7 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
     }
 
     public void sendMessage(View view) {
-        Intent intent = new Intent(this, OpenGLES20Activity.class);
-
-        switch (view.getId()){
-
-            case (R.id.level1button):
-                currentLevel = currentSet + ".1";
-                intent.putExtra(LEVEL_MESSAGE, currentLevel);
-                break;
-
-            case (R.id.level2button):
-                currentLevel = currentSet + ".2";
-                intent.putExtra(LEVEL_MESSAGE, currentLevel);
-                break;
-
-            case (R.id.level3button):
-                currentLevel = currentSet + ".3";
-                intent.putExtra(LEVEL_MESSAGE, currentLevel);
-                break;
-
-            case (R.id.level4button):
-                currentLevel = currentSet + ".4";
-                intent.putExtra(LEVEL_MESSAGE, currentLevel);
-                break;
-
-            case (R.id.level5button):
-                currentLevel = currentSet + ".5";
-                intent.putExtra(LEVEL_MESSAGE, currentLevel);
-                break;
-
-        }
-
-        startActivityForResult(intent, START_LEVEL);
-
+        handleChangeEvent(view);
     }
 
     @Override
@@ -343,9 +312,14 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
             return;
         }
 
+        handleChangeEvent(v);
+    }
+
+    private void handleChangeEvent(View view) {
         Intent intent = new Intent(this, OpenGLES20Activity.class);
 
-        switch(v.getId()){
+        switch (view.getId()){
+
             case (R.id.level1button):
                 currentLevel = currentSet + ".1";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
@@ -370,9 +344,18 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
                 currentLevel = currentSet + ".5";
                 intent.putExtra(LEVEL_MESSAGE, currentLevel);
                 break;
+
         }
 
+        boolean muteSound = shouldMuteSound();
+        intent.putExtra("muteSound", muteSound);
         startActivityForResult(intent, START_LEVEL);
+    }
+
+    private boolean shouldMuteSound() {
+        OptionsController optionsController = new OptionsController(this, OPTIONS_STORAGE_LOCATION);
+        boolean shouldMuteSound = optionsController.getOption("muteSound");
+        return shouldMuteSound;
     }
 
 }

@@ -148,7 +148,7 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:text="Another option"
+                android:text="Mute music"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView2"
@@ -160,7 +160,7 @@
                 android:text="CheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/checkBox2"
+                android:id="@+id/mutemusic"
                 android:checked="true"
                 android:enabled="true"
                 android:visibility="visible"
@@ -174,7 +174,7 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:text="Another option"
+                android:text="Mute sound"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView3"
@@ -186,7 +186,7 @@
                 android:text="CheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/checkBox3"
+                android:id="@+id/mutesound"
                 android:checked="true"
                 android:enabled="true"
                 android:visibility="visible"

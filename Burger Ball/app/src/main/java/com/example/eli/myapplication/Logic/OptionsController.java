@@ -30,6 +30,8 @@ public class OptionsController {
 
         //defaults
         optionMap.put("override_set_filter","0");
+        optionMap.put("muteMusic","0");
+        optionMap.put("muteSound","0");
 
         try {
 
@@ -72,6 +74,8 @@ public class OptionsController {
     public void resetOptions(){
 
         String optOverrideSetFilter = "&override_set_filter=" + "0";
+        String optMuteMusic = "&muteMusic=" + "0";
+        String optMuteSound = "&muteSound=" + "0";
 
         FileOutputStream outputStream;
 
@@ -79,6 +83,8 @@ public class OptionsController {
             outputStream = context.openFileOutput(storageLocation, Context.MODE_PRIVATE);
 
             outputStream.write(optOverrideSetFilter.getBytes());
+            outputStream.write(optMuteMusic.getBytes());
+            outputStream.write(optMuteSound.getBytes());
 
             outputStream.close();
         } catch (Exception e) {

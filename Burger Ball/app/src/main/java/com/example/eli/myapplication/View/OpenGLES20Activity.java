@@ -25,7 +25,7 @@ import com.example.eli.myapplication.Controller.MyGLSurfaceView;
 import com.example.eli.myapplication.Logic.MediaPlayerService;
 import com.example.eli.myapplication.View.MainActivity;
 
-public class OpenGLES20Activity extends Activity {
+public class OpenGLES20Activity extends BackgroundMusicActivitySimple {
 
     private GLSurfaceView mGLView;
     private GameEngine mGame;
@@ -36,7 +36,8 @@ public class OpenGLES20Activity extends Activity {
 
         Intent intent = getIntent();
         String levelString = intent.getStringExtra(MainActivity.LEVEL_MESSAGE);
-        mGame = new GameEngine(levelString, this);
+        boolean muteSound = intent.getBooleanExtra("muteSound", false);
+        mGame = new GameEngine(levelString, muteSound, this);
 
         // Create a GLSurfaceView instance and set it
         // as the ContentView for this Activity

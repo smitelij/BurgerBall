@@ -1,5 +1,6 @@
 package com.example.eli.myapplication.View;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.example.eli.myapplication.Logic.Ball.MusicPlayerServiceConnection;
 import com.example.eli.myapplication.Logic.MediaPlayerService;
+import com.example.eli.myapplication.Logic.OptionsController;
 
 /**
  * Created by Eli on 6/25/2017.
@@ -17,12 +19,16 @@ import com.example.eli.myapplication.Logic.MediaPlayerService;
 
 public class BackgroundMusicActivity extends AppCompatActivity {
 
+    public final static String OPTIONS_STORAGE_LOCATION = "options.txt";
+
     MediaPlayerService mpService;
     int boundActivities = 0;
 
+
     @Override
     protected void onStart() {
-        bindMPservice();
+        boolean muteMusic = shouldMuteMusic();
+        bindMPservice(muteMusic);
         super.onStart();
     }
 
@@ -32,9 +38,10 @@ public class BackgroundMusicActivity extends AppCompatActivity {
         unbindMP();
     }
 
-    private void bindMPservice() {
+    private void bindMPservice(boolean muteMusic) {
         // Bind to LocalService
         Intent intent = new Intent(this, MediaPlayerService.class);
+        intent.putExtra("muteMusic", muteMusic);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -63,5 +70,19 @@ public class BackgroundMusicActivity extends AppCompatActivity {
 
         }
     };
+
+    public void stopMusic() {
+        mpService.stopMusic();
+    }
+
+    public void restartMusic() {
+        mpService.restartMusic();
+    }
+
+    private boolean shouldMuteMusic() {
+        OptionsController optionsController = new OptionsController(this, OPTIONS_STORAGE_LOCATION);
+        boolean shouldMuteMusic = optionsController.getOption("muteMusic");
+        return shouldMuteMusic;
+    }
 
 }
