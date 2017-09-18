@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ * The purpose of this class is to contain some of the more advanced ball properties and logic. To do this
+ * we maintain multiple hashmaps corresponding to every ball's properties
  * Created by Eli on 1/21/2017.
  */
 
@@ -75,10 +77,8 @@ public class BallEngine {
         }
 
         if (sameLastCollision(currentBall, collision)) {
-            System.out.println("same last collision");
             sameBoundaryCollisionsThisFrame = incrementCollisionMapEntry(sameBoundaryCollisionsThisFrame, currentBall);
         } else {
-            System.out.println("different last collision");
             sameBoundaryCollisionsThisFrame.put(currentBall, 1);
             lastCollisionMap.put(currentBall, collision);
         }
@@ -96,10 +96,8 @@ public class BallEngine {
 
     public int getBoundaryCollisionCountThisFrame(Ball currentBall) {
         if (boundaryCollisionsThisFrame.get(currentBall) == null) {
-            System.out.println("bounday collisions this frame: " + 0);
             return 0;
         }
-        System.out.println("bounday collisions this frame: " + boundaryCollisionsThisFrame.get(currentBall));
         return boundaryCollisionsThisFrame.get(currentBall);
     }
 
@@ -181,10 +179,7 @@ public class BallEngine {
     }
 
     private PointF getCurrentFlatRollDeceleration(Ball currentBall) {
-        System.out.println("get current flat roll deceleration");
         PointF currentVelocity = currentBall.getVelocity();
-        System.out.println("current ball velocity: " + currentVelocity);
-        System.out.println("flat roll deceleration: " + new PointF(-currentVelocity.x * GameState.ROLLING_DECELERATION_CONSTANT,0f));
         return new PointF(-currentVelocity.x * GameState.ROLLING_DECELERATION_CONSTANT,0f);
 
     }
@@ -212,7 +207,6 @@ public class BallEngine {
 
         //if mNewVelocity exists, then we have updated the balls new velocity elsewhere
         if (currentBall.didBallCollide()) {
-            System.out.println("ball collided?");
             currentBall.updateVelocityWithNewVelocity();
 
         //otherwise, just update based on gravity
@@ -230,7 +224,6 @@ public class BallEngine {
             PointF surfaceVelocity = getSurfaceVelocity(currentBall);
             ballVelocity.set(ballVelocity.x - surfaceVelocity.x, ballVelocity.y - surfaceVelocity.y);
         }
-        System.out.println("setting non collision velocity: " + new PointF(ballVelocity.x, ballVelocity.y));
         currentBall.setVelocity(new PointF(ballVelocity.x, ballVelocity.y));
     }
 
@@ -269,7 +262,6 @@ public class BallEngine {
     }
 
     private void setInitialRollingVelocity(Ball currentBall, boolean flatSurface) {
-        System.out.println("set initial rolling velocity.");
         PointF rollingVector = calculateRollingVector(currentBall, flatSurface);
         PointF directionalVelocity = calculateDirectionalVelocity(currentBall, rollingVector, flatSurface);
         PointF finalVelocity = increaseVelocityForElasticLoss(directionalVelocity);
@@ -342,9 +334,7 @@ public class BallEngine {
         }
 
         PointF remainingLength = calculateRemainingDistanceToBeRolled(currentBall);
-        System.out.println("remaining length to be rolleD: " + remainingLength);
         float rollTime = calculateQuadraticRollTime(currentBall, remainingLength);
-        System.out.println("remaining time to be rolled: " + rollTime);
         rollTime = rollTime * 1.05f; //Add a bit extra so we don't get stuck on a corner after rolling.
         rollTimeMap.put(currentBall, rollTime);
     }
@@ -491,7 +481,6 @@ public class BallEngine {
     }
 
     public void handleStuckBall(Ball stuckBall) {
-        System.out.println("HANDLING STUCK BALL");
         PointF collisionAxis = getLastCollision(stuckBall).getBoundaryAxis();
         //displace ball away from the collision axis
         stuckBall.setVelocity(new PointF(-collisionAxis.x, -collisionAxis.y));
@@ -524,7 +513,6 @@ public class BallEngine {
     }
 
     public boolean isBallSlowedOnAnotherBall(Ball currentBall) {
-        System.out.println("get ball collisions this frame: " + getBallCollisionsThisFrame(currentBall));
         return (getBallCollisionsThisFrame(currentBall) > GameState.BALL_BOUNCE_CONSTANT * GameState.FRAME_SIZE);
     }
 
@@ -638,7 +626,6 @@ public class BallEngine {
 
         float surfaceVelocity = CommonFunctions.dotProduct(currentVelocity, surfaceVector);
 
-        System.out.println("surface velocity: " + surfaceVelocity);
         currentBall.setSpin(surfaceVelocity / -8);
     }
 

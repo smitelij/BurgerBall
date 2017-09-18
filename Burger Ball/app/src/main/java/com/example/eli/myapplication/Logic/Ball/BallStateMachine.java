@@ -43,6 +43,7 @@ public class BallStateMachine {
         checkHasBallRolledOffEdge(currentBall, ballEngine);
         checkHasBallStopped(currentBall, ballEngine);
         checkIsBallReallyStuck(currentBall, ballEngine);
+        //checkHasBallCollided(currentBall, ballEngine);
     }
 
     private void updateStoppedBall(Ball currentBall, BallEngine ballEngine) {
@@ -56,7 +57,6 @@ public class BallStateMachine {
     private void checkIsBallSlowedOnBoundary(Ball currentBall, BallEngine ballEngine) {
         //Check if a ball has collided with an identical axis enough times to activate 'slowed ball logic'
         if (ballEngine.isBallSlowedOnConsecutiveCollisionAxis(currentBall)) {
-            System.out.println("ball slowed on consecutive axis... handle slowed ball.");
             ballEngine.handleSlowedBall(currentBall);
         }
     }
@@ -65,30 +65,25 @@ public class BallStateMachine {
         //Check if a ball has collided with any obstacle enough that we can say it is 'stuck'.
         // This would usually mean it is stuck on the corner of an object
         if (ballEngine.isBallSlowedOnCorner(currentBall)) {
-            System.out.println("ball is slowed on some axis.. handle stuck ball");
             ballEngine.handleStuckBall(currentBall);
         }
     }
 
     private void checkIsBallSlowedOnAnotherBall(Ball currentBall, BallEngine ballEngine) {
         if (ballEngine.isBallSlowedOnAnotherBall(currentBall)) {
-            System.out.println("ball slowed on another ball");
             ballEngine.handleBallOnTopOfBall(currentBall);
         }
     }
 
     private void checkIsBallReallyStuck(Ball currentBall, BallEngine ballEngine) {
         //If ball has been stuck for a while, we will simply deactivate.
-        System.out.println("testing if ball is really stuck.");
         if (ballEngine.isBallReallyStuck(currentBall)) {
-            System.out.println("ball is REALLY stuck, deactivating.");
             currentBall.deactivateBall();
         }
     }
 
     private void checkHasBallRolledOffEdge(Ball currentBall, BallEngine ballEngine) {
         if (ballEngine.getRollTimeForBall(currentBall) < 0) {
-            System.out.println("Roll time expired- reactivating rolling ball.");
             ballEngine.activateBall(currentBall);
             //We need to update the balls current velocity, because if we
             // are on a moving object, then we will forget that velocity
@@ -105,12 +100,23 @@ public class BallStateMachine {
         }
 
         if (ballEngine.getVelocity(currentBall,0).length() < GameState.DEACTIVATE_BALL_VELOCITY ) {
-            System.out.println("Stopping rolling ball.");
             if (ActivateBallLogic.isBallInFiringZone(null, currentBall, initialBallCoords) && !allBallsFired) {
                 currentBall.deactivateBall();
             } else {
                 ballEngine.stopBall(currentBall);
             }
+        }
+    }
+
+    private void checkHasBallCollided(Ball currentBall, BallEngine ballEngine) {
+
+        if (ballEngine.getBallCollisionsThisFrame(currentBall) > 0) {
+            currentBall.activateBall();
+            //We need to update the balls current velocity, because if we
+            // are on a moving object, then we will forget that velocity
+            // when we reactivate the ball.
+            PointF currentVelocity = ballEngine.getVelocity(currentBall, 0); //Get balls instantaneous velocity
+            currentBall.setVelocity(currentVelocity);
         }
     }
 }

@@ -20,6 +20,7 @@ import com.example.eli.myapplication.Logic.OptionsController;
 import com.example.eli.myapplication.R;
 import com.example.eli.myapplication.Resources.StarRanges;
 
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 /**
@@ -75,9 +76,16 @@ public class SetSelect extends BackgroundMusicActivity {
         int totalStarsChapter2 = countTotalStars(2);
         int totalStarsChapter3 = countTotalStars(3);
 
+        int totalScore = countTotalScore();
+        String totalScoreFormatted = NumberFormat.getIntegerInstance().format(totalScore);
+
         TextView totalStarsChapter1text = (TextView) findViewById(R.id.totalStars1Text);
         TextView totalStarsChapter2text = (TextView) findViewById(R.id.totalStars2Text);
         TextView totalStarsChapter3text = (TextView) findViewById(R.id.totalStars3Text);
+        TextView totalStarsTotalText = (TextView) findViewById(R.id.totalStarsTotalText);
+        TextView totalStarsTotal = (TextView) findViewById(R.id.totalStarsTotal);
+        TextView totalScoreTotal = (TextView) findViewById(R.id.totalScoreTotal);
+        TextView totalScoreTotalText = (TextView) findViewById(R.id.totalScoreTotalText);
 
         TextView set2locked = (TextView) findViewById(R.id.set2locked);
         TextView set3locked = (TextView) findViewById(R.id.set3locked);
@@ -85,6 +93,7 @@ public class SetSelect extends BackgroundMusicActivity {
         ImageView blueStarImage = (ImageView) findViewById(R.id.bluestarimage);
         ImageView redStarImage = (ImageView) findViewById(R.id.redstarimage);
         ImageView greenStarImage = (ImageView) findViewById(R.id.greenstarimage);
+        ImageView blackStarImage = (ImageView) findViewById(R.id.blackstarimage);
 
         Button set2button = (Button) findViewById(R.id.set2button);
         Button set3button = (Button) findViewById(R.id.set3button);
@@ -149,7 +158,7 @@ public class SetSelect extends BackgroundMusicActivity {
             if (totalStarsChapter3 > 0) {
                 blueStarImage.setVisibility(View.VISIBLE);
                 totalStarsChapter3text.setVisibility(View.VISIBLE);
-                totalStarsChapter3text.setText("= " + totalStarsChapter2);
+                totalStarsChapter3text.setText("= " + totalStarsChapter3);
             } else {
                 blueStarImage.setVisibility(View.INVISIBLE);
                 totalStarsChapter3text.setVisibility(View.INVISIBLE);
@@ -163,6 +172,23 @@ public class SetSelect extends BackgroundMusicActivity {
             set3button.setBackgroundColor(lockedSetBackground);
             set3button.setTextColor(lockedSetText);
             set3button.setClickable(false);
+        }
+
+        //ALL
+        if (totalStarsChapter1 > 0) {
+            totalStarsTotalText.setVisibility(View.VISIBLE);
+            totalStarsTotal.setVisibility(View.VISIBLE);
+            blackStarImage.setVisibility(View.VISIBLE);
+            totalStarsTotal.setText("= " + (totalStarsChapter1 + totalStarsChapter2 + totalStarsChapter3));
+            totalScoreTotal.setVisibility(View.VISIBLE);
+            totalScoreTotal.setText("= " + totalScoreFormatted);
+            totalScoreTotalText.setVisibility(View.VISIBLE);
+        } else {
+            totalStarsTotalText.setVisibility(View.GONE);
+            totalStarsTotal.setVisibility(View.GONE);
+            blackStarImage.setVisibility(View.GONE);
+            totalScoreTotal.setVisibility(View.GONE);
+            totalScoreTotalText.setVisibility(View.GONE);
         }
 
 
@@ -255,32 +281,62 @@ public class SetSelect extends BackgroundMusicActivity {
     public int countTotalStars(int chapter){
         int totalStars;
 
-        int[] levelRange = starRangeData.getRange(1);
+        int[] levelRange = starRangeData.getRange(chapter, 1);
         String scoreString = (String) currentUserScores.get(chapter + ".1");
         int score = Integer.parseInt(scoreString);
         totalStars = compareScoreToRange(score, levelRange);
 
-        levelRange = starRangeData.getRange(2);
+        levelRange = starRangeData.getRange(chapter, 2);
         scoreString = (String) currentUserScores.get(chapter + ".2");
         score = Integer.parseInt(scoreString);
         totalStars = totalStars + compareScoreToRange(score, levelRange);
 
-        levelRange = starRangeData.getRange(3);
+        levelRange = starRangeData.getRange(chapter, 3);
         scoreString = (String) currentUserScores.get(chapter + ".3");
         score = Integer.parseInt(scoreString);
         totalStars = totalStars + compareScoreToRange(score, levelRange);
 
-        levelRange = starRangeData.getRange(4);
+        levelRange = starRangeData.getRange(chapter, 4);
         scoreString = (String) currentUserScores.get(chapter + ".4");
         score = Integer.parseInt(scoreString);
         totalStars = totalStars + compareScoreToRange(score, levelRange);
 
-        levelRange = starRangeData.getRange(5);
+        levelRange = starRangeData.getRange(chapter, 5);
         scoreString = (String) currentUserScores.get(chapter + ".5");
         score = Integer.parseInt(scoreString);
         totalStars = totalStars + compareScoreToRange(score, levelRange);
 
         return totalStars;
+    }
+
+    public int countTotalScore() {
+        int totalScore = 0;
+        int currentScore = 0;
+
+
+        for (int i = 1; i <= 3; i++) {
+
+            String scoreString = (String) currentUserScores.get(i + ".1");
+            currentScore = Integer.parseInt(scoreString);
+            totalScore+= currentScore;
+
+            scoreString = (String) currentUserScores.get(i + ".2");
+            currentScore = Integer.parseInt(scoreString);
+            totalScore+= currentScore;
+
+            scoreString = (String) currentUserScores.get(i + ".3");
+            currentScore = Integer.parseInt(scoreString);
+            totalScore+= currentScore;
+
+            scoreString = (String) currentUserScores.get(i + ".4");
+            currentScore = Integer.parseInt(scoreString);
+            totalScore+= currentScore;
+
+            scoreString = (String) currentUserScores.get(i + ".5");
+            currentScore = Integer.parseInt(scoreString);
+            totalScore+= currentScore;
+        }
+        return totalScore;
     }
 
     private int compareScoreToRange(int score, int[] range){

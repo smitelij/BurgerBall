@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    layout_width="wrap_content"
+    layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,9 +42,9 @@
             android:layout_marginBottom="50dp"
             android:layout_marginTop="50dp"
             android:scaleType="fitCenter"
+            android:layout_marginLeft="0dp"
             android:adjustViewBounds="true"
-            android:cropToPadding="false"
-            android:layout_marginLeft="-20dp" />
+            android:cropToPadding="false" />
     </TableRow>
 
     <TableRow
@@ -228,47 +234,116 @@
                     android:textSize="10dp" />
             </TableRow>
 
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"></TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"></TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"></TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"></TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </TableRow>
         </TableLayout>
     </TableRow>
 
 
+
+
 </TableLayout>
+    <TableLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="bottom"
+        android:background="#000000">
+
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:gravity="bottom">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Total"
+                android:id="@+id/totalStarsTotalText"
+                android:layout_column="9"
+                android:textColor="#8c8c8c"
+                android:textAlignment="textStart"
+                android:paddingLeft="5dp"
+                android:layout_marginTop="15dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/smallstarblack"
+                android:id="@+id/blackstarimage"
+                android:scaleType="fitCenter"
+                android:maxWidth="20dp"
+                android:maxHeight="20dp"
+                android:minHeight="20dp"
+                android:minWidth="20dp"
+                android:layout_marginLeft="10dp"
+                android:adjustViewBounds="true"
+                android:layout_marginBottom="18dp"
+                android:alpha="0.7" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="="
+                android:id="@+id/totalStarsTotal"
+                android:layout_column="9"
+                android:textColor="#8c8c8c"
+                android:textAlignment="textStart"
+                android:paddingLeft="5dp"
+                android:layout_marginTop="15dp" />
+
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:gravity="bottom">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Score"
+                android:id="@+id/totalScoreTotalText"
+                android:layout_column="9"
+                android:textColor="#8c8c8c"
+                android:textAlignment="textStart"
+                android:paddingLeft="5dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="-10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text=""
+                android:id="@+id/totalScoreEmpty"
+                android:layout_column="9"
+                android:textColor="#c5c5c5"
+                android:textStyle="bold"
+                android:textAlignment="textStart"
+                android:paddingLeft="5dp"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="="
+                android:id="@+id/totalScoreTotal"
+                android:layout_column="9"
+                android:textColor="#8c8c8c"
+                android:textAlignment="textStart"
+                android:paddingLeft="5dp"
+                android:layout_marginTop="15dp" />
+
+
+        </TableRow>
+    </TableLayout>
+</RelativeLayout>

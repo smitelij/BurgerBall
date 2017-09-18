@@ -60,8 +60,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
 
-        System.out.println("on surface created.");
-
         // Set the background frame color
         GLES30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -132,8 +130,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         int x, y, viewWidth, viewHeight;
 
         float STATIC_RATIO = GameState.FULL_WIDTH / GameState.FULL_HEIGHT;
-
-        //System.out.println(STATIC_RATIO);
 
         if (width > (int) height * STATIC_RATIO) {
             //too wide, restrict width
@@ -242,11 +238,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             if ((frameCount % 10) == 0) {
                 long avgFrameSizeLastTen = (long) (mGame.getAvgFrameLength() * .94);
                 long avgSleepTimeLastTen = getAvgSleepTime();
-                System.out.println("Avg frame size: " + avgFrameSizeLastTen);
-                System.out.println("Avg sleep time: " + avgSleepTimeLastTen);
                 long desiredSleepTime = (long) (mFrameRateCap * 0.25);
                 long diffFromDesiredSleep = avgSleepTimeLastTen - desiredSleepTime;
-                System.out.println("Diff from desired sleep: " + diffFromDesiredSleep);
                 mFrameRateCap = avgFrameSizeLastTen - (diffFromDesiredSleep/2);
             }
 
@@ -258,9 +251,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         long sleepTime = mFrameRateCap - (mEndTime - mStartTime);
         sleepTimes[frameCount % 10] = sleepTime;
         frameCount++;
-        System.out.println("MS per frame:" + mFrameRateCap);
-        System.out.println("Length of last frame: " + (mEndTime - mStartTime));
-        System.out.println("Sleep time: " + sleepTime);
         if (sleepTime > 0) {
             try {
                 Thread.sleep(sleepTime);

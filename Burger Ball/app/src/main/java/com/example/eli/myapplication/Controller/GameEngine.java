@@ -125,7 +125,6 @@ public class GameEngine {
     //
     public GameEngine(String levelString, boolean muteSound, Activity parentActivity){
 
-        System.out.println(levelString);
         String[] parts = levelString.split("\\.");
         String chapterPart = parts[0];
         String levelPart = parts[1];
@@ -265,11 +264,9 @@ public class GameEngine {
             //check if any balls should be deactivated
             updateBallStatuses();
 
-            System.out.println("time elapsed (beginning) : " + timeElapsed);
 
             //At first, we try to advance the whole frame (or whatever is remaining), and see if any collisions happen.
             float timeStep = mCurrentFrameSize - timeElapsed;
-            System.out.println("time step: " + timeStep);
 
             //Move non-colliding objects (moving obstacles)
             advanceNonActiveCollisionObjects(timeStep);
@@ -282,8 +279,6 @@ public class GameEngine {
             //Also handles NO collisions (assign normal velocity to the balls displacement tally)
             //If there is a collision, timeElapsed is updated to the collision time.
             timeElapsed = collisionHandling(CD, timeStep, timeElapsed);
-
-            System.out.println("time elapsed (end): " + timeElapsed);
 
         }
     }
@@ -350,17 +345,8 @@ public class GameEngine {
      */
     private void collisionDetection(CollisionDetection CD, float timeStep) {
 
-        /*try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-            }*/
-
-        System.out.println("Begin collision detection frame. Size: " + mCurrentFrameSize);
-
         //go through all active balls
         for (Ball currentBall : mAllBalls) {
-
-            System.out.println("..Collision detection for ball.");
 
             if (currentBall.isBallInactive()){
                 continue;
@@ -477,7 +463,6 @@ public class GameEngine {
 
             //we can just grab the first member here since they all have the same time
             float collisionTime = firstCollisions.get(0).getTime();
-            System.out.println("COLLISION DETECTED. Collision time: " + collisionTime);
             //move all balls forward by collision time, and update velocity for colliding balls
             handleCollisionsForBalls(CH, firstCollisions, collisionTime);
             //Only target collisions before collision time will be valid
@@ -571,10 +556,7 @@ public class GameEngine {
         for (MovingObstacle currentObstacle : allMovingObstacles){
             //Cleanup moving obstacle AABB
             currentObstacle.resetAABB(); //reset because they should have been moved 1 full frame
-            System.out.println("Move MovingObstacle by frame step: " + collisionTime);
-            System.out.println("previous vertex location: " + currentObstacle.get2dCoordArray()[0]);
             currentObstacle.moveByFrame(collisionTime); //move forward to the collision time
-            System.out.println("new vertex location: " + currentObstacle.get2dCoordArray()[0]);
             currentObstacle.updatePrevAABB();  //update saved value
         }
     }
@@ -732,14 +714,12 @@ public class GameEngine {
         if (mPrevTime != 0) {
             float currentTime = System.nanoTime();
             float timeLastFrame = currentTime - mPrevTime;
-            System.out.println("Length of last frame: In GameEngine: " + timeLastFrame / 1000000);
             timesPerFrame[mFrameCount % 10] = timeLastFrame;
             sumTotal = sumTotal + timeLastFrame;
             mFrameCount++;
             mPrevTime = currentTime;
             if (mFrameCount % 10 == 0){
                 float avgFPS = calculateFPS();
-                System.out.println("Frames per second: " + calculateFPS());
                 if (avgFPS < 51) {
                     particleEngine.decreaseParticleGeneration(0.2f);
                 }
@@ -768,7 +748,6 @@ public class GameEngine {
         }
 
         float discrepancy = ((maxNum - minNum) / maxNum);
-        System.out.println("Discrepancy between frames: " + discrepancy);
         discrepancySum = discrepancySum + discrepancy;
         discrepancyCounter++;
 
@@ -786,8 +765,6 @@ public class GameEngine {
         }
 
         float avgFPS = 1 / ((sumTotal / mFrameCount) / 1000000000);
-        System.out.println("!!!FINAL AVG FPS: " + avgFPS);
-        System.out.println("!!!FINAL AVG DISCREPANCY: " + (discrepancySum / discrepancyCounter));
     }
 
     private boolean isLevelActive(){
@@ -931,8 +908,6 @@ public class GameEngine {
         currentLevelStatus = GameStatus.POST_PLAY;
         showFinalAvgFPS();
         particleEngine.deactivate();
-
-        System.out.println("FINAL SCORE: " + currentScore);
     }
 
     private void returnToSelectScreen() {

@@ -92,7 +92,6 @@ public class CollisionHandling {
                 calculateVelocityStationaryBorderCollision(ballEngine, currentCollision);
             }
             float boundaryArea = ((Obstacle)currentCollision.getObstacle()).getArea();
-            System.out.println("bounday area: " + boundaryArea);
             float boundaryFreq = CommonFunctions.getFreqOfBoundary(boundaryArea);
 
             float surfaceVelocity = Math.abs(getCollisionVelocity(ballEngine, currentCollision));
@@ -135,8 +134,12 @@ public class CollisionHandling {
 
         newVelocity = reduceVelocityElasticLoss(ballEngine, ball, newVelocity);
 
-        System.out.println("stationary border collision set velocity.");
         ball.setVelocity(newVelocity);
+
+        //handle edge case of rolling ball colliding with obstacle.
+        if (ball.isBallRolling()) {
+            ball.activateBall();
+        }
     }
 
     //**Reference material:
@@ -150,7 +153,6 @@ public class CollisionHandling {
         //get tangent vector and normal vector of the collision
         PointF UTangentVector = collision.getBoundaryAxis();
         PointF UNormalVector = new PointF(UTangentVector.y, -UTangentVector.x);
-        //System.out.println("boundary axis length: " + collision.getBoundaryAxis().length());
 
         //get velocities for balls
         PointF ball1velocity = ballEngine.getAvailableVelocity(ball1, collision.getTime());  //if a ball collides with more than one other ball,
@@ -241,13 +243,6 @@ public class CollisionHandling {
         PointF obstacleDirectionalVel = new PointF(outerBoundaryAxis.x * velocityInCollisionDirection, outerBoundaryAxis.y * velocityInCollisionDirection);
         PointF totalCollisionVelocity = new PointF(oldVelocity.x - obstacleDirectionalVel.x, oldVelocity.y - obstacleDirectionalVel.y);
 
-        System.out.println("ball velocity: " + oldVelocity);
-        System.out.println("obstacle velocity: " + obstacleVelocity);
-        System.out.println("boundary axis: " + boundaryAxis);
-        System.out.println("velocity in collision direction: " + velocityInCollisionDirection);
-        System.out.println("obstacle directional vel: " + obstacleDirectionalVel);
-        System.out.println("total collision velocity: " + totalCollisionVelocity);
-
         //Now that we know how fast the ball and obstacle collided, we can pretend the
         // obstacle is stationary to calculate the change in velocity the collision will cause
 
@@ -260,14 +255,17 @@ public class CollisionHandling {
         PointF newVelocity = new PointF(totalCollisionVelocity.x - velocityChangeVector.x, totalCollisionVelocity.y - velocityChangeVector.y);
 
         PointF newVelocityElastic = reduceVelocityElasticLoss(ballEngine, ball, newVelocity);
-        System.out.println("new velocity elastic: " + newVelocityElastic);
 
         //Finally, we must add the obstacle directional velocity with the post-collision change
         // in velocity (newVelocityElastic), to get our ball's final velocity.
         PointF finalVelocity = new PointF(newVelocityElastic.x + obstacleDirectionalVel.x, newVelocityElastic.y + obstacleDirectionalVel.y);
-        System.out.println("final velocity: " + finalVelocity);
 
         ball.setVelocity(finalVelocity);
+
+        //handle edge case of rolling ball colliding with obstacle.
+        if (ball.isBallRolling()) {
+            ball.activateBall();
+        }
 
     }
 
@@ -334,13 +332,10 @@ public class CollisionHandling {
         float surfaceVelocity = CommonFunctions.dotProduct(oldVelocity, surfaceVector);
 
         if (Math.abs(oldVelocity.length()) < 1.2) {
-            System.out.println("less than 1- using normal spin");
             ball.setSpin(surfaceVelocity / -11);
         } else if ((Math.abs(surfaceVelocity) < 1.2) && (Math.abs(ball.getCurrentRotation()) > 0.05 )) {
-            System.out.println("surface veloc less than 1: reversing spin");
             ball.reverseSpin();
         } else {
-            System.out.println("setting normal spin.");
             ball.setSpin(surfaceVelocity / -11);
         }
 

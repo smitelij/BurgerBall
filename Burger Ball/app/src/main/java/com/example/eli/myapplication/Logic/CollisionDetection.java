@@ -267,7 +267,6 @@ public class CollisionDetection {
         PointF prevVelocityStep;
         PointF totalVelocity;
 
-        Log.d("my app","standard obstacle.");
         prevVelocityStep = new PointF(ballVelocity.x * timeStep, ballVelocity.y * timeStep);
         totalVelocity = ballVelocity;
 
@@ -281,8 +280,6 @@ public class CollisionDetection {
         //For example, if a ball uses 50% of velocity before colliding, and the time step was 0.5, then the collision occurred at 0.25.
         float percentOfVelocityBeforeCollision = (prevVelocityStep.length() - (float) Math.abs(hypotenuse)) / prevVelocityStep.length();
         float collisionTime = (percentOfVelocityBeforeCollision) * timeStep;
-
-        Log.d("my app","***collision time: " + collisionTime);
 
         //once a ball gets really close, this can happen... not sure why
         if (collisionTime < 0){
@@ -305,8 +302,6 @@ public class CollisionDetection {
         PointF prevVelocityStep;
         PointF totalVelocity;
 
-        Log.d("my app","Moving obstacle.");
-
         MovingObstacle tempObstacle = (MovingObstacle) obstacle;
         PointF obstacleVelocity = tempObstacle.getVelocity();
         prevVelocityStep = new PointF((ballVelocity.x - obstacleVelocity.x) * timeStep, (ballVelocity.y - obstacleVelocity.y) * timeStep);
@@ -315,7 +310,6 @@ public class CollisionDetection {
 
         //Calculate the angle of the ball's velocity against the boundary axis
         if (totalVelocity.length() == 0) {
-            System.out.println("total velocity 0?");
             throw new InvalidBallPositionException(boundaryAxis);
         }
 
@@ -329,8 +323,6 @@ public class CollisionDetection {
         float percentOfVelocityBeforeCollision = (prevVelocityStep.length() - (float) Math.abs(hypotenuse)) / prevVelocityStep.length();
         float collisionTime = (percentOfVelocityBeforeCollision) * timeStep;
 
-        Log.d("my app","***collision time: " + collisionTime);
-
         //once a ball gets really close, this can happen... not sure why
         if (collisionTime < 0){
             collisionTime = 0.01f;
@@ -343,8 +335,6 @@ public class CollisionDetection {
 
 
     private void calculateBallBallCollisionInfo(Ball ball1, Ball ball2, float timeStep) throws InvalidBallPositionException {
-
-        System.out.println("CALCULATE BALL BALL COLLISION INFO");
 
         //get necessary information to calculate quadratic
         PointF ball1PrevCenter = ball1.getPrevCenter();
@@ -400,8 +390,6 @@ public class CollisionDetection {
     private void calculateBallPointCollisionInfo(Ball ball, PointF vertex, Interactable obstacle,
                                                  float timeStep, float radius){
 
-        System.out.println("CALCULATE BALL POINT COLLISION INFO");
-
         //get necessary information to calculate quadratic
         PointF boundaryAxis = new PointF(0f,0f);
         PointF ball1PrevCenter = ball.getPrevCenter();
@@ -436,8 +424,6 @@ public class CollisionDetection {
 
         //Get vertex from penetration
         PointF vertex = penetration.mVertex;
-        Log.d("my app","***ball location: " + ball.getPrevCenter());
-        Log.d("my app","***point location: " + vertex);
 
         //get necessary information to calculate quadratic
         PointF ball1PrevCenter = ball.getPrevCenter();
@@ -449,25 +435,12 @@ public class CollisionDetection {
         PointF ballCenter = ball.getCenter();
         PointF currentVertexPos = new PointF(vertex.x + (obstacleVelocity.x * timeStep), vertex.y + (obstacleVelocity.y * timeStep));
         PointF distanceFromVertexAfterTimestep = new PointF(ballCenter.x - currentVertexPos.x, ballCenter.y - currentVertexPos.y);
-        Log.d("my app","_____________________");
-        Log.d("my app","Current ball center: " + ballCenter);
-        Log.d("my app","current vertex pos: " + currentVertexPos);
-        Log.d("my app","distance from vertex after timestep: " + distanceFromVertexAfterTimestep);
-        Log.d("my app","distance value: " + distanceFromVertexAfterTimestep.length());
-        Log.d("my app","timestep: " + timeStep);
-        Log.d("my app","_______________");
 
         PointF velocityDifference = new PointF(ballVelocity.x - obstacleVelocity.x, ballVelocity.y - obstacleVelocity.y);
         if (velocityDifference.length() == 0) {
             throw new InvalidBallPositionException(penetration.mNormalAxis);
         }
         float distanceThreshold = ball.getRadius();
-
-        Log.d("my app","ball velocitY: " + ballVelocity);
-        Log.d("my app","obstacleVelocity: " + obstacleVelocity);
-        Log.d("my app","velocity difference: " + velocityDifference);
-        Log.d("my app","distance difference: " + distanceFromVertex);
-        Log.d("my app","distance value: " + distanceFromVertex.length());
 
         //calculate the collision time using the quadratic formula
         float collisionTime = 0.01f;
@@ -476,7 +449,6 @@ public class CollisionDetection {
         } catch (Exception e) {}
 
         if (collisionTime > timeStep) {
-            System.out.println("error.");
             throw new InvalidBallPositionException(penetration.mNormalAxis);
         }
 
@@ -486,8 +458,6 @@ public class CollisionDetection {
         if (true) {
             //update the boundary axis based on the collision-point location of the ball (this will make velocity calculation more accurate)
             boundaryAxis = updateBoundaryAxisMovingVertex(ball, collisionTime, obstacleVelocity, vertex);
-            System.out.println("old boundary axis: " + penetration.mNormalAxis);
-            System.out.println("new boundary axis: " + boundaryAxis);
         }
 
         if (collisionTime < 0) {
@@ -514,9 +484,6 @@ public class CollisionDetection {
         double squareRoot = Math.sqrt((quadB * quadB) - (4*quadA*quadC));
         double result1 = (-quadB + squareRoot) / (2*quadA);
         double result2 = (-quadB - squareRoot) / (2*quadA);
-
-        Log.d("my app","quadratic result 1: " + result1);
-        Log.d("my app","quadratic result 2: " + result2);
 
         if (isResultWithinBounds(result1, timeStep) && isResultWithinBounds(result2, timeStep)) {
             return Math.min(result1, result2);
@@ -546,8 +513,6 @@ public class CollisionDetection {
         //gather info
         PointF ballCenter = ball.getCenter();
 
-        //Log.d("my app","###### collision testing - ball: " + ball.hashCode() + " _ obstacle: " + obstacle.hashCode());
-
         //Grab the current coords of the obstacle (get temp coords if it's moving)
         PointF[] obstacleCoords;
         if (obstacle.getType() == GameState.INTERACTABLE_MOVING_OBSTACLE) {
@@ -568,8 +533,6 @@ public class CollisionDetection {
 
         //normalize vector
         float nearestVertexLength = nearestVertexToBall.length();
-        Log.d("my app","nearest vertex: " + nearestVertex);
-        Log.d("my app","nearestVertexLength to ball length: " + nearestVertexLength);
         PointF normalAxis = new PointF(nearestVertexToBall.x / nearestVertexLength, nearestVertexToBall.y / nearestVertexLength);
 
         //Determine if a gap exists in the projection
@@ -722,7 +685,6 @@ public class CollisionDetection {
 
         //check if the gap is greater than 0 (min - max > 0), which means definitely no collision!
         if ((result1 > 0) || (result2 > 0 )){
-            Log.d("my app","distances: " + result1 + ", " + result2);
             return true;
         } else {
 
@@ -769,22 +731,14 @@ public class CollisionDetection {
             }
 
         }
-/*
-        Log.d("my app","  ball min x: " + ball.getMinX() + ", ball max x: " + ball.getMaxX());
-        Log.d("my app","  ball min y: " + ball.getMinY() + ", ball max Y: " + ball.getMaxY());
-        Log.d("my app","__");
-        Log.d("my app","  obstacle min x: " + obstacle.getMinX() + ", obstacle max x: " + obstacle.getMaxX());
-        Log.d("my app","  obstacle min y: " + obstacle.getMinY() + ", obstacle max Y: " + obstacle.getMaxY());
-*/
+
         //Test Bounding boxes
         //x axis
         if (((ball.getMaxX()) + 1 >= obstacle.getMinX()) && (obstacle.getMaxX() >= ball.getMinX() - 1)){
 
-            //Log.d("my app"," x axis: True");
             //y axis
             if (((ball.getMaxY()) + 1 >= obstacle.getMinY()) && (obstacle.getMaxY() >= ball.getMinY() - 1)) {
 
-                //Log.d("my app"," y axis: true");
                 return true;
             }
         }

@@ -238,35 +238,36 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
 
     private void updateStarsEarned(){
         RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar1);
-        int[] levelRange = starRangeData.getRange(1);
+        int setInt = Integer.parseInt(currentSet);
+        int[] levelRange = starRangeData.getRange(setInt, 1);
         String scoreString = (String) currentUserScores.get(currentSet + ".1");
         int score = Integer.parseInt(scoreString);
         int rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar2);
-        levelRange = starRangeData.getRange(2);
+        levelRange = starRangeData.getRange(setInt, 2);
         scoreString = (String) currentUserScores.get(currentSet + ".2");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar3);
-        levelRange = starRangeData.getRange(3);
+        levelRange = starRangeData.getRange(setInt, 3);
         scoreString = (String) currentUserScores.get(currentSet + ".3");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar4);
-        levelRange = starRangeData.getRange(4);
+        levelRange = starRangeData.getRange(setInt, 4);
         scoreString = (String) currentUserScores.get(currentSet + ".4");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
         ratingBar.setRating(rating);
 
         ratingBar = (RatingBar) findViewById(R.id.ratingBar5);
-        levelRange = starRangeData.getRange(5);
+        levelRange = starRangeData.getRange(setInt, 5);
         scoreString = (String) currentUserScores.get(currentSet + ".5");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
