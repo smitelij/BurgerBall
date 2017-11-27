@@ -132,9 +132,9 @@
                 android:onClick="sendMessage"
                 android:background="@drawable/button1"
                 android:textColor="#cae4c3"
+                android:textAllCaps="false"
                 android:focusableInTouchMode="true"
-                android:capitalize="none"
-                android:textAllCaps="false" />
+                android:textIsSelectable="false" />
 
             <RatingBar
                 android:layout_width="wrap_content"
@@ -346,13 +346,13 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/ratingBar5"
                 android:layout_column="18"
-                android:numStars="2"
+                android:numStars="4"
                 android:scaleX=".5"
                 android:scaleY=".5"
                 android:longClickable="false"
                 android:isIndicator="true"
                 android:progressTint="#ffffff"
-                android:rating="0"
+                android:rating="2"
                 android:layout_marginRight="6dp"
                 android:progressBackgroundTint="#1c1c1c"
                 android:backgroundTintMode="multiply"

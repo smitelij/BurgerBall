@@ -164,9 +164,6 @@ public class Drawable {
         GLES30.glAttachShader(mProgram, fragmentShader); // add the fragment shader to program
         GLES30.glBindAttribLocation(mProgram,0,"a_TexCoordinate");
         GLES30.glLinkProgram(mProgram);                  // create OpenGL program executables
-        String error = GLES30.glGetProgramInfoLog(mProgram);
-        String error2 = GLES30.glGetShaderInfoLog(vertexShader);
-        String error3 = GLES30.glGetShaderInfoLog(fragmentShader);
 
         mBorderCoords = borderCoords;
         mTextureDataHandle = texturePointer;
@@ -244,6 +241,10 @@ public class Drawable {
 
         // Disable vertex array
         GLES30.glDisableVertexAttribArray(mPositionHandle);
+
+        //Disable texture array
+        GLES30.glDisableVertexAttribArray(mTextureCoordinateHandle);
+
 
 
     }

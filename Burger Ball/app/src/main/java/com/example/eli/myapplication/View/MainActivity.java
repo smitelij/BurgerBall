@@ -26,7 +26,7 @@ import com.example.eli.myapplication.Resources.StarRanges;
 
 import java.util.HashMap;
 
-public class MainActivity extends BackgroundMusicActivity implements View.OnFocusChangeListener{
+public class MainActivity extends ToolbarActivity implements View.OnFocusChangeListener{
 
     private Context context;
     public final static String LEVEL_MESSAGE = "com.example.eli.myapplication.LEVEL_MESSAGE";
@@ -37,7 +37,7 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
     public String currentLevel;
     private HashMap currentUserScores;
     private StarRanges starRangeData = new StarRanges();
-    private HighScoreController highScoreController;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +80,8 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(Color.LTGRAY);
         toolbar.setLogo(R.drawable.burgericon);
+        Drawable drawable = ContextCompat.getDrawable(getApplicationContext(),R.drawable.overflow);
+        toolbar.setOverflowIcon(drawable);
 
         initializeButtons();
 
@@ -142,31 +144,6 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
         RatingBar ratingBar3 = (RatingBar) findViewById(R.id.ratingBar3);
         RatingBar ratingBar4 = (RatingBar) findViewById(R.id.ratingBar4);
         RatingBar ratingBar5 = (RatingBar) findViewById(R.id.ratingBar5);
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        //setTitle(" ");
-
-        return true;
-}
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button1, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.clear_scores) {
-            highScoreController.clearScores();
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void sendMessage(View view) {
@@ -237,41 +214,43 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
 
 
     private void updateStarsEarned(){
-        RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar1);
+
+        RatingBar ratingBar1 = (RatingBar) findViewById(R.id.ratingBar1);
+        RatingBar ratingBar2 = (RatingBar) findViewById(R.id.ratingBar2);
+        RatingBar ratingBar3 = (RatingBar) findViewById(R.id.ratingBar3);
+        RatingBar ratingBar4 = (RatingBar) findViewById(R.id.ratingBar4);
+        RatingBar ratingBar5 = (RatingBar) findViewById(R.id.ratingBar5);
+
         int setInt = Integer.parseInt(currentSet);
         int[] levelRange = starRangeData.getRange(setInt, 1);
         String scoreString = (String) currentUserScores.get(currentSet + ".1");
         int score = Integer.parseInt(scoreString);
         int rating = compareScoreToRange(score, levelRange);
-        ratingBar.setRating(rating);
+        ratingBar1.setRating(rating);
 
-        ratingBar = (RatingBar) findViewById(R.id.ratingBar2);
         levelRange = starRangeData.getRange(setInt, 2);
         scoreString = (String) currentUserScores.get(currentSet + ".2");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
-        ratingBar.setRating(rating);
+        ratingBar2.setRating(rating);
 
-        ratingBar = (RatingBar) findViewById(R.id.ratingBar3);
         levelRange = starRangeData.getRange(setInt, 3);
         scoreString = (String) currentUserScores.get(currentSet + ".3");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
-        ratingBar.setRating(rating);
+        ratingBar3.setRating(rating);
 
-        ratingBar = (RatingBar) findViewById(R.id.ratingBar4);
         levelRange = starRangeData.getRange(setInt, 4);
         scoreString = (String) currentUserScores.get(currentSet + ".4");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
-        ratingBar.setRating(rating);
+        ratingBar4.setRating(rating);
 
-        ratingBar = (RatingBar) findViewById(R.id.ratingBar5);
         levelRange = starRangeData.getRange(setInt, 5);
         scoreString = (String) currentUserScores.get(currentSet + ".5");
         score = Integer.parseInt(scoreString);
         rating = compareScoreToRange(score, levelRange);
-        ratingBar.setRating(rating); // ?? wtf?
+        ratingBar5.setRating(rating);
 
     }
 
@@ -354,7 +333,6 @@ public class MainActivity extends BackgroundMusicActivity implements View.OnFocu
     }
 
     private boolean shouldMuteSound() {
-        OptionsController optionsController = new OptionsController(this, OPTIONS_STORAGE_LOCATION);
         boolean shouldMuteSound = optionsController.getOption("muteSound");
         return shouldMuteSound;
     }

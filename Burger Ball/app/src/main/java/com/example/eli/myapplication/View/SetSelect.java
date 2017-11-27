@@ -1,14 +1,18 @@
 package com.example.eli.myapplication.View;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,7 +30,7 @@ import java.util.HashMap;
 /**
  * Created by Eli on 9/5/2016.
  */
-public class SetSelect extends BackgroundMusicActivity {
+public class SetSelect extends ToolbarActivity {
 
 
 /**
@@ -50,13 +54,40 @@ public class SetSelect extends BackgroundMusicActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.set_select);
 
+        context = getApplicationContext();
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitleTextColor(Color.LTGRAY);
         toolbar.setLogo(R.drawable.burgericon);
+        Drawable drawable = ContextCompat.getDrawable(getApplicationContext(),R.drawable.overflow);
+        toolbar.setOverflowIcon(drawable);
+
+
+        //setButtons();
 
         loadScoresAndUpdateDisplays();
     }
+/*
+    @TargetApi(16)
+    private void setButtons() {
+
+        Button set1button = (Button) findViewById(R.id.set1button);
+        Button set2button = (Button) findViewById(R.id.set2button);
+        Button set3button = (Button) findViewById(R.id.set3button);
+
+        Drawable button1 = null;
+        Drawable button2 = null;
+        Drawable button3 = null;
+
+        button1 = ContextCompat.getDrawable(context,R.drawable.buttonset);
+        button2 = ContextCompat.getDrawable(context,R.drawable.buttonset);
+        button3 = ContextCompat.getDrawable(context,R.drawable.buttonset);
+
+        set1button.setBackground(button1);
+        set2button.setBackground(button2);
+        set3button.setBackground(button3);
+    }*/
 
     @Override
     public void onResume() {
@@ -64,6 +95,7 @@ public class SetSelect extends BackgroundMusicActivity {
         loadScoresAndUpdateDisplays();
     }
 
+    @TargetApi(16)
     private void loadScoresAndUpdateDisplays() {
         context = getApplicationContext();
         highScoreController = new HighScoreController(context, HISCORE_STORAGE_LOCATION);
@@ -85,7 +117,6 @@ public class SetSelect extends BackgroundMusicActivity {
         TextView totalStarsTotalText = (TextView) findViewById(R.id.totalStarsTotalText);
         TextView totalStarsTotal = (TextView) findViewById(R.id.totalStarsTotal);
         TextView totalScoreTotal = (TextView) findViewById(R.id.totalScoreTotal);
-        TextView totalScoreTotalText = (TextView) findViewById(R.id.totalScoreTotalText);
 
         TextView set2locked = (TextView) findViewById(R.id.set2locked);
         TextView set3locked = (TextView) findViewById(R.id.set3locked);
@@ -98,7 +129,12 @@ public class SetSelect extends BackgroundMusicActivity {
         Button set2button = (Button) findViewById(R.id.set2button);
         Button set3button = (Button) findViewById(R.id.set3button);
 
-        int unlockedSetBackground = Color.parseColor("#2E202A");
+        Drawable button2 = null;
+        Drawable button3 = null;
+
+        button2 = ContextCompat.getDrawable(context,R.drawable.buttonset);
+        button3 = ContextCompat.getDrawable(context,R.drawable.buttonset);
+
         int lockedSetBackground = Color.parseColor("#21181d");
         int lockedSetText = Color.parseColor("#5B5B5B");
 
@@ -120,7 +156,7 @@ public class SetSelect extends BackgroundMusicActivity {
         //If set 2 is UNLOCKED
         if (totalStarsChapter1 >= 12 || isSetOverrideEnabled) {
             set2button.setTextColor(Color.WHITE);
-            set2button.setBackgroundColor(unlockedSetBackground);
+            set2button.setBackground(button2);
             set2button.setClickable(true);
             set2locked.setVisibility(View.INVISIBLE);
 
@@ -150,7 +186,7 @@ public class SetSelect extends BackgroundMusicActivity {
         //If set 3 is UNLOCKED
         if (totalStarsChapter2 >= 12 || isSetOverrideEnabled) {
             set3button.setTextColor(Color.WHITE);
-            set3button.setBackgroundColor(unlockedSetBackground);
+            set3button.setBackground(button3);
             set3button.setClickable(true);
             set3locked.setVisibility(View.INVISIBLE);
 
@@ -179,44 +215,18 @@ public class SetSelect extends BackgroundMusicActivity {
             totalStarsTotalText.setVisibility(View.VISIBLE);
             totalStarsTotal.setVisibility(View.VISIBLE);
             blackStarImage.setVisibility(View.VISIBLE);
-            totalStarsTotal.setText("= " + (totalStarsChapter1 + totalStarsChapter2 + totalStarsChapter3));
             totalScoreTotal.setVisibility(View.VISIBLE);
-            totalScoreTotal.setText("= " + totalScoreFormatted);
-            totalScoreTotalText.setVisibility(View.VISIBLE);
+            totalStarsTotal.setText("= " + (totalStarsChapter1 + totalStarsChapter2 + totalStarsChapter3));
+            totalScoreTotal.setText(totalScoreFormatted);
         } else {
             totalStarsTotalText.setVisibility(View.GONE);
             totalStarsTotal.setVisibility(View.GONE);
             blackStarImage.setVisibility(View.GONE);
             totalScoreTotal.setVisibility(View.GONE);
-            totalScoreTotalText.setVisibility(View.GONE);
         }
 
 
         context = getApplicationContext();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        //setTitle(" ");
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button1, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.clear_scores) {
-            //clearScores();
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void sendMessage(View view) {

@@ -73,6 +73,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
                     return false;
                 }
 
+                System.out.println("Is sound pool" + mGame.isSoundPoolReady());
+
                 mGame.playBallPullBack();
 
                 PointF responseCenter = mGame.getInitialBallCenter();
@@ -107,6 +109,8 @@ public class MyGLSurfaceView extends GLSurfaceView {
                     PointF initialVelocity = CommonFunctions.calculateInitialVelocity(xChange,yChange);
 
                     mGame.activateBall(initialVelocity);
+                    mGame.stopBallPullBack();
+
                     if (firstBall) {
                         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                         firstBall = false;

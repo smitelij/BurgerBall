@@ -38,7 +38,7 @@ public class SoundEngine {
     public SoundEngine(Context context, boolean muteSound) {
         this.context = context;
 
-        SoundPool.Builder builder = new SoundPool.Builder();
+        SoundPool.Builder builder = new SoundPool.Builder().setMaxStreams(8);
         soundPool = builder.build();
 
         ballPullHandle = soundPool.load(context, R.raw.ballpullbackfinal, 1);
@@ -48,6 +48,7 @@ public class SoundEngine {
         musicPlayer = MediaPlayer.create(context,R.raw.fbcfull);
         active = true;
         this.muteSound = muteSound;
+
     }
 
     public void playBallFire(float volume, float freq) {
@@ -78,6 +79,10 @@ public class SoundEngine {
         soundPool.play(ballPullHandle, volume, volume, 1,0,freq);
     }
 
+    public void stopBallPullBack() {
+        soundPool.stop(ballPullHandle);
+    }
+
     public void start() {
         //musicPlayer.start();
     }
@@ -89,5 +94,10 @@ public class SoundEngine {
             active = false;
         }
     }
+
+    public boolean isReady() {
+        return active;
+    }
+
 
 }

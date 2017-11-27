@@ -98,6 +98,7 @@ public class GameEngine {
     private float discrepancyCounter = 0;
 
     private Circle mVelocityArrow;
+    private float[] mVelocityArrowCoords;
     private boolean mIsVelocityArrowActive;
 
     private int currentScore = 100000;
@@ -635,6 +636,11 @@ public class GameEngine {
             particleEngine.drawAllParticles(mVPMatrix);
         }
 
+        //Only update drawable coords every frame. Otherwise, weird texture shifting can happen
+        if (mVelocityArrowCoords != null) {
+            mVelocityArrow.setCoords(mVelocityArrowCoords);
+        }
+
         //Draw all drawable objects
         for (Drawable object : allDrawableObjects) {
             if (shouldObjectBeDrawn(object)) {
@@ -837,7 +843,8 @@ public class GameEngine {
 
         float[] newCoords = CommonFunctions.updateVelocityArrow(angle, height, getInitialBallCenter());
 
-        mVelocityArrow.setCoords(newCoords);
+        //Don't update the actual object's coords until we draw the objects.
+        mVelocityArrowCoords = newCoords;
     }
 
     public int getScore(){
@@ -958,8 +965,8 @@ public class GameEngine {
         // Set the background frame color
         GLES30.glClearColor(0.6f, 0.0f, 0.0f, 1.0f);
 
-        endLevelFailImage.draw(mVPMatrix);
-        endLevelFailImage.updateImage();
+        //endLevelFailImage.draw(mVPMatrix);
+        //endLevelFailImage.updateImage();
     }
 
     private void moveScoreDigits() {
@@ -987,6 +994,12 @@ public class GameEngine {
 
     public void playBallPullBack() {
         soundEngine.playBallPullBack(0.5f,1);
+    }
+
+    public void stopBallPullBack() { soundEngine.stopBallPullBack(); }
+
+    public boolean isSoundPoolReady() {
+        return soundEngine.isReady();
     }
 
     public void releaseSounds() {

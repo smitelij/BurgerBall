@@ -3,11 +3,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".View.MainActivity">
     <item
-        android:id="@+id/clear_scores"
+    android:id="@+id/mutemusicitem"
+    android:orderInCategory="100"
+    android:title="Mute Music"
+    app:showAsAction="never"
+    android:textColor="@android:color/white"/>
+
+    <item
+        android:id="@+id/unmutemusicitem"
+        android:orderInCategory="100"
+        android:title="Enable Music"
+        app:showAsAction="never"
+        android:textColor="@android:color/white"/>
+
+    <item
+        android:id="@+id/mutesounditem"
+        android:orderInCategory="100"
+        android:title="Mute Sounds"
+        app:showAsAction="never"
+        android:colorPrimary="@android:color/white"/>
+
+    <item
+        android:id="@+id/unmutesounditem"
+        android:orderInCategory="100"
+        android:title="Enable Sounds"
+        app:showAsAction="never"
+        android:colorPrimary="@android:color/white"/>
+
+    <item
+        android:id="@+id/clearscores"
         android:orderInCategory="100"
         android:title="Clear Scores"
         app:showAsAction="never"
-        android:textColor="@android:color/white"/>
+        android:colorPrimary="@android:color/white"/>
 
 </menu>
 
